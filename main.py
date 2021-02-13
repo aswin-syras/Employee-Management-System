@@ -1,16 +1,27 @@
-from flask import Flask
+from flask import Flask, request, render_template
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+app = Flask(__name__)
+print(__name__)
 
 
-# Press the green button in the gutter to run the script.
+# http://127.0.0.1:5001/
+@app.route("/", methods=["GET"])
+def hello():
+    return "<h1>Welcome to Python Flask Example</h1>"
+
+
+# http://127.0.0.1:5001/hello
+@app.route("/hello", methods=["GET"])
+def greet():
+    return "<h1>Hello World</h1>"
+
+
+# http://127.0.0.1:5001/name
+# This should return your name
+@app.route("/name", methods=["GET"])
+def name():
+    print(request)
+    return "<h1>Employee Management System</h1>"
+
 if __name__ == '__main__':
-    print_hi("Yeah mwone!!!")
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run(port=5001, debug=True)
