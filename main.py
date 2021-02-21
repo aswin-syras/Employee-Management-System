@@ -4,6 +4,10 @@ app = Flask(__name__)
 print(__name__)
 
 
+@app.route("/<name>")
+def home(name):
+    return render_template("index.html", content = name)
+
 # http://127.0.0.1:5001/
 @app.route("/", methods=["GET"])
 def hello():
