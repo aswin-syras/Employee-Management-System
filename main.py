@@ -32,7 +32,7 @@ def hello():
 
 
 # http://127.0.0.1:5001/hello
-@app.route("/hello", methods=["GET"])
+@app.route("/employees", methods=["GET"])
 def greet():
     return "<h1>Hello World</h1>"
 
