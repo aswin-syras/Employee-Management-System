@@ -1,39 +1,84 @@
 import pymongo
 
+# ***************************Database Connection ********************************* #
 def database_connection () :
     connection_string = "mongodb+srv://Username:Password@cluster0.j1u4m.mongodb.net/EmployeeManagementSystem?retryWrites=true&w=majority"
     my_client = pymongo.MongoClient(connection_string)
     database_name = my_client["EmployeeManagementSystem"]
+    return database_name
+
+#Connect the table only to login
+def connect_login_table():
+     database_name = database_connection()
+     login_table_name = database_name["login"]
+     return login_table_name
+
+#Connect the table only to employees
+def connect_employee_table_name():
+    database_name = database_connection()
+    employee_table_name = database_name["employees"]
+    return employee_table_name
+
+#Connect the table only to role
+def connect_role_table_name():
+    database_name = database_connection()
+    role_table_name = database_name["role"]
+    return role_table_name
+
+#Connect the table only to role
+def connect_manager_table_name():
+    database_name = database_connection()
+    managers_table_name = database_name["managers"]
+    return managers_table_name
+
+def connect_employees_role_table ():
+    database_name = database_connection()
+    employee_table_name = database_name["employees"]
+    role_table_name = database_name["role"]
+    return { "employee": employee_table_name, "role": role_table_name }
+
+#Fetching all the table names to make life easier
+def fetch_all_tables():
+    database_name = database_connection()
     login_table_name = database_name["login"]
     employee_table_name = database_name["employees"]
     role_table_name = database_name["role"]
+    manager_table_name = database_name["managers "]
 
-    return { "login": login_table_name, "employee": employee_table_name, "role": role_table_name }
+    return { "login": login_table_name, "employee": employee_table_name, "role": role_table_name, 'manager': manager_table_name }
+
+def merge_employee_role ():
+    emp_role = connect_employees_role_table()
+    emp = employee_table(emp_role["employee"])
+    role = role_table(emp_role["role"])
+
+    merged_array = []
+    for employee in emp:
+        for rol in role:
+            if ( employee["user_role_id"] == rol["_id"] ) :
+                employee["role"] = rol["role_name"]
+                employee["department"] = rol["department"]
+                merged_array.append(employee)
+    print(merged_array)
+    return merged_array
 
 def login_table (login):
-
-    # print(all_collections)
     fetch_values = login.find()
     login_user = [record for record in fetch_values]
-    print(login_user)
+    return login_user
 
 def employee_table(employee):
-    # print(all_collections)
     fetch_values = employee.find()
     employee_user = [record for record in fetch_values]
-    print(employee_user)
+    return employee_user
 
 
 def role_table(role):
-    # print(all_collections)
     fetch_values = role.find()
     role_user = [record for record in fetch_values]
-    print(role_user)
+    return role_user
 
-def overall_connection ():
-    all_collections = database_connection()
-    return all_collections
-# login_table(all_collections['login'])
-# employees_table(all_collections['employee'])
-# role_table(all_collections['role'])
-
+def manager_table(manager):
+    fetch_values = manager.find()
+    manager_user = [record for record in fetch_values]
+    return manager_user
