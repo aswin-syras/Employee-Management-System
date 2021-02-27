@@ -59,7 +59,6 @@ def merge_employee_role ():
                 employee["role"] = rol["role_name"]
                 employee["department"] = rol["department"]
                 merged_array.append(employee)
-    print(merged_array)
     return merged_array
 
 def login_table (login):
@@ -82,3 +81,9 @@ def manager_table(manager):
     fetch_values = manager.find()
     manager_user = [record for record in fetch_values]
     return manager_user
+
+def fetch_only_one_employee(id):
+    fetch_one = connect_employee_table_name()
+    query = { '_id' : id }
+    find_one_employee = fetch_one.find_one(query)
+    return find_one_employee

@@ -8,9 +8,9 @@
                 <div class="col-1">
                     {% if employee.profile_image_name %}
                         <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
-                    {% elif employee.gender == "female" %}
+                    {% elif employee.gender == "Female" %}
                         <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% elif employee.gender == "male" %}
+                    {% elif employee.gender == "Male" %}
                         <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
                     {% else %}
                         <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
@@ -26,7 +26,7 @@
                     </div>
                 </div>
                 <div class="col-1">
-                    <a href="#" >Edit</a>
+                    <a href="/editEmployee/{{ employee._id }}" >Edit</a>
                 </div>
 
                 <div class="d-flex p-2 col-4">

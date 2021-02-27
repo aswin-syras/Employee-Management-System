@@ -1,0 +1,113 @@
+{% extends "shared-component/index.html" %}
+{% block title %} Edit Employee {% endblock title %}
+{% block content %}
+    <!--suppress XmlInvalidId, XmlDuplicatedId -->
+    <div>
+        Editing an Employee
+        <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
+            <div>
+                <!-- Firstname and lastname info-->
+                <div class="d-flex row pt-3">
+                    <div class="form-group col-4">
+                        <label for="fName" class="" >First Name</label>
+                        <input type="text" name="fName" value="{{ one_employee.first_name }}" class="form-control"/>
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="" class="" >Last Name</label>
+                        <input type="text" name="lName" value="{{ one_employee.last_name }}" class="form-control"/>
+                    </div>
+                </div>
+
+                <!-- Job Position -->
+                <div class="row pt-3">
+                    <div class="form-group col-4">
+                        <label for="" class="" >Job Position</label>
+                        <input type="text" name="jobPosition" class="form-control"/>
+                    </div>
+                </div>
+
+                <!-- Email Address and Phone Number -->
+                <div class="d-flex row pt-3">
+                    <div class="form-group col-4">
+                        <label for="" class="" >Email Address</label>
+                        <input type="email" name="emailAddress" value="{{ one_employee.email_address }}" class="form-control"/>
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="" class="" >Phone Number</label>
+                        <input type="tel" name="phoneNumber" value="{{ one_employee.phone_number }}" class="form-control"/>
+                    </div>
+                </div>
+
+                <!-- Upload Picture -->
+                <div class="custom-file pt-3">
+                    {% if one_employee.profile_image_name %}
+                        <img src="{{url_for('file', filename=one_employee['profile_image_name'])}}" name="profile_image" id="output" width="50px" height="50px">
+                    {% elif one_employee.gender == "Female" %}
+                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                    {% elif one_employee.gender == "Male" %}
+                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='img/avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                    {% endif %}
+
+                    <input type="file" class="custom-file-input" id="customFile" id="output" name="profile_image" accept="image/*" onchange="loadFile(event)">
+                </div>
+
+
+                <div class="form-group pt-3 row">
+                    <div class="col-4">
+                        <label for="" class="" >Gender</label>
+                        <select class="custom-select form-control" name="gender">
+                            {% for gender in gender_array %}
+                                <option value="{{ gender }}"
+                                        {% if  gender == one_employee.gender %} selected="selected" {% endif %}> {{ gender }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group pt-3 row">
+                    <div class="col-4">
+                        <label for="" class="" >Job Position</label>
+                        <select class="custom-select form-control" name="role_id">
+                            {% for role in display_all_roles %}
+                            <!-- <option selected>Open this select menu</option>-->
+                            <option value="{{ role._id }}"
+                                    {% if  role._id == one_employee.user_role_id %} selected="selected" {% endif %}>
+                                {{ role.role_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                {% if one_employee.user_manager_id %}
+                    <div class="form-group pt-3 row">
+                        <div class="col-4">
+                            <label for="" class="" >Reporting Manager</label>
+                            <select class="custom-select form-control" name="manager_id">
+                                {% for role in display_all_managers %}
+                                <!-- <option selected>Open this select menu</option>-->
+                                <option value="{{ role._id }}"
+                                        {% if  role._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
+                                        {{ role.manager_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Buttons -->
+                <div class="d-flex pt-3">
+
+                    <div class="form-group">
+                        <input type="submit" value="Update" class="btn btn-primary"/>
+                    </div>
+                    <div class="form-group">
+                        <a href="{{ url_for( came_from ) }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock content %}

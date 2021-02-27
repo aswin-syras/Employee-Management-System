@@ -1,14 +1,15 @@
 {% extends "shared-component/index.html" %}
-{% block title %} Login form {% endblock title %}
+{% block title %}New Employee {% endblock title %}
 {% block content %}
-    <div>
+    <!--suppress XmlInvalidId -->
+<div>
         Add New Employee
         <form method="POST" action="/createNewEmployee"  enctype="multipart/form-data">
             <div>
                 <!-- Firstname and lastname info-->
                 <div class="d-flex row pt-3">
                     <div class="form-group col-4">
-                        <label for="" class="" >First Name</label>
+                        <label for="fName" class="" >First Name</label>
                         <input type="text" name="fName" class="form-control"/>
                     </div>
                     <div class="form-group col-4">
@@ -40,7 +41,8 @@
                 <!-- Upload Picture -->
                 <div class="custom-file pt-3">
                     <label class="custom-file-label" for="customFile">Upload your picture</label>
-                    <input type="file" class="custom-file-input" id="customFile" name="profile_image">
+                    <img id="output" src="{{ url_for('static', filename='img/avatar.jpg') }}" width="50px" height="50px">
+                    <input type="file" class="custom-file-input" id="customFile" name="profile_image" accept="image/*" onchange="loadFile(event)">
                 </div>
 
 
@@ -48,9 +50,9 @@
                     <div class="col-4">
                         <label for="" class="" >Gender</label>
                         <select class="custom-select form-control" name="gender">
-                            <option value="NotReadyToDeclare">Not ready to declare</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
+                            {% for gender in gender_array %}
+                                <option value="{{ gender }}">{{ gender }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -91,5 +93,6 @@
                 </div>
             </div>
         </form>
+    </div>
 
 {% endblock content %}
