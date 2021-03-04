@@ -5,3 +5,6 @@ employees = Blueprint("employees", __name__, static_folder="static", template_fo
 @employees.route("/")
 def home():
     return render_template("employees/employee.html")
+
+def latestfn():
+    print("cd")
