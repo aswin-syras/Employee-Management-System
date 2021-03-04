@@ -16,3 +16,7 @@ def adminHome():
     return render_template("admin/admin.html", display_all_employees = employees, came_from = "admin.adminHome")
 
 
+def adminDetails():
+    print("Hi!!")
+
+
