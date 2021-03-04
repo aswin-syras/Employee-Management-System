@@ -5,3 +5,7 @@ login = Blueprint("login", __name__, static_folder="static", template_folder="te
 @login.route("/")
 def home():
     return render_template("login.html")
+
+
+
+#ssssssssssssss
