@@ -88,5 +88,3 @@ def fetch_only_one_employee(id):
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
-def vai():
-    return()
