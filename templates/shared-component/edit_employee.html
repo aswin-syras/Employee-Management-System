@@ -41,13 +41,13 @@
                 <!-- Upload Picture -->
                 <div class="custom-file pt-3">
                     {% if one_employee.profile_image_name %}
-                        <img src="{{url_for('file', filename=one_employee['profile_image_name'])}}" name="profile_image" id="output" width="50px" height="50px">
+                        <img src="{{url_for('file', filename=one_employee['profile_image_name'])}}" class="img-call" name="profile_image" id="output" width="50px" height="50px">
                     {% elif one_employee.gender == "Female" %}
-                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
                     {% elif one_employee.gender == "Male" %}
-                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
                     {% else %}
-                        <img src="{{ url_for('static', filename='img/avatar.jpg') }}" id="output" alt="alternate" width="50px" height="50px">
+                        <img src="{{ url_for('static', filename='img/avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
                     {% endif %}
 
                     <input type="file" class="custom-file-input" id="customFile" id="output" name="profile_image" accept="image/*" onchange="loadFile(event)">
@@ -86,10 +86,12 @@
                             <label for="" class="" >Reporting Manager</label>
                             <select class="custom-select form-control" name="manager_id">
                                 {% for role in display_all_managers %}
-                                <!-- <option selected>Open this select menu</option>-->
-                                <option value="{{ role._id }}"
+                                    <!-- <option selected>Open this select menu</option>-->
+                                    {% if role._id %}
+                                        <option value="{{ role._id }}"
                                         {% if  role._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
-                                        {{ role.manager_name }}</option>
+                                            {{ role.manager_name }}</option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </div>

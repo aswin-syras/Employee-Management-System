@@ -2,68 +2,88 @@
 {% block title %} Login form {% endblock title %}
 {% block content %}
     <div>
-        <a href="{{ url_for('createNewEmployeeGET') }}" >Add a new employee</a>
-        {% for employee in display_all_employees %}
-            <div class="d-flex p-2 row">
-                <div class="col-1">
-                    {% if employee.profile_image_name %}
-                        <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
-                    {% elif employee.gender == "Female" %}
-                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% elif employee.gender == "Male" %}
-                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% endif %}
-                </div>
-                <div class="col-4">
-                    <div>
-                        {{ employee.first_name }} {{ employee.last_name }}
-                    </div>
+        <a href="/admin/calendar">CALENDAR</a>
 
-                    <div>
-                        {{ employee.role }}
-                    </div>
-                </div>
-                <div class="col-1">
-                    <a href="/editEmployee/{{ employee._id }}" >Edit</a>
-                </div>
-
-                <div class="d-flex p-2 col-4">
-                    <div>
-                        <div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">All Employees</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Calendar</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</button>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                 <a href="{{ url_for('createNewEmployeeGET') }}" >Add a new employee</a>
+                {% for employee in display_all_employees %}
+                    <div class="d-flex p-2 row">
+                        <div class="col-1">
+                            {% if employee.profile_image_name %}
+                                <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
+                            {% elif employee.gender == "Female" %}
+                                <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% elif employee.gender == "Male" %}
+                                <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% endif %}
+                        </div>
+                        <div class="col-4">
                             <div>
-                                E-mail:
+                                {{ employee.first_name }} {{ employee.last_name }}
                             </div>
+
                             <div>
-                                {{ employee.email_address }}
+                                {{ employee.role }}
                             </div>
                         </div>
-
-                         <div>
-                            <div>
-                                Phone Number:
-                            </div>
-                            <div>
-                                {{ employee.phone_number }}
-                            </div>
+                        <div class="col-1">
+                            <a href="/editEmployee/{{ employee._id }}" >Edit</a>
                         </div>
 
-                         <div>
+                        <div class="d-flex p-2 col-4">
                             <div>
-                                Department:
-                            </div>
-                            <div>
-                                {{ employee.department }}
+                                <div>
+                                    <div>
+                                        E-mail:
+                                    </div>
+                                    <div>
+                                        {{ employee.email_address }}
+                                    </div>
+                                </div>
+
+                                 <div>
+                                    <div>
+                                        Phone Number:
+                                    </div>
+                                    <div>
+                                        {{ employee.phone_number }}
+                                    </div>
+                                </div>
+
+                                 <div>
+                                    <div>
+                                        Department:
+                                    </div>
+                                    <div>
+                                        {{ employee.department }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <div class="col-2">
+                                <a href="#">{{ employee.department }}</a>
+                            </div>
                     </div>
-                </div>
-                <div class="col-2">
-                        <a href="#">{{ employee.department }}</a>
-                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+          </div>
+        </div>
+
     </div>
 
 {% endblock content %}
