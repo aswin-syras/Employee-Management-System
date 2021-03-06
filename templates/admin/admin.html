@@ -15,6 +15,10 @@
             <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Contact</button>
           </li>
         </ul>
+        <form class="form-inline my-2 my-lg-0" method="POST" action="{{ url_for('admin.searchAnEmployee') }}"  enctype="multipart/form-data">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="search_value" value={{ value_search }}>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                  <a href="{{ url_for('createNewEmployeeGET') }}" >Add a new employee</a>
