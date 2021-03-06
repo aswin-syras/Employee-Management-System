@@ -25,7 +25,7 @@ def searchAnEmployee():
     fetch_names = database_connection.fetch_employee_search_name(fetch_search_result)
     print(fetch_names)
     if ( fetch_search_result ):
-        return render_template("admin/admin.html", display_all_employees = fetch_names, search_result = fetch_search_result)
+        return render_template("admin/admin.html", display_all_employees = fetch_names, search_result = fetch_search_result, value_search=request.form.get('search_value'))
     else:
         return redirect(url_for("admin.adminHome")) # If the search field is empty then navigate to the home page
 
@@ -66,7 +66,7 @@ def return_data():
     new_end_date = start_date_string.strftime(new_format_start_time) + 'T' + end_date_string.strftime(new_format_end_time)
     start_date_format = "%Y-%m-%dT%H:%M:%S"
     new_value_start = start_date_string.strftime(start_date_format)
-
+    print("ONE ELEMENT: ", one_element)
     work_schedle_db.update_one(
         {'_id': one_element["_id"]},
         {'$set': { 'start': new_value_start , 'end': new_end_date}}
