@@ -1,13 +1,18 @@
 # import pymongo
-from flask import Flask, request, render_template, url_for
+from flask import Flask, request, render_template, url_for,session,redirect
 from login import login
 from admin import admin
 from employees import employees
 from flask_pymongo import PyMongo
 import database_connection
 import json
+from flask_wtf import FlaskForm
+from wtforms.fields.html5 import DateField
+from wtforms.validators import DataRequired
+from wtforms import validators, SubmitField
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "$%^&U$%^TYURTFY&*GU"
 
 ###### BluePrint for differernt pages
 app.register_blueprint(login, url_prefix="/login")
@@ -24,6 +29,11 @@ all_roles = database_connection.connect_role_table_name()
 all_managers = database_connection.connect_manager_table_name()
 
 gender_array = [ 'Not Ready to Declare', 'Male', 'Female']
+
+class InformForm(FlaskForm):
+    startdate = DateField('Start Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
+    enddate = DateField('End Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
+    submit = SubmitField('Submit')
 
 
 @app.route("/<name>")
@@ -185,6 +195,30 @@ def editAnEmployee(id):
 
         #TODO: Need to redirect it to the desired location
         return render_template("shared-component/index.html")
+
+@admin.route("/createnewEvent", methods=['GET', 'POST'])
+def return_data():
+    return ()
+
+@app.route("/createNewEventPost", methods=['GET', 'POST'])
+def createNewEventPost():
+    form = InformForm()
+    if (form.validate_on_submit()):
+        print("CLISEKED SUBMIT")
+        session['startdate'] = form.startdate.data
+        session['enddate'] = form.enddate.data
+        return redirect(url_for("date"))
+    return render_template('admin/new_event_creation.html', form=form)
+
+@app.route("/date", methods=['POST'])
+def date():
+    form = InformForm()
+    session['startdate'] = form.startdate.data
+    session['enddate'] = form.enddate.data
+    startdate = session["startdate"]
+    enddate = session["enddate"]
+
+    return render_template('admin/date.html')
 
 if __name__ == '__main__':
     #### Provides all the table names ###############

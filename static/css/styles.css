@@ -1,3 +1,7 @@
 body {
     background: lightgrey;
 }
+
+.img-call {
+    border-radius: "50px";
+}
