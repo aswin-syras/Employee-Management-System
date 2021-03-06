@@ -73,9 +73,11 @@
                     <div class="col-4">
                         <label for="" class="" >Reporting Manager</label>
                         <select class="custom-select form-control" name="manager_id">
-                            {% for role in display_all_managers %}
-                            <!-- <option selected>Open this select menu</option>-->
-                            <option value="{{ role._id }}">{{ role.manager_name }}</option>
+                            {% for manager in display_all_managers %}
+                                <!-- <option selected>Open this select menu</option>-->
+                                {% if manager._id %}
+                                    <option value="{{ manager._id }}">{{ manager.manager_name }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                     </div>

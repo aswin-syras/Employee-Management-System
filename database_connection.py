@@ -1,6 +1,9 @@
 import pymongo
 
 # ***************************Database Connection ********************************* #
+from bson import ObjectId
+
+
 def database_connection () :
     connection_string = "mongodb+srv://Username:Password@cluster0.j1u4m.mongodb.net/EmployeeManagementSystem?retryWrites=true&w=majority"
     my_client = pymongo.MongoClient(connection_string)
@@ -24,6 +27,12 @@ def connect_role_table_name():
     database_name = database_connection()
     role_table_name = database_name["role"]
     return role_table_name
+
+#Connect to work_schedule
+def connect_workSchedule_table_name():
+    database_name = database_connection()
+    workSchedule_table_name = database_name["workSchedule"]
+    return workSchedule_table_name
 
 #Connect the table only to role
 def connect_manager_table_name():
@@ -77,6 +86,11 @@ def role_table(role):
     role_user = [record for record in fetch_values]
     return role_user
 
+def workSchedule_table(schedule):
+    fetch_values = schedule.find()
+    schedule_user = [record for record in fetch_values]
+    return schedule_user
+
 def manager_table(manager):
     fetch_values = manager.find()
     manager_user = [record for record in fetch_values]
@@ -88,3 +102,15 @@ def fetch_only_one_employee(id):
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
+def fetch_only_one_work_schedule(id):
+    fetch_one = connect_workSchedule_table_name()
+    query = { '_id' : ObjectId(id) }
+    find_one_employee = fetch_one.find_one(query)
+    return find_one_employee
+
+def fetch_employee_search_name(values):
+    connected_employees = connect_employee_table_name()
+    fetch_me = connected_employees.find({ "$or": [{"first_name": {"$regex": f".*{values}.*"}}, {"last_name": {"$regex": f".*{values}.*"}}]} )
+
+    overall_fetch = [ doc for doc in fetch_me ]
+    return overall_fetch
