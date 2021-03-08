@@ -13,9 +13,10 @@
           $('.selectpicker').selectpicker();
         });
     </script>
-<div>
-        Add New Event
-        <form method="POST" action="{{url_for('admin.getFullCalendar')}}"  name="myForm">
+
+	<div>
+        Edit Existing Event
+        <form method="POST" action="/postAnExistingEvent/{{ fetched_data._id }}"  name="myForm">
             {{ form.csrt_token }}
             <div class="form-group pt-3 row">
                 <div class="col-4">
@@ -23,7 +24,8 @@
                       <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id">
                         {% for employee in display_all_employees %}
                             {% if employee._id %}
-                                <option value="{{ employee._id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                                <option value="{{ employee._id }}" {% if  employee._id == fetched_data.employee_id %} selected="selected" {% endif %}>
+                                    {{ employee.first_name }} {{ employee.last_name }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -36,39 +38,47 @@
                             {% for manager in display_all_managers %}
                                 <!-- <option selected>Open this select menu</option>-->
                                 {% if manager._id %}
-                                    <option value="{{ manager._id }}">{{ manager.manager_name }}</option>
+                                    <option value="{{ manager._id }}"
+                                    {% if  manager._id == fetched_data.manager_id %} selected="selected" {% endif %}>{{ manager.manager_name }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
                     </div>
                 </div>
+
                 <div class="col-4">
-                    {{ form.title.label }} {{ form.title(class="form-control") }} {{ form.hidden_tag() }}
-                </div>
-                <div class="col-4">
-                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control") }} {{ form.hidden_tag() }}
-                </div>
-                <div class="col-4">
-                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control") }} {{ form.hidden_tag() }}
+                    {{ form.title.label }} {{ form.title(class="form-control", value=fetched_data['title'] ) }} {{ form.hidden_tag() }}
                 </div>
 
                 <div class="col-4">
-                    {{ form.start_at.label }} {{ form.start_at(class="form-control") }} {{ form.hidden_tag() }}
+                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control", value=fetched_data['start'].split("T")[0] ) }} {{ form.hidden_tag() }}
+                </div>
+                <div class="col-4">
+                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control", value=fetched_data['end'].split("T")[0]) }} {{ form.hidden_tag() }}
                 </div>
 
                 <div class="col-4">
-                    {{ form.end_at.label }} {{ form.end_at(class="form-control") }} {{ form.hidden_tag() }}
+                    {{ form.start_at.label }} {{ form.start_at(class="form-control", value=fetched_data['start'].split("T")[1]) }} {{ form.hidden_tag() }}
+                </div>
+
+                <div class="col-4">
+                    {{ form.end_at.label }} {{ form.end_at(class="form-control", value=fetched_data['end'].split("T")[1]) }} {{ form.hidden_tag() }}
                 </div>
             </div>
 
 
-            <p>
+            <div>
                {{ form.submit(class="btn btn-primary") }}
-            </p>
+            </div>
+
+            <div>
+                <a class="btn btn-danger" href="/deleteEvent/{{ fetched_data._id }}">Delete the Event</a>
+            </div>
 
             <div>
                 <a class="btn btn-secondary" href="{{ url_for('admin.getFullCalendar') }}">Back</a>
             </div>
+
         </form>
     </div>
 

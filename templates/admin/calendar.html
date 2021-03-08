@@ -1,21 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+{% extends "shared-component/index.html" %}
+{% block title %} Edit Employee {% endblock title %}
+{% block content %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js"></script>
-</head>
 
 
-<body>
     <div class="container-fluid">
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{{ url_for('admin.adminHome') }}">Active</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('admin.getFullCalendar') }}">CALENDAR</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+          </li>
+        </ul>
+        <div class="ml-1">
+            <a class="btn btn-primary" href="/createNewEventPost" class="btn btn-primary"> Add a new Event </a>
+        </div>
+
         <div id="calendar"></div>
     </div>
-    <div>
-        <a href="/createnewEvent" class="btn btn-primary"></a>
-    </div>
+
     <script>
         var calendarElement = document.getElementById("calendar");
         console.log("calendarElement:", calendarElement);
@@ -23,71 +41,91 @@
         var calendar = new FullCalendar.Calendar(calendarElement, {
             events: [
                 {% for event in events %}
-                {
-                    id: '{{ event._id }}',
-                    title: '{{event.title}}',
-                    start: '{{event.start}}',
-                    extendedProps: {
-                        _id: '{{ event._id }}',
-                        employee_id: {{ event.employee_id }},
-                        old_start: '{{event.start}}',
-                        end: '{{ event.end }}'
-                     },
-                },
+					{
+						id: '{{ event._id }}',
+						title: '{{event.title}}',
+						start: '{{event.start}}',
+						extendedProps: {
+							_id: '{{ event._id }}',
+							employee_id: {{ event.employee_id }},
+							old_start: '{{event.start}}',
+							end: '{{ event.end }}',
+							manager_id: '{{ event.manager_id }}',
+							title: '{{ event.title }}'
+						 },
+					},
                 {% endfor %}
             ],
-
-           timeZone: 'UTC',
+			timeZone: 'UTC',
             headerToolbar: {
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+				left: 'prev,next today',
+				center: 'title',
+				right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
-              eventDrop: function(info) {
-                alert(info.event.title + " was dropped on " + info.event.start.toISOString() + " "+ info.event.employee_id +  "  "+ info.event.employee_id);
-                console.log(info);
-                if (!confirm("Are you sure about this change?")) {
-                  info.revert();
-                }
-                console.log("PARAMS: ", info, info.event.extendedProps);
-                var eventData = {
-                        title: info.event.title ,
-                        start: info.event.start.toISOString()
-                };
-                eventData = {...eventData, ...info.event.extendedProps}
+			eventDrop: function(info) {
+				alert(info.event.title + " was dropped on " + info.event.start.toISOString() + " "+ info.event.employee_id +  "  "+ info.event.employee_id);
+				console.log(info);
+				if (!confirm("Are you sure about this change?")) {
+				  info.revert();
+				}
+				console.log("PARAMS: ", info, info.event.extendedProps);
+				var eventData = {
+						title: info.event.title ,
+						start: info.event.start.toISOString()
+				};
+				eventData = {...eventData, ...info.event.extendedProps}
 
-                //$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
-                 //   'start': info.event.start.toISOString()} )
+				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
+				 //   'start': info.event.start.toISOString()} )
 
-                $.ajax({
-                type: "POST",
-                url: '{{url_for("admin.return_data")}}',
-                data: JSON.stringify({'eventData' : eventData}),
-                contentType: "application/json",
-                dataType: 'json',
-                success: function(response) {
-                    // do something
-                    },
-                error: function (xhr, status, error) {
-                    console.log(error);
-                    }
-            });
+				$.ajax({
+					type: "POST",
+					url: '{{url_for("admin.return_data")}}',
+					data: JSON.stringify({'eventData' : eventData}),
+					contentType: "application/json",
+					dataType: 'json',
+					success: function(response) {
+						// do something
+					},
+					error: function (xhr, status, error) {
+						console.log(error);
+					}
+				});
+			},
+			eventClick: function(info) {
+				info.jsEvent.preventDefault(); // don't let the browser navigate
+				//window.open("https://www.google.com/");
+				console.log("OPEN ME");
+
+				console.log("PARAMS: ", info, info.event.extendedProps);
+				var eventData = {
+						title: info.event.title ,
+						start: info.event.start.toISOString(),
+
+				};
+				eventData = {...eventData, ...info.event.extendedProps}
 
 
-              },
-                eventClick: function(info) {
-                    info.jsEvent.preventDefault(); // don't let the browser navigate
-                    //window.open("https://www.google.com/");
+				console.log("*********------: ", eventData._id);
 
-              }
-        });
+				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
+				 //   'start': info.event.start.toISOString()} )
+
+				$.ajax({
+				type: "GET",
+				url: '/getExistingEvent/'+ info.event.extendedProps._id,
+				success: function(response) {
+					// do something
+					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id ,"_self");
+					},
+				error: function (xhr, status, error) {
+					console.log(error);
+					}
+				});
+			}
+		});
         calendar.render();
-
     </script>
-<!--            dateClick: function() {-->
-<!--                alert('a day has been clicked!');-->
-<!--            },-->
-</body>
-</html>
+{% endblock content %}

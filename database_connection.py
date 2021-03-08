@@ -110,7 +110,9 @@ def fetch_only_one_work_schedule(id):
 
 def fetch_employee_search_name(values):
     connected_employees = connect_employee_table_name()
-    fetch_me = connected_employees.find({ "$or": [{"first_name": {"$regex": f".*{values}.*"}}, {"last_name": {"$regex": f".*{values}.*"}}]} )
+
+    # the below query will fetch all case insensitive characters
+    fetch_me = connected_employees.find({ "$or": [{"first_name": {"$regex": f".*{values}.*", "$options" :'i'}}, {"last_name": {"$regex": f".*{values}.*", "$options" :'i'}}]} )
 
     overall_fetch = [ doc for doc in fetch_me ]
     return overall_fetch
