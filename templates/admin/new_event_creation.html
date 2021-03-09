@@ -13,17 +13,35 @@
           $('.selectpicker').selectpicker();
         });
     </script>
-<div>
+    <style>
+        .btn.dropdown-toggle.btn-default:after {
+            content: none;
+        }
+    </style>
+
+    <div>
         Add New Event
         <form method="POST" action="{{url_for('admin.getFullCalendar')}}"  name="myForm">
             {{ form.csrt_token }}
+
+              {% if error %}
+                <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ error }}</div>
+              {% endif %}
+
+            requestForm.employee_id ===> {{ requestForm.employee_id }}
+
             <div class="form-group pt-3 row">
                 <div class="col-4">
                     <label for="" class="" >Employee Name</label>
                       <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id">
                         {% for employee in display_all_employees %}
                             {% if employee._id %}
-                                <option value="{{ employee._id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                                {% if requestForm %}
+                                    <option value="{{ employee._id }}"{% if  employee._id == requestForm.employee_id %} selected="selected" {% endif %}>
+                                        {{ employee.first_name }} {{ employee.last_name }}</option>
+                                {% else %}
+                                  <option value="{{ employee._id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -36,7 +54,12 @@
                             {% for manager in display_all_managers %}
                                 <!-- <option selected>Open this select menu</option>-->
                                 {% if manager._id %}
-                                    <option value="{{ manager._id }}">{{ manager.manager_name }}</option>
+                                    {% if requestForm %}
+                                        <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
+                                            {{ manager.manager_name }}</option>
+                                    {% else %}
+                                        <option value="{{ manager._id }}">{{ manager.manager_name }}</option>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </select>

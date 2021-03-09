@@ -1,7 +1,7 @@
 # import pymongo
 from datetime import datetime
 
-from flask import Flask, request, render_template, url_for, session, redirect
+from flask import Flask, request, render_template, url_for, session, redirect, flash
 from login import login
 from admin import admin
 from employees import employees
@@ -221,7 +221,7 @@ def deleteExistingEmployee(id):
 def createNewEventPost():
     form = InformForm()
     # TODO we may need to show all the employees list
-
+    print("NEW: ", request.form.get("employee_id"))
     if (form.validate_on_submit()):
         session['startdate'] = form.startdate.data
         session['enddate'] = form.enddate.data
@@ -241,15 +241,63 @@ def date():
     enddate = session["enddate"]
 
     # TODO Need to validate and some logics
+    #https://www.dataquest.io/blog/python-datetime-tutorial/
+    start_date_split = request.form.get('startdate').split("-")
+    start_at_split = request.form.get('start_at').split(":")
 
-    mongo.db.workSchedule.insert({
-                       'employee_id': int(request.form.get('employee_id')),
-                       'title': request.form.get('title'),
-                       'start': request.form.get('startdate') + 'T' + request.form.get('start_at') + ":00",
-                       'end': request.form.get('enddate') + 'T' + request.form.get('end_at') + ":00",
-                        'manager_id': int(request.form.get('manager_id')) })
+    end_date_split = request.form.get('enddate').split("-")
+    end_at_split = request.form.get('end_at').split(":")
 
-    return redirect(url_for("admin.getFullCalendar"))
+    # date1 = datetime(int(start_date_split[0]), int(start_date_split[1]), int(start_date_split[2]), int(start_at_split[0]), int(start_at_split[1]), 00)
+    # date2 = datetime(int(end_date_split[0]), int(end_date_split[1]), int(end_date_split[2]), int(end_at_split[0]), int(end_at_split[1]), 00)
+    #
+    # diff = date2 - date1
+    # print("Difference: ", diff)
+
+    print("NEW: ", request.form.get("employee_id"))
+    print("FORM: ", request.form)
+
+
+    requestForm = {
+        "employee_id": int(request.form.get("employee_id")),
+        "manager_id": int(request.form.get("manager_id"))
+    }
+
+    # print("request.form.get('startdate'): ", start_date_split)
+    # print("request.form.get('startdate'): ", start_at_split)
+    dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+    dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+    timestamp = datetime.timestamp(dt_object2)
+    timestamp2 = datetime.timestamp(dt_object1)
+    error = None
+    if ( dt_object1 == dt_object2 ):
+        print("They r same, please try something else")
+        # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
+        error = 'Start date and End date are same, please try to enter the start date to be less than the end date'
+        return render_template('admin/new_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers), error=error, requestForm=requestForm)
+    elif (dt_object1 > dt_object2):
+        print("Looks like the start date is greater than end date")
+        error = 'Looks like the start date is greater than end date'
+        return render_template('admin/new_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers), error=error, requestForm=requestForm)
+    else:
+        print("Looks like it is the correct date: ", request.form, session)
+        mongo.db.workSchedule.insert({
+                           'employee_id': int(request.form.get('employee_id')),
+                           'title': request.form.get('title'),
+                           'start': request.form.get('startdate') + 'T' + request.form.get('start_at') + ":00",
+                           'end': request.form.get('enddate') + 'T' + request.form.get('end_at') + ":00",
+                            'manager_id': int(request.form.get('manager_id')) })
+        return redirect(url_for("admin.getFullCalendar"))
+
+    print('Unix Timestamp: ', timestamp, timestamp2)
+
+
 
 @app.route("/getExistingEvent/<id>", methods=['GET', 'POST'])
 def editExitEvent(id):
