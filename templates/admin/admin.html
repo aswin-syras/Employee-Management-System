@@ -8,7 +8,6 @@
         <ul class="nav nav-tabs">
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{{ url_for('admin.searchAnEmployee') }}">Active</a>
-
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('admin.getFullCalendar') }}">CALENDAR</a>
@@ -26,76 +25,91 @@
   <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
 </form>
       <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-         <a class="btn btn-primary" href="{{ url_for('createNewEmployeeGET') }}" >Add a new employee</a>
-        {% for employee in display_all_employees %}
-            <div class="d-flex p-2 row">
-                <div class="col-1">
-                    {% if employee.profile_image_name %}
-                        <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
-                    {% elif employee.gender == "Female" %}
-                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% elif employee.gender == "Male" %}
-                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                    {% endif %}
-                </div>
-                <div class="col-4">
-                    <div>
-                        {{ employee.first_name }} {{ employee.last_name }}
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="row form-group d-flex">
+                    <div class="col-3">
+                        <a class="btn btn-primary" href="{{ url_for('createNewEmployeeGET') }}" >Add a New Employee</a>
+                    </div>
+                    <div class="col-3">
+                        <a class="btn btn-primary" href="{{ url_for('createNewDepartmentGET') }}" >Add a New Department</a>
+                    </div>
+                    <div class="col-3">
+                        <a class="btn btn-primary" href="{{ url_for('createNewEmployeeTypeGET') }}" >Add a New Employee Type</a>
                     </div>
 
-                    <div>
-                        {{ employee.role }}
+                    <div class="col-3">
+                        <a class="btn btn-primary" href="{{ url_for('createNewRoleGET') }}" >Add a New Role</a>
                     </div>
-                </div>
-                <div class="col-1">
-                    <a href="/editEmployee/{{ employee._id }}" >Edit</a>
-                </div>
 
-                <div class="d-flex p-2 col-3">
-                    <div>
-                        <div>
+                </div>
+                {% for employee in display_all_employees %}
+                    <div class="d-flex p-2 row">
+                        <div class="col-1">
+                            {% if employee.profile_image_name %}
+                                <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
+                            {% elif employee.gender == "Female" %}
+                                <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% elif employee.gender == "Male" %}
+                                <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            {% endif %}
+                        </div>
+                        <div class="col-4">
                             <div>
-                                E-mail:
+                                {{ employee.first_name }} {{ employee.last_name }}
                             </div>
+
                             <div>
-                                {{ employee.email_address }}
+                                {{ employee.role }}
                             </div>
                         </div>
-
-                         <div>
-                            <div>
-                                Phone Number:
-                            </div>
-                            <div>
-                                {{ employee.phone_number }}
-                            </div>
+                        <div class="col-1">
+                            <a href="/editEmployee/{{ employee._id }}" >Edit</a>
                         </div>
 
-                         <div>
+                        <div class="d-flex p-2 col-3">
                             <div>
-                                Department:
+                                <div>
+                                    <div>
+                                        E-mail:
+                                    </div>
+                                    <div>
+                                        {{ employee.email_address }}
+                                    </div>
+                                </div>
+
+                                 <div>
+                                    <div>
+                                        Phone Number:
+                                    </div>
+                                    <div>
+                                        {{ employee.phone_number }}
+                                    </div>
+                                </div>
+
+                                 <div>
+                                    <div>
+                                        Department:
+                                    </div>
+                                    <div>
+                                        {{ employee.department_name }}
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                {{ employee.department_name }}
-                            </div>
+                        </div>
+                        <div class="col-2">
+                                <a href="{{ url_for('editingDepartmentGET', id=employee.department_id) }}">{{ employee.department_name }}</a>
+                        </div>
+                        <div class="col-1">
+                            <a class="btn btn-danger" href="/deleteExistingEmployee/{{ employee._id }}">Delete</a>
                         </div>
                     </div>
-                </div>
-                <div class="col-2">
-                        <a href="#">{{ employee.department_name }}</a>
-                </div>
-                <div class="col-1">
-                    <a class="btn btn-danger" href="/deleteExistingEmployee/{{ employee._id }}">Delete</a>
-                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-    </div>
-    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-  </div>
-</div>
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            </div>
+      </div>
     <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
     </div>
 

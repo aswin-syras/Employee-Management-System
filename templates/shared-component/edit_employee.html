@@ -11,10 +11,10 @@
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
-    <div>
+    <div class="parent-edit-div">
         <h2>Editing an Employee</h2>
         <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
-            <div class="d-flex">
+            <div>
             {{ form.csrt_token }}
 
             {% if error %}
@@ -27,7 +27,7 @@
 
 
                 <!-- Upload Picture -->
-                <div class="custom-file pt-3">
+                <div class="custom-file pt-3 pb-3">
                     {% if one_employee.profile_image_name %}
                         <img src="{{url_for('file', filename=one_employee['profile_image_name'])}}" class="img-call" name="profile_image" id="output" width="50px" height="50px">
                     {% elif one_employee.gender == "Female" %}
@@ -43,243 +43,257 @@
                     <input type="file" class="custom-file-input" id="customFile" name="profile_image" accept="image/*" onchange="loadFile(event)">
                 </div>
 
-                <!-- Firstname and lastname info-->
-                <div class="d-flex row pt-3">
-                    <div class="form-group col-4">
-<!--                        <label for="fName" class="" >First Name</label>-->
-<!--                        <input type="text" name="fName" value="{{ one_employee.first_name }}" class="form-control"/>-->
-                        {{ form.first_name.label }} {{ form.first_name(class="form-control", value=one_employee.first_name )}} {{ form.hidden_tag() }}
-                    </div>
-                    <div class="form-group col-4">
-<!--                        <label for="" class="" >Last Name</label>-->
-<!--                        <input type="text" name="lName" value="{{ one_employee.last_name }}" class="form-control"/>-->
-                        {{ form.last_name.label }} {{ form.last_name(class="form-control", value=one_employee.last_name)}} {{ form.hidden_tag() }}
-                    </div>
-                </div>
+                <ul class="nav nav-tabs">
+                   <li class="active"><a href="#a" data-toggle="tab">Personal Details</a></li>
+                   <li><a href="#b" data-toggle="tab">Official Details</a></li>
+                   <li><a href="#c" data-toggle="tab">Bank Details</a></li>
+                   <li><a href="#d" data-toggle="tab">Salary/Hourly Pay Details</a></li>
+                </ul>
 
-                                <!-- Is Manager Check -->
-                <div class="row pt-3">
-                    <div class="form-group col-4">
-                        <div>{{ form.is_manager(class="form-check-input", type="checkbox", checked=one_employee.is_manager )}} {{ form.is_manager.label }}  {{ form.hidden_tag() }}</div>
-                    </div>
-                </div>
+                <div class="tab-content">
+                   <div class="tab-pane active pb-3 pt-3" id="a">
+                        <!-- Firstname and lastname info-->
+                        <div class="d-flex row pt-3">
+                            <div class="form-group col-4">
+        <!--                        <label for="fName" class="" >First Name</label>-->
+        <!--                        <input type="text" name="fName" value="{{ one_employee.first_name }}" class="form-control"/>-->
+                                {{ form.first_name.label }} {{ form.first_name(class="form-control", value=one_employee.first_name )}} {{ form.hidden_tag() }}
+                            </div>
+                            <div class="form-group col-4">
+        <!--                        <label for="" class="" >Last Name</label>-->
+        <!--                        <input type="text" name="lName" value="{{ one_employee.last_name }}" class="form-control"/>-->
+                                {{ form.last_name.label }} {{ form.last_name(class="form-control", value=one_employee.last_name)}} {{ form.hidden_tag() }}
+                            </div>
+                        </div>
 
-                <!-- Email Address and Phone Number -->
-                <div class="d-flex row pt-3">
-                    <div class="form-group col-4">
-<!--                        <label for="" class="" >Email Address</label>-->
-<!--                        <input type="email" name="emailAddress" value="{{ one_employee.email_address }}" class="form-control"/>-->
-                        {{ form.email_address.label }} {{ form.email_address(class="form-control", value=one_employee.email_address )}} {{ form.hidden_tag() }}
-                    </div>
-                    <div class="form-group col-4">
-                        <label for="" class="" >Phone Number</label>
-                        <input type="tel" name="phoneNumber" value="{{ one_employee.phone_number }}" class="form-control"/>
-                    </div>
-                </div>
+                                        <!-- Is Manager Check -->
+                        <div class="row pt-3">
+                            <div class="form-group col-4">
+                                <div>{{ form.is_manager(class="form-check-input", type="checkbox", checked=one_employee.is_manager )}} {{ form.is_manager.label }}  {{ form.hidden_tag() }}</div>
+                            </div>
+                        </div>
 
-                <!-- Gender-->
-                <div class="form-group pt-3 row">
-                    <div class="col-4">
-                        <label for="" class="" >Gender</label>
-                        <select class="custom-select form-control" name="gender">
-                            {% for gender in gender_array %}
-                                <option value="{{ gender }}"
-                                        {% if  gender == one_employee.gender %} selected="selected" {% endif %}> {{ gender }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                        <!-- Email Address and Phone Number -->
+                        <div class="d-flex row pt-3">
+                            <div class="form-group col-4">
+        <!--                        <label for="" class="" >Email Address</label>-->
+        <!--                        <input type="email" name="emailAddress" value="{{ one_employee.email_address }}" class="form-control"/>-->
+                                {{ form.email_address.label }} {{ form.email_address(class="form-control", value=one_employee.email_address )}} {{ form.hidden_tag() }}
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="" class="" >Phone Number</label>
+                                <input type="tel" name="phoneNumber" value="{{ one_employee.phone_number }}" class="form-control"/>
+                            </div>
+                        </div>
 
-                <div class="row">
-                    <!-- Current Address -->
-                    <div class="col-6">
-                        {{ form.current_address.label }} {{ form.current_address(class="form-control", value=one_employee.current_address) }} {{ form.hidden_tag() }}
-                    </div>
+                       <!-- Date of Birth -->
+                       <div class="d-flex row pt-3">
+                           <div class="form-group col-4">
+                                {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", value=one_employee.date_of_birth,  max="2005-01-01") }} {{ form.hidden_tag() }}
+                            </div>
 
-                    <!-- Permanent Address -->
-                    <div class="col-6">
-                        {{ form.permanent_address.label }} {{ form.permanent_address(class="form-control", value=one_employee.permanent_address) }} {{ form.hidden_tag() }}
-                    </div>
-                </div>
+                           <!-- Gender-->
+                           <div class="form-group col-4">
+                                <label for="" class="" >Gender</label>
+                                <select class="custom-select form-control" name="gender">
+                                    {% for gender in gender_array %}
+                                        <option value="{{ gender }}"
+                                                {% if  gender == one_employee.gender %} selected="selected" {% endif %}> {{ gender }}</option>
+                                    {% endfor %}
+                                </select>
+                           </div>
+                       </div>
 
-                <!-- Job Position-->
-                <div class="form-group pt-3 row">
-                    <div class="col-4">
-                        <label for="" class="" >Job Position</label>
-                        <select class="custom-select form-control selectpicker" data-live-search="true" name="role_id" onchange="roleChange()">
-                            {% for role in display_all_roles %}
-<!--                             <option selected >Open this select menu</option>-->
-                            {% if requestForm %}
-                                    <option value="{{ role._id }}"{% if  role._id == requestForm.role_id %} selected="selected" {% endif %}>
-                                        {{ role.role_name }}</option>
-                                {% else %}
-                                    <option value="{{ role._id }}"
-                                            {% if  role._id == one_employee.user_role_id %} selected="selected" {% endif %}>{{ role.role_name }}</option>
+                        <!-- ADDRESS-->
+                        <div class="row">
+                            <!-- Current Address -->
+                            <div class="col-6">
+                                {{ form.current_address.label }} {{ form.current_address(class="form-control", value=one_employee.current_address) }} {{ form.hidden_tag() }}
+                            </div>
+
+                            <!-- Permanent Address -->
+                            <div class="col-6">
+                                {{ form.permanent_address.label }} {{ form.permanent_address(class="form-control", value=one_employee.permanent_address) }} {{ form.hidden_tag() }}
+                            </div>
+                        </div>
+                   </div>
+                   <div class="tab-pane pb-3 pt-3" id="b">
+                        <!-- Job Position-->
+                        <div class="form-group pt-3 row">
+                            <div class="col-4">
+                                <label for="" class="" >Job Position</label>
+                                <select class="custom-select form-control selectpicker" data-live-search="true" name="role_id" onchange="roleChange()">
+                                    {% for role in display_all_roles %}
+        <!--                             <option selected >Open this select menu</option>-->
+                                    {% if requestForm %}
+                                            <option value="{{ role._id }}"{% if  role._id == requestForm.role_id %} selected="selected" {% endif %}>
+                                                {{ role.role_name }}</option>
+                                        {% else %}
+                                            <option value="{{ role._id }}"
+                                                    {% if  role._id == one_employee.user_role_id %} selected="selected" {% endif %}>{{ role.role_name }}</option>
+                                    {% endif %}
+
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!--Employement Type-->
+                            <div class="col-4">
+                                <label for="" class="" >Employment Type</label>
+                                <select class="form-control selectpicker" id="select-employment_type" data-live-search="true" name="employee_type_id" onchange="employee_type_function()">
+                                     <option selected disabled>Please Select the options</option>
+                                    {% for employee_type in display_all_employee_type %}
+                                        {% if employee_type._id %}
+                                            {% if requestForm %}
+                                                <option value="{{ employee_type._id }}"{% if  employee_type._id == requestForm.employee_type_id %} selected="selected" {% endif %}>
+                                                    {{ employee_type.employee_type_description }}</option>
+                                            {% else %}
+                                                <option value="{{ employee_type._id }}" {% if  employee_type._id == one_employee.employee_type_id %} selected="selected"
+                                                        {% endif %}>{{ employee_type.employee_type_description }}</option>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                       <div class="form-group pt-3 row">
+                           <!-- Reporting Manager-->
+                            {% if one_employee.user_manager_id %}
+                                    <div class="col-4">
+                                        <label for="" class="" >Reporting Manager</label>
+                                        <select class="custom-select form-control selectpicker" data-live-search="true" name="manager_id">
+                                            {% for manager in display_all_managers %}
+                                                <!-- <option selected>Open this select menu</option>-->
+                                                {% if manager._id %}
+                                                    {% if requestForm %}
+                                                        <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
+                                                            {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                                    {% else %}
+                                                        <option value="{{ manager._id }}"
+                                                            {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
+                                                                {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                             {% endif %}
 
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Reporting Manager-->
-                {% if one_employee.user_manager_id %}
-                    <div class="form-group pt-3 row">
-                        <div class="col-4">
-                            <label for="" class="" >Reporting Manager</label>
-                            <select class="custom-select form-control selectpicker" data-live-search="true" name="manager_id">
-                                {% for manager in display_all_managers %}
-                                    <!-- <option selected>Open this select menu</option>-->
-                                    {% if manager._id %}
-                                        {% if requestForm %}
-                                            <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
-                                                {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
-                                        {% else %}
-                                            <option value="{{ manager._id }}"
-                                                {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
-                                                    {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                           <!--Department Type-->
+                            <div class="col-4">
+                                <label for="" class="" >Department Type</label>
+                                <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
+                                     <option selected disabled>Please Select the options</option>
+                                    {% for department in display_all_departments %}
+                                        {% if department._id %}
+                                            {% if requestForm %}
+                                                <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
+                                                    {{ department.department_name }}</option>
+                                            {% else %}
+                                                <option value="{{ department._id }}"{% if  department._id == one_employee.department_id %} selected="selected"
+                                                        {% endif %}>{{ department.department_name }}</option>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                       </div>
+
+                       <div class="form-group pt-3 row">
+                           <!-- Date of Joining Date -->
+                            <div class="col-4">
+                                {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control", value=one_employee.date_of_joining) }} {{ form.hidden_tag() }}
+                            </div>
+
+                            <!-- Last date -->
+                            <div class="col-4">
+                                {{ form.last_date.label }} {{ form.last_date(class="datepicker form-control", value=one_employee.last_date) }} {{ form.hidden_tag() }}
+                            </div>
+
+                            <!-- Official email address -->
+                            <div class="col-4">
+                                {{ form.official_email_address.label }} {{ form.official_email_address(class="form-control", value=one_employee.official_email_address)}} {{ form.hidden_tag() }}
+                            </div>
+                       </div>
+                   </div>
+                    <div class="tab-pane pb-3 pt-3" id="c">
+                        <!-- Bank Details-->
+                        <div>
+                            <p>Bank Details</p>
+                            <div class="row">
+                                <div class="col-4">
+                                    {{ form.bank_name.label }} {{ form.bank_name(class="form-control", value=one_employee.bank_details.bank_name)}} {{ form.hidden_tag() }}
+                                </div>
+                                <div class="col-4">
+                                    {{ form.account_number.label }} {{ form.account_number(class="form-control", value=one_employee.bank_details.account_number)}} {{ form.hidden_tag() }}
+                                </div>
+                                <div class="col-4">
+                                    {{ form.UAN_number.label }} {{ form.UAN_number(class="form-control", value=one_employee.bank_details.UAN_number)}} {{ form.hidden_tag() }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                {% endif %}
+                    <div class="tab-pane pb-3 pt-3" id="d">
+                      <!-- Salary Details-->
+                        <div id="salary_complete_details">
+        <!--                    {% if one_employee.salary_details %}-->
+                            <p>Salary Details</p>
+                            <div class="row">
+                                <div class="col-3">
+                                    {{ form.salary.label }}
+                                    <input id="salaryId" class="form-control" min="0" name="salary" type="number" value="{{one_employee
+        .salary}}">
+                                </div>
+                                <div class="col-3">
+        <!--                            {{ form.bonus.label }} {{ form.bonus(class="form-control", id="bonusId")}} {{ form.hidden_tag() }}-->
+                                    {{ form.bonus.label }}
+                                    <input id="bonusId" class="form-control" min="0" name="bonus" type="number" value="{{one_employee
+        .bonus}}">
+                                </div>
 
-                <!--Employement Type-->
-                <div class="form-group pt-3 row">
-                    <div class="col-4">
-                        <label for="" class="" >Employment Type</label>
-                        <select class="form-control selectpicker" id="select-employment_type" data-live-search="true" name="employee_type_id" onchange="employee_type_function()">
-                             <option selected disabled>Please Select the options</option>
-                            {% for employee_type in display_all_employee_type %}
-                                {% if employee_type._id %}
-                                    {% if requestForm %}
-                                        <option value="{{ employee_type._id }}"{% if  employee_type._id == requestForm.employee_type_id %} selected="selected" {% endif %}>
-                                            {{ employee_type.employee_type_description }}</option>
-                                    {% else %}
-                                        <option value="{{ employee_type._id }}" {% if  employee_type._id == one_employee.employee_type_id %} selected="selected"
-                                                {% endif %}>{{ employee_type.employee_type_description }}</option>
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                                <div class="col-3">
+                                    {{ form.basic_allowance.label }}
+                                    <input id="basicAllowanceId" class="form-control" min="0" name="basic_allowance" type="number" value="{{one_employee.basic_allowance}}">
+                                </div>
 
-                <!--Department Type-->
-                <div class="form-group pt-3 row">
-                    <div class="col-4">
-                        <label for="" class="" >Department Type</label>
-                        <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
-                             <option selected disabled>Please Select the options</option>
-                            {% for department in display_all_departments %}
-                                {% if department._id %}
-                                    {% if requestForm %}
-                                        <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
-                                            {{ department.department_name }}</option>
-                                    {% else %}
-                                        <option value="{{ department._id }}"{% if  department._id == one_employee.department_id %} selected="selected"
-                                                {% endif %}>{{ department.department_name }}</option>
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
+                                <div class="col-3">
+                                    {{ form.medical_allowance.label }}
+                                    <input id="medicalAllowanceId" class="form-control" min="0" name="medical_allowance" type="number" value="{{one_employee.medical_allowance}}">
+                                </div>
 
-                <!-- Date of Birth -->
-                <div class="col-4">
-                    {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", value=one_employee.date_of_birth,  max="2005-01-01") }} {{ form.hidden_tag() }}
-                </div>
+                                <div class="col-3">
+                                    {{ form.provident_fund.label }}
+                                    <input id="pfId" class="form-control" min="0" name="provident_fund" type="number" value="{{one_employee.provident_fund}}">
 
-                <!-- Date of Joining Date -->
-                <div class="col-4">
-                    {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control", value=one_employee.date_of_joining) }} {{ form.hidden_tag() }}
-                </div>
+                                </div>
 
-                <!-- Last date -->
-                <div class="col-4">
-                    {{ form.last_date.label }} {{ form.last_date(class="datepicker form-control", value=one_employee.last_date) }} {{ form.hidden_tag() }}
-                </div>
+                                <div class="col-3">
+                                    {{ form.tax.label }}
+                                    <input id="taxId" class="form-control" min="0" name="tax" type="number" value="{{one_employee.tax}}">
+                                </div>
 
-                <!-- Official email address -->
-                <div class="col-4">
-                    {{ form.official_email_address.label }} {{ form.official_email_address(class="form-control", value=one_employee.official_email_address)}} {{ form.hidden_tag() }}
-                </div>
-
-                <!-- Bank Details-->
-                <div>
-                    <p>Bank Details</p>
-                    <div class="row">
-                        <div class="col-4">
-                            {{ form.bank_name.label }} {{ form.bank_name(class="form-control", value=one_employee.bank_details.bank_name)}} {{ form.hidden_tag() }}
+                            </div>
+        <!--                    {% endif %}-->
                         </div>
-                        <div class="col-4">
-                            {{ form.account_number.label }} {{ form.account_number(class="form-control", value=one_employee.bank_details.account_number)}} {{ form.hidden_tag() }}
-                        </div>
-                        <div class="col-4">
-                            {{ form.UAN_number.label }} {{ form.UAN_number(class="form-control", value=one_employee.bank_details.UAN_number)}} {{ form.hidden_tag() }}
+
+                        <!-- Hourly Details-->
+                        <div id="hourly_pay_details">
+                            <p>Hourly Details</p>
+                            <div class="row">
+                                <div class="col-3">
+                                    {{ form.hourly_pay.label }}
+                                    <input id="hourlyRateId" class="form-control" min="0" name="hourly_pay" type="number" value="{{one_employee.hourly_pay}}">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Salary Details-->
-                <div id="salary_complete_details">
-<!--                    {% if one_employee.salary_details %}-->
-                    <p>Salary Details</p>
-                    <div class="row">
-                        <div class="col-3">
-                            {{ form.salary.label }}
-                            <input id="salaryId" class="form-control" min="0" name="salary" type="number" value="{{one_employee
-.salary}}">
-                        </div>
-                        <div class="col-3">
-<!--                            {{ form.bonus.label }} {{ form.bonus(class="form-control", id="bonusId")}} {{ form.hidden_tag() }}-->
-                            {{ form.bonus.label }}
-                            <input id="bonusId" class="form-control" min="0" name="bonus" type="number" value="{{one_employee
-.bonus}}">
-                        </div>
-
-                        <div class="col-3">
-                            {{ form.basic_allowance.label }}
-                            <input id="basicAllowanceId" class="form-control" min="0" name="basic_allowance" type="number" value="{{one_employee.basic_allowance}}">
-                        </div>
-
-                        <div class="col-3">
-                            {{ form.medical_allowance.label }}
-                            <input id="medicalAllowanceId" class="form-control" min="0" name="medical_allowance" type="number" value="{{one_employee.medical_allowance}}">
-                        </div>
-
-                        <div class="col-3">
-                            {{ form.provident_fund.label }}
-                            <input id="pfId" class="form-control" min="0" name="provident_fund" type="number" value="{{one_employee.provident_fund}}">
-
-                        </div>
-
-                        <div class="col-3">
-                            {{ form.tax.label }}
-                            <input id="taxId" class="form-control" min="0" name="tax" type="number" value="{{one_employee.tax}}">
-                        </div>
-
-                    </div>
-<!--                    {% endif %}-->
-                </div>
-
-                <!-- Hourly Details-->
-                <div id="hourly_pay_details">
-                    <p>Hourly Details</p>
-                    <div class="row">
-                        <div class="col-3">
-                            {{ form.hourly_pay.label }}
-                            <input id="hourlyRateId" class="form-control" min="0" name="hourly_pay" type="number" value="{{one_employee.hourly_pay}}">
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <!-- Buttons -->
-            <div class="d-flex">
+            <div class="d-flex all-btns">
                 <div class="form-group buttons-edit">
                     <input type="submit" value="Update" class="btn btn-primary"/>
                 </div>

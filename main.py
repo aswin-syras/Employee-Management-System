@@ -96,6 +96,13 @@ class InformForm(FlaskForm):
     hourly_pay = IntegerField('Hourly Pay')
     submit = SubmitField('Submit')
 
+    department_name = StringField('Department Name', validators=[DataRequired()])
+    employee_type_description = StringField('Employee Type Description', validators=[DataRequired()])
+
+    role_name = StringField('Role Name', validators=[DataRequired()])
+    role_have_full_power = BooleanField('Assign Full Power?')
+    role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
+
 
 @app.route("/<name>")
 def home(name):
@@ -184,6 +191,57 @@ def generating_random_id_employees():
             i = 1
 
 
+def generating_random_id_departments():
+    # Generating a new random id for employees
+    i = 1
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000)
+        all_departments_find = mongo.db.departments.find()
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["_id"], all_departments_find)
+        not_in_list = random_id_generator not in list(result)
+        if (not_in_list):
+            i = 0
+            return random_id_generator
+        else:
+            i = 1
+
+
+def generating_random_id_employee_type():
+    # Generating a new random id for employees
+    i = 1
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000)
+        all_employee_type_find = mongo.db.employee_type.find()
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["_id"], all_employee_type_find)
+        not_in_list = random_id_generator not in list(result)
+        if (not_in_list):
+            i = 0
+            return random_id_generator
+        else:
+            i = 1
+
+
+def generating_random_id_role():
+    # Generating a new random id for employees
+    i = 1
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000)
+        all_role_find = mongo.db.role.find()
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["_id"], all_role_find)
+        not_in_list = random_id_generator not in list(result)
+        if (not_in_list):
+            i = 0
+            return random_id_generator
+        else:
+            i = 1
+
+
 @app.route("/newEmployee")
 def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
@@ -217,7 +275,7 @@ def createNewEmployee():
 
             error = []
 
-            print("request.form.get:::", request.form.get("manager_id"), request.form )
+            print("request.form.get:::", request.form.get("manager_id"), request.form)
             if not request.form.get("role_id"):
                 error.append("Please Select the Job Position")
             elif request.form.get("role_id"):
@@ -248,7 +306,8 @@ def createNewEmployee():
                                    came_from="admin.adminHome",
                                    gender_array=gender_array,
                                    requestForm=requestForm)
-        elif int(request.form.get("employee_type_id")) != 1000 and request.form.get("is_manager"): # If manager cannot be in Hourly rate
+        elif int(request.form.get("employee_type_id")) != 1000 and request.form.get(
+                "is_manager"):  # If manager cannot be in Hourly rate
             error = []
             error.append("Manager Cannot be on an hourly rate")
             requestForm.update({'role_id': int(request.form.get("role_id"))})
@@ -268,7 +327,7 @@ def createNewEmployee():
                                    requestForm=requestForm)
         else:
             salary_hourly_details = {}
-            print("--------------------: ", int(request.form.get("employee_type_id")) , request.form.get("is_manager"))
+            print("--------------------: ", int(request.form.get("employee_type_id")), request.form.get("is_manager"))
             # Fulltime job has some benefits
             if (int(request.form.get('employee_type_id')) == 1000):
                 my_salary = request.form.get('salary')
@@ -283,8 +342,10 @@ def createNewEmployee():
                         "salary": 0 if not my_salary else float(request.form.get('salary')),
                         "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
                         "allowances": {
-                            "basic_allowance": 0 if not my_basic_allowance else float(request.form.get('basic_allowance')),
-                            "medical_allowance": 0 if not my_medical_allowance else float(request.form.get('medical_allowance')),
+                            "basic_allowance": 0 if not my_basic_allowance else float(
+                                request.form.get('basic_allowance')),
+                            "medical_allowance": 0 if not my_medical_allowance else float(
+                                request.form.get('medical_allowance')),
                             "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
                             "tax": 0 if not my_tax else float(request.form.get('tax'))
                         }
@@ -332,11 +393,11 @@ def createNewEmployee():
             # If the is a Manager? then insert the user into the table
             if (request.form.get('is_manager')):
                 manager_data = {
-                      "_id": insert_data["_id"],
-                      "manager_first_name": insert_data["first_name"],
-                      "manager_last_name": insert_data["last_name"],
-                      "manager_role_id": insert_data['user_role_id'],
-                      "manager_department_id": insert_data["department_id"]
+                    "_id": insert_data["_id"],
+                    "manager_first_name": insert_data["first_name"],
+                    "manager_last_name": insert_data["last_name"],
+                    "manager_role_id": insert_data['user_role_id'],
+                    "manager_department_id": insert_data["department_id"]
                 }
                 mongo.db.managers.insert_one(manager_data)
 
@@ -437,14 +498,197 @@ def editAnEmployee(id):
 @app.route("/deleteExistingEmployee/<int:id>")
 def deleteExistingEmployee(id):
     print("ID: ", id, )
-    fetch_one_employee = mongo.db.employees.find_one({ '_id': id })
+    fetch_one_employee = mongo.db.employees.find_one({'_id': id})
     if fetch_one_employee['is_manager']:
         mongo.db.managers.delete_one({'_id': id})
     mongo.db.employees.delete_one({'_id': id})
     return redirect(url_for('admin.adminHome'))
 
 
-# ********************************** CREATING CALENDAR EVENT *****************************#
+# ********************************** CREATEING A NEW DEPARTMENT ************************** #
+@app.route("/createNewDepartment", methods=['GET', 'POST'])
+def createNewDepartmentGET():
+    form = InformForm()
+    return render_template("admin/new_department.html",
+                           form=form,
+                           came_from="admin.adminHome")
+
+
+@app.route("/createNewDepartmentPOST", methods=['GET', 'POST'])
+def createNewDepartmentPOST():
+    # Insert the employees  data into the employees collection
+    mongo.db.departments.insert_one({
+        '_id': generating_random_id_departments(),
+        'department_name': request.form.get('department_name')
+    })
+    return redirect(url_for("admin.adminHome"))
+
+
+@app.route("/editDepartment/<int:id>", methods=['GET', 'POST'])
+def editingDepartmentGET(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+    one_department = mongo.db.departments.find_one({"_id": id})
+    print("---------- ", one_department)
+    return render_template("admin/edit_department.html",
+                           form=form,
+                           one_department=one_department,
+                           came_from="admin.adminHome")
+
+
+@app.route("/editDepartmentPOST/<int:id>", methods=['GET', 'POST'])
+def editingDepartmentPOST(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+
+    # Update the employees  data into the employees collection
+    mongo.db.departments.update_one(
+        {'_id': id},
+        {'$set': {'department_name': request.form.get('department_name')}})
+    return redirect(url_for("admin.adminHome"))
+
+
+# ********************************** CREATEING A NEW EMPLOYEE TYPE ************************** #
+@app.route("/createNewEmployeeType", methods=['GET', 'POST'])
+def createNewEmployeeTypeGET():
+    form = InformForm()
+    return render_template("admin/new_employee_type.html",
+                           form=form,
+                           came_from="admin.adminHome")
+
+
+@app.route("/createNewEmployeeTypePOST", methods=['GET', 'POST'])
+def createNewEmployeeTypePOST():
+    # Insert the employees  data into the employees collection
+    mongo.db.employee_type.insert_one({
+        '_id': generating_random_id_employee_type(),
+        'employee_type_description': request.form.get('employee_type_description')
+    })
+    return redirect(url_for("admin.adminHome"))
+
+
+@app.route("/editEmployeeType/<int:id>", methods=['GET', 'POST'])
+def editingEmployeeTypeGET(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+    one_employee_type = mongo.db.employee_type.find_one({"_id": id})
+    print("---------- ", one_employee_type)
+    return render_template("admin/edit_employee_type.html",
+                           form=form,
+                           one_employee_type=one_employee_type,
+                           came_from="admin.adminHome")
+
+
+@app.route("/editingEmployeeTypePOST/<int:id>", methods=['GET', 'POST'])
+def editingEmployeeTypePOST(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+
+    # Update the employees  data into the employees collection
+    mongo.db.employee_type.update_one(
+        {'_id': id},
+        {'$set': {'employee_type_description': request.form.get('employee_type_description')}})
+    return redirect(url_for("admin.adminHome"))
+
+
+# ********************************** CREATING A NEW ROLE ************************** #
+@app.route("/createNewRole", methods=['GET', 'POST'])
+def createNewRoleGET():
+    form = InformForm()
+    return render_template("admin/new_role.html",
+                           form=form,
+                           display_all_departments=fetch_all_departments,
+                           came_from="admin.adminHome")
+
+
+@app.route("/createNewRolePOST", methods=['GET', 'POST'])
+def createNewRolePOST():
+    form = InformForm()
+    error = []
+    if not request.form.get("department_id"):
+        error.append("Please Select the Department")
+
+        return render_template("admin/new_role.html",
+                               display_all_departments=fetch_all_departments,
+                               form=form,
+                               error=error,
+                               came_from="admin.adminHome",
+                               gender_array=gender_array
+                               )
+    else:
+        # Insert the employees  data into the employees collection
+        mongo.db.role.insert_one({
+            '_id': generating_random_id_role(),
+            'role_name': request.form.get('role_name'),
+            'role_have_full_power': True if request.form.get('role_have_full_power') else False,
+            'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
+            'role_department_id': int(request.form.get('department_id'))
+        })
+        return redirect(url_for("admin.adminHome"))
+
+
+@app.route("/editRole/<int:id>", methods=['GET', 'POST'])
+def editingRoleGET(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+    one_role = mongo.db.role.find_one({"_id": id})
+    print("---------- ", one_role)
+    return render_template("admin/edit_role.html",
+                           form=form,
+                           display_all_departments=fetch_all_departments,
+                           one_role=one_role,
+                           came_from="admin.adminHome")
+
+
+@app.route("/editingRolePOST/<int:id>", methods=['GET', 'POST'])
+def editingRolePOST(id):
+    # Insert the employees  data into the employees collection
+    form = InformForm()
+    found_one_from_db_before_json = mongo.db.role.find_one({"_id": id})
+    fetched_one_value_before_json = {
+        '_id': id,
+        "role_name": found_one_from_db_before_json['role_name'],
+        'role_have_full_power': True if found_one_from_db_before_json['role_have_full_power'] else False,
+        'role_upload_documents_profile_pictures': True if found_one_from_db_before_json['role_name'] else False,
+        'role_department_id': int(found_one_from_db_before_json['role_department_id'])
+    }
+
+    converted_json = json.dumps(fetched_one_value_before_json, sort_keys=True)
+    fetched_value_before_json = {
+        '_id': id,
+        "role_name": request.form.get('role_name'),
+        'role_have_full_power': True if request.form.get('role_have_full_power') else False,
+        'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
+        'role_department_id': int(request.form.get('department_id'))
+    }
+
+    fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
+
+    collect_data_to_append = {}
+    if converted_json == fetched_val_json:
+        print("They are Exactly the same, so don't update the db")
+    else:
+        if (fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]):
+            collect_data_to_append["role_name"] = fetched_value_before_json["role_name"]
+        if (fetched_value_before_json["role_have_full_power"] != fetched_one_value_before_json["role_have_full_power"]):
+            collect_data_to_append["role_have_full_power"] = fetched_value_before_json["role_have_full_power"]
+        if (fetched_value_before_json["role_upload_documents_profile_pictures"] != fetched_one_value_before_json[
+            "role_upload_documents_profile_pictures"]):
+            collect_data_to_append["role_upload_documents_profile_pictures"] = fetched_value_before_json[
+                "role_upload_documents_profile_pictures"]
+        if (fetched_value_before_json["role_department_id"] != fetched_one_value_before_json["role_department_id"]):
+            collect_data_to_append["role_department_id"] = fetched_value_before_json["role_department_id"]
+
+        # Update the employees  data into the employees collection
+        mongo.db.role.update_one(
+            {'_id': id},
+            {'$set': collect_data_to_append}
+        )
+
+    return redirect(url_for("admin.adminHome"))
+
+
+# ********************************** CREATING CALENDAR EVENT ***************************** #
 @app.route("/createNewEventPost", methods=['GET', 'POST'])
 def createNewEventPost():
     form = InformForm()

@@ -1,0 +1,65 @@
+{% extends "shared-component/index.html" %}
+{% block title %}New Event Creation {% endblock title %}
+{% block content %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <div>
+        <h3>Edit a Role </h3>
+        <form method="POST" action="{{url_for('editingRolePOST', id=one_role._id)}}"  name="myForm">
+            {{ form.csrt_token }}
+
+            {% if error %}
+                {% for errors in error %}
+                    <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ errors }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group pt-3 row">
+                <div class="col-4">
+                    {{ form.role_name.label }} {{ form.role_name(class="form-control", value=one_role.role_name)}} {{ form.hidden_tag() }}
+                </div>
+                <div class="col-4">
+                    {{ form.role_have_full_power(class="form-check-input", type="checkbox", checked=one_role.role_have_full_power)}} {{ form.role_have_full_power.label }} {{ form.hidden_tag() }}
+                </div>
+                <div class="col-4">
+                    {{ form.role_upload_documents_profile_pictures(class="form-check-input", type="checkbox", checked=one_role.role_upload_documents_profile_pictures)}} {{ form.role_upload_documents_profile_pictures.label }}  {{ form.hidden_tag() }}
+                </div>
+
+                <!--Department Type-->
+                <div class="col-4">
+                    <label for="" class="" >Department Type</label>
+                    <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
+                         <option selected disabled>Please Select the options</option>
+                        {% for department in display_all_departments %}
+                            {% if department._id %}
+                                {% if requestForm %}
+                                    <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
+                                        {{ department.department_name }}</option>
+                                {% else %}
+                                    <option value="{{ department._id }}"{% if  department._id == one_role.role_department_id %} selected="selected"
+                                            {% endif %}>{{ department.department_name }}</option>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex pt-3">
+                <div class="form-group buttons-edit">
+                    <input type="submit" value="Update" class="btn btn-primary"/>
+                </div>
+                <div class="form-group buttons-edit">
+                    <a href="{{ url_for(came_from) }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

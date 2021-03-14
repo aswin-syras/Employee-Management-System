@@ -37,3 +37,18 @@ input[type="file"] {
 .custom-file-upload {
     margin-left: 20px
 }
+
+.parent-edit-div {
+    position: relative;
+}
+
+.all-btns {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
