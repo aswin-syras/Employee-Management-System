@@ -9,12 +9,16 @@ from flask_pymongo import PyMongo
 import database_connection
 import json
 from flask_wtf import FlaskForm
+from wtforms import BooleanField, TextAreaField, IntegerField
 from wtforms.fields.html5 import DateField, TimeField
-from wtforms.validators import DataRequired, required
+from wtforms.validators import DataRequired, required, NumberRange, Optional
 from wtforms import validators, SubmitField, StringField
-from wtforms.fields.html5 import DateTimeLocalField
+from wtforms.fields.html5 import DateTimeLocalField, EmailField
 from wtforms_components import DateRange
 from bson import ObjectId
+from random import randrange
+from wtforms.fields import html5 as h5fields
+from wtforms.widgets import html5 as h5widgets
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "$%^&U$%^TYURTFY&*GU"
@@ -34,10 +38,21 @@ fetch_database_connection = database_connection.database_connection()
 all_roles = database_connection.connect_role_table_name()
 all_managers = database_connection.connect_manager_table_name()
 all_employees = database_connection.connect_employee_table_name()
+fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+
+print("Employee type", fetch_all_employee_type)
+print("Department type", fetch_all_departments)
+
 # all_work_schedule = database_connection.connect_workSchedule_table_name()
 
 
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
+
+
+# mongo.db.employees.delete_many({})
+# mongo.db.managers.delete_many({})
+# mongo.db.role.delete_many({})
 
 
 class InformForm(FlaskForm):
@@ -46,12 +61,46 @@ class InformForm(FlaskForm):
     enddate = DateField('End Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     start_at = TimeField('Start at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
     end_at = TimeField('End at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
+    date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
+    date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
+    last_date = DateField('Last Date', format="%Y-%m-%d", )
+    official_email_address = EmailField('Official Email address', [validators.DataRequired(), validators.Email()])
+    email_address = EmailField('Email address', [validators.DataRequired(), validators.Email()])
+    salary = h5fields.IntegerField(
+        "Salary", widget=h5widgets.NumberInput(min=0)
+    )
+    bonus = h5fields.IntegerField(
+        "Bonus", widget=h5widgets.NumberInput(min=0)
+    )
+    bank_name = StringField('Bank Name')
+    account_number = StringField('Account Number')
+    UAN_number = StringField('UAN Number')
+    basic_allowance = h5fields.IntegerField(
+        "Basic Allowance", widget=h5widgets.NumberInput(min=0)
+    )
+    medical_allowance = h5fields.IntegerField(
+        "Medical Allowance", widget=h5widgets.NumberInput(min=0)
+    )
+    provident_fund = h5fields.IntegerField(
+        "Provident Fund", widget=h5widgets.NumberInput(min=0)
+    )
+    tax = h5fields.IntegerField(
+        "Tax", widget=h5widgets.NumberInput(min=0)
+    )
+    current_address = TextAreaField('Current Address')
+    permanent_address = TextAreaField('Permanent Address')
+    is_active = BooleanField('Active')
+    is_manager = BooleanField('Is a Manager?')
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
+    hourly_pay = IntegerField('Hourly Pay')
     submit = SubmitField('Submit')
 
 
 @app.route("/<name>")
 def home(name):
     return render_template("shared-component/index.html", content=name)
+
 
 # http://127.0.0.1:5001/
 @app.route("/", methods=["GET"])
@@ -83,6 +132,7 @@ def profile_pictures():
         </form>
     '''
 
+
 @app.route("/create", methods=['POST'])
 def create():
     if "profile_image" in request.files:
@@ -91,9 +141,11 @@ def create():
         mongo.db.users.insert({'username': request.form.get('username'), 'profile_image_name': profile_image.filename})
         return 'DONE!'
 
+
 @app.route("/file/<filename>")
 def file(filename):
     return mongo.send_file(filename)
+
 
 # @app.route("/profile/<_id>")
 # def profile(_id):
@@ -114,15 +166,39 @@ def profile(id):
         <img src="{url_for('file', filename=employees['profile_image_name'])}">
     '''
 
+
+def generating_random_id_employees():
+    # Generating a new random id for employees
+    i = 1
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000)
+        all_employees_find = mongo.db.employees.find()
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["_id"], all_employees_find)
+        not_in_list = random_id_generator not in list(result)
+        if (not_in_list):
+            i = 0
+            return random_id_generator
+        else:
+            i = 1
+
+
 @app.route("/newEmployee")
 def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
     # all_managers = database_connection.connect_manager_table_name()
+    form = InformForm()
+
     return render_template("shared-component/new_employee.html",
                            display_all_roles=database_connection.role_table(all_roles),
                            display_all_managers=database_connection.manager_table(all_managers),
+                           display_all_departments=fetch_all_departments,
+                           display_all_employee_type=fetch_all_employee_type,
+                           form=form,
                            came_from="admin.adminHome",
                            gender_array=gender_array)
+
 
 @app.route("/createNewEmployee", methods=['POST'])
 def createNewEmployee():
@@ -132,15 +208,140 @@ def createNewEmployee():
         all_employees_table = database_connection.connect_employee_table_name()
         all_emp_record = database_connection.employee_table(all_employees_table)
 
-        mongo.db.employees.insert({'_id': len(all_emp_record) + 1,
-                                   'first_name': request.form.get('fName'),
-                                   'last_name': request.form.get('lName'),
-                                   'phone_number': request.form.get('phoneNumber'),
-                                   'email_address': request.form.get('emailAddress'),
-                                   'user_role_id': int(request.form.get('role_id')),
-                                   'user_manager_id': int(request.form.get('manager_id')),
-                                   'gender': request.form.get('gender'),
-                                   'profile_image_name': profile_image.filename})
+        print(request.form)
+        requestForm = {}
+        form = InformForm()
+
+        if (not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
+                "role_id") or not request.form.get("department_id")):
+
+            error = []
+
+            print("request.form.get:::", request.form.get("manager_id"), request.form )
+            if not request.form.get("role_id"):
+                error.append("Please Select the Job Position")
+            elif request.form.get("role_id"):
+                requestForm.update({'role_id': int(request.form.get("role_id"))})
+
+            if not request.form.get("manager_id"):
+                error.append("Please Select the Reporting Manager")
+            elif request.form.get("manager_id"):
+                requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+
+            if not request.form.get("employee_type_id"):
+                error.append("Please Select the Employment Type")
+            elif request.form.get("employee_type_id"):
+                requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+
+            if not request.form.get("department_id"):
+                error.append("Please Select the Department")
+            elif request.form.get("department_id"):
+                requestForm.update({'department_id': int(request.form.get("department_id"))})
+
+            return render_template("shared-component/new_employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="admin.adminHome",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm)
+        elif int(request.form.get("employee_type_id")) != 1000 and request.form.get("is_manager"): # If manager cannot be in Hourly rate
+            error = []
+            error.append("Manager Cannot be on an hourly rate")
+            requestForm.update({'role_id': int(request.form.get("role_id"))})
+            requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+            requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+            requestForm.update({'department_id': int(request.form.get("department_id"))})
+
+            return render_template("shared-component/new_employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="admin.adminHome",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm)
+        else:
+            salary_hourly_details = {}
+            print("--------------------: ", int(request.form.get("employee_type_id")) , request.form.get("is_manager"))
+            # Fulltime job has some benefits
+            if (int(request.form.get('employee_type_id')) == 1000):
+                my_salary = request.form.get('salary')
+                my_bonus = request.form.get('bonus')
+                my_basic_allowance = request.form.get('basic_allowance')
+                my_medical_allowance = request.form.get('medical_allowance')
+                my_provident_fund = request.form.get('provident_fund')
+                my_tax = request.form.get('tax')
+
+                salary_hourly_details = {
+                    "salary_details": {
+                        "salary": 0 if not my_salary else float(request.form.get('salary')),
+                        "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
+                        "allowances": {
+                            "basic_allowance": 0 if not my_basic_allowance else float(request.form.get('basic_allowance')),
+                            "medical_allowance": 0 if not my_medical_allowance else float(request.form.get('medical_allowance')),
+                            "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
+                            "tax": 0 if not my_tax else float(request.form.get('tax'))
+                        }
+                    }
+                }
+            else:
+                myhourly_pay = request.form.get('hourly_pay')
+                salary_hourly_details = {
+                    "hourly_pay_details": {
+                        "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
+                    }
+                }
+
+            insert_data = {
+                '_id': generating_random_id_employees(),
+                'first_name': request.form.get('first_name'),
+                'last_name': request.form.get('last_name'),
+                'phone_number': request.form.get('phoneNumber'),
+                'email_address': request.form.get('email_address'),
+                'user_role_id': int(request.form.get('role_id')),
+                'user_manager_id': int(request.form.get('manager_id')),
+                'gender': request.form.get('gender'),
+                'profile_image_name': profile_image.filename,
+                'is_active': True if request.form.get('is_active') else False,
+                'employee_type_id': int(request.form.get('employee_type_id')),
+                'department_id': int(request.form.get('department_id')),
+                'date_of_birth': request.form.get('date_of_birth'),
+                'date_of_joining': request.form.get('date_of_joining'),
+                'last_date': request.form.get('last_date'),
+                'official_email_address': request.form.get('official_email_address'),
+                'is_manager': True if request.form.get('is_manager') else False,
+                'bank_details': {
+                    'bank_name': request.form.get('bank_name'),
+                    'account_number': request.form.get('account_number'),
+                    'UAN_number': request.form.get('UAN_number'),
+                },
+                'address': {
+                    'current_address': request.form.get('current_address'),
+                    'permanent_address': request.form.get('permanent_address')
+                }
+            }
+
+            insert_data.update(salary_hourly_details)
+
+            # If the is a Manager? then insert the user into the table
+            if (request.form.get('is_manager')):
+                manager_data = {
+                      "_id": insert_data["_id"],
+                      "manager_first_name": insert_data["first_name"],
+                      "manager_last_name": insert_data["last_name"],
+                      "manager_role_id": insert_data['user_role_id'],
+                      "manager_department_id": insert_data["department_id"]
+                }
+                mongo.db.managers.insert_one(manager_data)
+
+            # Insert the employees  data into the employees collection
+            mongo.db.employees.insert_one(insert_data)
         return redirect(url_for("admin.adminHome"))
 
 
@@ -148,13 +349,34 @@ def createNewEmployee():
 def editEmployee(id):
     # Fetch only the particular employee whose Id matches in the database
     find_one = database_connection.fetch_only_one_employee(id)
+    form = InformForm()
+    print("***************** ", 'hourly_pay_details' in find_one)
+    one_salary_hourly_pay = {}
+    if 'hourly_pay_details' in find_one:
+        one_salary_hourly_pay = {
+            'hourly_pay': find_one['hourly_pay_details']['hourly_pay']
+        }
+    else:
+        one_salary_hourly_pay = {
+            'salary': find_one['salary_details']['salary'],
+            "bonus": find_one['salary_details']['bonus'],
+            "basic_allowance": find_one['salary_details']['allowances']['basic_allowance'],
+            "medical_allowance": find_one['salary_details']['allowances']['medical_allowance'],
+            "provident_fund": find_one['salary_details']['allowances']['provident_fund'],
+            "tax": find_one['salary_details']['allowances']['tax']
+        }
+    find_one.update(one_salary_hourly_pay)
 
     return render_template("shared-component/edit_employee.html",
+                           form=form,
                            one_employee=find_one,
                            display_all_roles=database_connection.role_table(all_roles),
                            display_all_managers=database_connection.manager_table(all_managers),
+                           display_all_departments=fetch_all_departments,
+                           display_all_employee_type=fetch_all_employee_type,
                            came_from="admin.adminHome",
                            gender_array=gender_array)
+
 
 @app.route("/editAnEmployee/<int:id>", methods=['POST'])
 def editAnEmployee(id):
@@ -210,18 +432,33 @@ def editAnEmployee(id):
         # TODO: Need to redirect it to the desired location
         return redirect(url_for("admin.adminHome"))
 
+
 # Delete an Event
 @app.route("/deleteExistingEmployee/<int:id>")
 def deleteExistingEmployee(id):
-    mongo.db.employees.delete_one({ '_id': id })
+    print("ID: ", id, )
+    fetch_one_employee = mongo.db.employees.find_one({ '_id': id })
+    if fetch_one_employee['is_manager']:
+        mongo.db.managers.delete_one({'_id': id})
+    mongo.db.employees.delete_one({'_id': id})
     return redirect(url_for('admin.adminHome'))
 
-#********************************** CREATING CALENDAR EVENT *****************************#
+
+# ********************************** CREATING CALENDAR EVENT *****************************#
 @app.route("/createNewEventPost", methods=['GET', 'POST'])
 def createNewEventPost():
     form = InformForm()
     # TODO we may need to show all the employees list
     print("NEW: ", request.form.get("employee_id"))
+
+    # TODO remove this
+    today = datetime.now()
+    strp_today = today.strftime("%Y-%m-%d %H:%M")
+    curr_date_time = datetime.strptime(strp_today, "%Y-%m-%d %H:%M")
+    timestamp_current_date_time = datetime.timestamp(curr_date_time)
+
+    print("NOW: ", timestamp_current_date_time)
+
     if (form.validate_on_submit()):
         session['startdate'] = form.startdate.data
         session['enddate'] = form.enddate.data
@@ -241,7 +478,7 @@ def date():
     enddate = session["enddate"]
 
     # TODO Need to validate and some logics
-    #https://www.dataquest.io/blog/python-datetime-tutorial/
+    # https://www.dataquest.io/blog/python-datetime-tutorial/
     start_date_split = request.form.get('startdate').split("-")
     start_at_split = request.form.get('start_at').split(":")
 
@@ -255,48 +492,56 @@ def date():
     # print("Difference: ", diff)
 
     print("NEW: ", request.form.get("employee_id"))
-    print("FORM: ", request.form)
-
+    print("FORM: ", request.form, datetime.now())
 
     requestForm = {
         "employee_id": int(request.form.get("employee_id")),
         "manager_id": int(request.form.get("manager_id"))
     }
 
-    # print("request.form.get('startdate'): ", start_date_split)
-    # print("request.form.get('startdate'): ", start_at_split)
     dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
     dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
     timestamp = datetime.timestamp(dt_object2)
     timestamp2 = datetime.timestamp(dt_object1)
+
+    # Today's timestamp
+    today = datetime.now()
+    strp_today = today.strftime("%Y-%m-%d %H:%M")
+    curr_date_time = datetime.strptime(strp_today, "%Y-%m-%d %H:%M")
+    timestamp_current_date_time = datetime.timestamp(curr_date_time)
+
+    today = datetime.now()
+    print("NOW: ", float(timestamp_current_date_time) < float(timestamp))
+    print("Float: ", float(timestamp_current_date_time), float(timestamp))
+
     error = None
-    if ( dt_object1 == dt_object2 ):
+    if (timestamp == timestamp2):
         print("They r same, please try something else")
         # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
         error = 'Start date and End date are same, please try to enter the start date to be less than the end date'
         return render_template('admin/new_event_creation.html',
                                form=form,
                                display_all_employees=database_connection.employee_table(all_employees),
-                               display_all_managers=database_connection.manager_table(all_managers), error=error, requestForm=requestForm)
-    elif (dt_object1 > dt_object2):
+                               display_all_managers=database_connection.manager_table(all_managers), error=error,
+                               requestForm=requestForm)
+
+    elif (float(timestamp) < float(timestamp2)):
         print("Looks like the start date is greater than end date")
         error = 'Looks like the start date is greater than end date'
         return render_template('admin/new_event_creation.html',
                                form=form,
                                display_all_employees=database_connection.employee_table(all_employees),
-                               display_all_managers=database_connection.manager_table(all_managers), error=error, requestForm=requestForm)
+                               display_all_managers=database_connection.manager_table(all_managers), error=error,
+                               requestForm=requestForm)
     else:
         print("Looks like it is the correct date: ", request.form, session)
-        mongo.db.workSchedule.insert({
-                           'employee_id': int(request.form.get('employee_id')),
-                           'title': request.form.get('title'),
-                           'start': request.form.get('startdate') + 'T' + request.form.get('start_at') + ":00",
-                           'end': request.form.get('enddate') + 'T' + request.form.get('end_at') + ":00",
-                            'manager_id': int(request.form.get('manager_id')) })
+        mongo.db.workSchedule.insert_one({
+            'employee_id': int(request.form.get('employee_id')),
+            'title': request.form.get('title'),
+            'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+            'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+            'manager_id': int(request.form.get('manager_id'))})
         return redirect(url_for("admin.getFullCalendar"))
-
-    print('Unix Timestamp: ', timestamp, timestamp2)
-
 
 
 @app.route("/getExistingEvent/<id>", methods=['GET', 'POST'])
@@ -311,8 +556,71 @@ def editExitEvent(id):
                            display_all_managers=database_connection.manager_table(all_managers),
                            fetched_data=one_element)
 
+
 @app.route("/postAnExistingEvent/<id>", methods=['POST'])
 def postAnExistingEventData(id):
+    requestForm = {
+        "employee_id": int(request.form.get("employee_id")),
+        "manager_id": int(request.form.get("manager_id"))
+    }
+    form = InformForm()
+    print("req: ", requestForm)
+    #
+    # print("request.form:::: ", request.form["startdate"], request.form.get('startdate'))
+    value_date1 = request.form.get('startdate') + ' ' + request.form.get('start_at')
+    print("+++++++++++++++++++++: ", value_date1)
+
+    dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+    dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+    timestamp = datetime.timestamp(dt_object2)
+    timestamp2 = datetime.timestamp(dt_object1)
+    error = None
+
+    print(dt_object1, dt_object2)
+    print(timestamp, timestamp2)
+
+    if (timestamp == timestamp2):
+        print("******: ++++++++++ ", form)
+
+        one_element = {
+            "_id": ObjectId(id),
+            "employee_id": int(request.form.get("employee_id")),
+            "manager_id": int(request.form.get("manager_id")),
+            "title": request.form.get("title"),
+            'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+            'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+        }
+
+        print("They r same, please try something else")
+        # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
+        error = 'Start date and End date are same, please try to enter the start date to be less than the end date'
+        return render_template('admin/edit_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers),
+                               error=error,
+                               requestForm=requestForm,
+                               fetched_data=one_element)
+    elif (float(timestamp) < float(timestamp2)):
+        one_element = {
+            "_id": ObjectId(id),
+            "employee_id": int(request.form.get("employee_id")),
+            "manager_id": int(request.form.get("manager_id")),
+            "title": request.form.get("title"),
+            'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+            'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+        }
+        print("Looks like the start date is greater than end date")
+        error = 'Looks like the start date is greater than end date'
+        return render_template('admin/edit_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers),
+                               error=error,
+                               requestForm=requestForm,
+                               fetched_data=one_element)
+
+    else:
         found_one_from_db_before_json = database_connection.fetch_only_one_work_schedule(ObjectId(id))
 
         del found_one_from_db_before_json["_id"]
@@ -347,11 +655,13 @@ def postAnExistingEventData(id):
             )
         return redirect(url_for('admin.getFullCalendar'))
 
+
 # Delete an Event
 @app.route("/deleteEvent/<id>")
 def deleteEvent(id):
-    mongo.db.workSchedule.delete_one({ '_id': ObjectId(id) })
+    mongo.db.workSchedule.delete_one({'_id': ObjectId(id)})
     return redirect(url_for('admin.getFullCalendar'))
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

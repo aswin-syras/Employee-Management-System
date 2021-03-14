@@ -24,6 +24,11 @@
         Edit Existing Event
         <form method="POST" action="/postAnExistingEvent/{{ fetched_data._id }}"  name="myForm">
             {{ form.csrt_token }}
+
+              {% if error %}
+                <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ error }}</div>
+              {% endif %}
+
             <div class="form-group pt-3 row">
                 <div class="col-4">
                     <label for="" class="" >Employee Name</label>

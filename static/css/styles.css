@@ -3,5 +3,37 @@ body {
 }
 
 .img-call {
-    border-radius: "50px";
+    border-radius: 100px;
+    height: 200px;
+    width: 200px;
+}
+
+.btn.dropdown-toggle.btn-default:after {
+    content: none;
+}
+
+.back-to-top {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    display: none;
+}
+
+.buttons-edit {
+    margin: 15px;
+    margin-left: 0;
+}
+
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.custom-file-upload {
+    margin-left: 20px
 }
