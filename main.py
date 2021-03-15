@@ -45,6 +45,10 @@ def home(name):
 def hello():
     return render_template("base.html")
 
+@app.route("/login", methods=["GET"])
+def login():
+    return render_template("shared-component/login.html")
+
 
 # http://127.0.0.1:5001/hello
 @app.route("/employees", methods=["GET"])
