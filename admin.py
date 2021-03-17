@@ -56,7 +56,7 @@ def return_data():
     # print(today)
     # print(end_time[1])
 
-    end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M:%S")
+    end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M")
     start_date_string = datetime.datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
 
     new_format_end_time = "%H:%M:%S"
@@ -70,3 +70,30 @@ def return_data():
         {'$set': {'start': new_value_start, 'end': new_end_date}}
     )
     return jsonify(req_json_obj)
+
+
+@admin.route("/EmployeeActive/<status>", methods=['GET'])
+def employee_active_data(status):
+    if status == 'Inactive':
+        is_active = False
+    elif status == 'active':
+        is_active = True
+    else:
+        return redirect(url_for('admin.adminHome'))
+    is_active_status = database_connection.fetch_active_inactive_employee(is_active)
+    print("is_active_status: ", is_active_status)
+    return render_template("admin/admin.html", display_all_employees=is_active_status, came_from="admin.adminHome",
+                           search_result="")
+
+
+@admin.route("/EditEmployee/event/<int:empId>")
+def getEditEmployeeEventCalendar(empId):
+    # events = database_connection.fetch_only_one_employee(empId)
+    events = database_connection.fetch_work_schedule_particular_emp(empId)
+    print("123: ", events)
+    # print("Workshec: ", work_schedule_employee)
+    # database_connection.fetch_only_one_work_schedule(id)
+    # work_scheule = database_connection.workSchedule_table(work_schedle_db)
+    # events = work_scheule
+    #
+    return render_template("shared-component/employee_calendar.html", employee_id=empId, events=events)

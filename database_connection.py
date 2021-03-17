@@ -87,7 +87,7 @@ def merge_employee_role():
                 employee["role"] = rol["role_name"]
 
                 for department in dept:
-                    if ( employee["department_id"] == department["_id"] ):
+                    if (employee["department_id"] == department["_id"]):
                         employee["department_name"] = department["department_name"]
                         merged_array.append(employee)
     return merged_array
@@ -141,6 +141,13 @@ def fetch_only_one_work_schedule(id):
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
+def fetch_work_schedule_particular_emp(empId):
+    fetch_one = connect_workSchedule_table_name()
+    query = {'employee_id': empId}
+    find_work_schedule_emp = [doc for doc in fetch_one.find(query)]
+    return find_work_schedule_emp
+
+
 def fetch_employee_search_name(values):
     connected_employees = connect_employee_table_name()
 
@@ -150,3 +157,15 @@ def fetch_employee_search_name(values):
 
     overall_fetch = [doc for doc in fetch_me]
     return overall_fetch
+
+
+def fetch_active_inactive_employee(status):
+    fetch_one = connect_employee_table_name()
+    if status == 'all':
+        find_staus_employee = fetch_one.find()
+    else:
+        print("STATUS: ", status)
+        find_staus_employee = fetch_one.find({'is_active': status})
+    fetch_status_employee = [doc for doc in find_staus_employee]
+
+    return fetch_status_employee

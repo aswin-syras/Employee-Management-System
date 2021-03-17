@@ -34,7 +34,7 @@
           </li>
         </ul>
         <div class="ml-1">
-            <a class="btn btn-primary" href="/createNewEventPost" class="btn btn-primary"> Add a new Event </a>
+            <a class="btn btn-primary" href="{{url_for('editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
         </div>
 
         <div id="calendar"></div>
@@ -73,36 +73,7 @@
             },
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
-			eventDrop: function(info) {
-				alert(info.event.title + " was dropped on " + info.event.start.toISOString() + " "+ info.event.employee_id +  "  "+ info.event.employee_id);
-				console.log(info);
-				if (!confirm("Are you sure about this change?")) {
-				  info.revert();
-				}
-				console.log("PARAMS: ", info, info.event.extendedProps);
-				var eventData = {
-						title: info.event.title ,
-						start: info.event.start.toISOString()
-				};
-				eventData = {...eventData, ...info.event.extendedProps}
 
-				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
-				 //   'start': info.event.start.toISOString()} )
-
-				$.ajax({
-					type: "POST",
-					url: '{{url_for("admin.return_data")}}',
-					data: JSON.stringify({'eventData' : eventData}),
-					contentType: "application/json",
-					dataType: 'json',
-					success: function(response) {
-						// do something
-					},
-					error: function (xhr, status, error) {
-						console.log(error);
-					}
-				});
-			},
 			eventClick: function(info) {
 				info.jsEvent.preventDefault(); // don't let the browser navigate
 				//window.open("https://www.google.com/");
@@ -124,10 +95,10 @@
 
 				$.ajax({
 				type: "GET",
-				url: '/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
+				url: '/getExistingEvent/'+ info.event.extendedProps._id+ '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
 				success: function(response) {
 					// do something
-					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + '0',"_self");
+					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,"_self");
 					},
 				error: function (xhr, status, error) {
 					console.log(error);
