@@ -259,6 +259,91 @@ def createNewEmployeeGET():
                            gender_array=gender_array)
 
 
+def createNewFormComparison():
+    if "profile_image" in request.files:
+        profile_image = request.files["profile_image"]
+        mongo.save_file(profile_image.filename, profile_image)
+        all_employees_table = database_connection.connect_employee_table_name()
+        all_emp_record = database_connection.employee_table(all_employees_table)
+        salary_hourly_details = {}
+        print("--------------------: ", int(request.form.get("employee_type_id")), request.form.get("is_manager"))
+        # Fulltime job has some benefits
+        if (int(request.form.get('employee_type_id')) == 1000):
+            my_salary = request.form.get('salary')
+            my_bonus = request.form.get('bonus')
+            my_basic_allowance = request.form.get('basic_allowance')
+            my_medical_allowance = request.form.get('medical_allowance')
+            my_provident_fund = request.form.get('provident_fund')
+            my_tax = request.form.get('tax')
+
+            salary_hourly_details = {
+                "salary_details": {
+                    "salary": 0 if not my_salary else float(request.form.get('salary')),
+                    "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
+                    "allowances": {
+                        "basic_allowance": 0 if not my_basic_allowance else float(
+                            request.form.get('basic_allowance')),
+                        "medical_allowance": 0 if not my_medical_allowance else float(
+                            request.form.get('medical_allowance')),
+                        "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
+                        "tax": 0 if not my_tax else float(request.form.get('tax'))
+                    }
+                }
+            }
+        else:
+            myhourly_pay = request.form.get('hourly_pay')
+            salary_hourly_details = {
+                "hourly_pay_details": {
+                    "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
+                }
+            }
+
+        insert_data = {
+            '_id': generating_random_id_employees(),
+            'first_name': request.form.get('first_name'),
+            'last_name': request.form.get('last_name'),
+            'phone_number': request.form.get('phoneNumber'),
+            'email_address': request.form.get('email_address'),
+            'user_role_id': int(request.form.get('role_id')),
+            'user_manager_id': int(request.form.get('manager_id')),
+            'gender': request.form.get('gender'),
+            'profile_image_name': profile_image.filename,
+            'is_active': True if request.form.get('is_active') else False,
+            'employee_type_id': int(request.form.get('employee_type_id')),
+            'department_id': int(request.form.get('department_id')),
+            'date_of_birth': request.form.get('date_of_birth'),
+            'date_of_joining': request.form.get('date_of_joining') + "T08:00",
+            'last_date': request.form.get('last_date'),
+            'official_email_address': request.form.get('official_email_address'),
+            'is_manager': True if request.form.get('is_manager') else False,
+            'bank_details': {
+                'bank_name': request.form.get('bank_name'),
+                'account_number': request.form.get('account_number'),
+                'UAN_number': request.form.get('UAN_number'),
+            },
+            'address': {
+                'current_address': request.form.get('current_address'),
+                'permanent_address': request.form.get('permanent_address')
+            }
+        }
+
+        insert_data.update(salary_hourly_details)
+
+        # If the is a Manager? then insert the user into the table
+        if request.form.get('is_manager'):
+            manager_data = {
+                "_id": insert_data["_id"],
+                "manager_first_name": insert_data["first_name"],
+                "manager_last_name": insert_data["last_name"],
+                "manager_role_id": insert_data['user_role_id'],
+                "manager_department_id": insert_data["department_id"]
+            }
+            mongo.db.managers.insert_one(manager_data)
+
+        # Insert the employees  data into the employees collection
+        mongo.db.employees.insert_one(insert_data)
+
+
 @app.route("/createNewEmployee", methods=['POST'])
 def createNewEmployee():
     if "profile_image" in request.files:
@@ -267,7 +352,6 @@ def createNewEmployee():
         all_employees_table = database_connection.connect_employee_table_name()
         all_emp_record = database_connection.employee_table(all_employees_table)
 
-        print(request.form)
         requestForm = {}
         form = InformForm()
 
@@ -327,92 +411,386 @@ def createNewEmployee():
                                    gender_array=gender_array,
                                    requestForm=requestForm)
         else:
-            salary_hourly_details = {}
-            print("--------------------: ", int(request.form.get("employee_type_id")), request.form.get("is_manager"))
-            # Fulltime job has some benefits
-            if (int(request.form.get('employee_type_id')) == 1000):
-                my_salary = request.form.get('salary')
-                my_bonus = request.form.get('bonus')
-                my_basic_allowance = request.form.get('basic_allowance')
-                my_medical_allowance = request.form.get('medical_allowance')
-                my_provident_fund = request.form.get('provident_fund')
-                my_tax = request.form.get('tax')
+            print("REP MAAGER: ", request.form.get('manager_id'), request.form.get('department_id'),
+                  type(request.form.get('department_id')))
 
-                salary_hourly_details = {
-                    "salary_details": {
-                        "salary": 0 if not my_salary else float(request.form.get('salary')),
-                        "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
-                        "allowances": {
-                            "basic_allowance": 0 if not my_basic_allowance else float(
-                                request.form.get('basic_allowance')),
-                            "medical_allowance": 0 if not my_medical_allowance else float(
-                                request.form.get('medical_allowance')),
-                            "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
-                            "tax": 0 if not my_tax else float(request.form.get('tax'))
-                        }
-                    }
-                }
+            manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
+            manager_dept_all = [doc for doc in manager_dept]
+
+            print("MANAGER:::: ", manager_dept_all)
+            if len(manager_dept_all) == 0:
+                print("IS  none: ")
+                createNewFormComparison()
+                return redirect(url_for("admin.adminHome"))
             else:
-                myhourly_pay = request.form.get('hourly_pay')
-                salary_hourly_details = {
-                    "hourly_pay_details": {
-                        "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
-                    }
-                }
+                print("is not none")
+                result = filter(lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(request.form.get('manager_id')), manager_dept_all)
+                list_result = list(result)
+                # not_in_list = random_id_generator not in list(result)
+                print("RESULR: ",len(list_result), list_result)
+                if len(list_result) > 0:
+                    createNewFormComparison()
+                    return redirect(url_for("admin.adminHome"))
+                else:
+                    print("Need to throw an error")
+                    error = []
+                    error.append(f"Reporting manager doesn't belong to the department you selected.")
+                    requestForm.update({'role_id': int(request.form.get("role_id"))})
+                    requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+                    requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+                    requestForm.update({'department_id': int(request.form.get("department_id"))})
 
-            insert_data = {
-                '_id': generating_random_id_employees(),
-                'first_name': request.form.get('first_name'),
-                'last_name': request.form.get('last_name'),
-                'phone_number': request.form.get('phoneNumber'),
-                'email_address': request.form.get('email_address'),
-                'user_role_id': int(request.form.get('role_id')),
-                'user_manager_id': int(request.form.get('manager_id')),
-                'gender': request.form.get('gender'),
-                'profile_image_name': profile_image.filename,
-                'is_active': True if request.form.get('is_active') else False,
-                'employee_type_id': int(request.form.get('employee_type_id')),
-                'department_id': int(request.form.get('department_id')),
-                'date_of_birth': request.form.get('date_of_birth'),
-                'date_of_joining': request.form.get('date_of_joining'),
-                'last_date': request.form.get('last_date'),
-                'official_email_address': request.form.get('official_email_address'),
-                'is_manager': True if request.form.get('is_manager') else False,
-                'bank_details': {
-                    'bank_name': request.form.get('bank_name'),
-                    'account_number': request.form.get('account_number'),
-                    'UAN_number': request.form.get('UAN_number'),
-                },
-                'address': {
-                    'current_address': request.form.get('current_address'),
-                    'permanent_address': request.form.get('permanent_address')
+                    return render_template("shared-component/new_employee.html",
+                                           display_all_roles=database_connection.role_table(all_roles),
+                                           display_all_managers=database_connection.manager_table(all_managers),
+                                           display_all_departments=fetch_all_departments,
+                                           display_all_employee_type=fetch_all_employee_type,
+                                           form=form,
+                                           error=error,
+                                           came_from="admin.adminHome",
+                                           gender_array=gender_array,
+                                           requestForm=requestForm)
+
+
+def editEmployeeComparison(found_one_from_db_before_json, id):
+    if "profile_image" in request.files:
+        found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
+        profile_image = request.files["profile_image"]
+        mongo.save_file(profile_image.filename, profile_image)
+        requestForm = {}
+        form = InformForm()
+        converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
+
+        one_salary_hourly_pay = {}
+
+        fetched_value_before_json = {
+            '_id': id,
+            'first_name': request.form.get('first_name'),
+            'last_name': request.form.get('last_name'),
+            'phone_number': request.form.get('phoneNumber'),
+            'email_address': request.form.get('email_address'),
+            'user_role_id': int(request.form.get('role_id')),
+            'user_manager_id': int(request.form.get('manager_id')) if found_one_from_db_before_json[
+                "user_manager_id"] else found_one_from_db_before_json["user_manager_id"],
+            'gender': request.form.get('gender'),
+            'profile_image_name': profile_image.filename if profile_image.filename else
+            found_one_from_db_before_json[
+                "profile_image_name"],
+            'is_active': True if request.form.get('is_active') else False,
+            'employee_type_id': int(request.form.get('employee_type_id')),
+            'department_id': int(request.form.get('department_id')),
+            'date_of_birth': request.form.get('date_of_birth'),
+            'date_of_joining': request.form.get('date_of_joining') + "T08:00",
+            'last_date': request.form.get('last_date'),
+            'official_email_address': request.form.get('official_email_address'),
+            'is_manager': True if request.form.get('is_manager') else False,
+            'bank_details': {
+                'bank_name': request.form.get('bank_name'),
+                'account_number': request.form.get('account_number'),
+                'UAN_number': request.form.get('UAN_number'),
+            },
+            'address': {
+                'current_address': request.form.get('current_address'),
+                'permanent_address': request.form.get('permanent_address')
+            }
+        }
+
+        if int(request.form.get('employee_type_id')) == 1000:
+            my_salary = request.form.get('salary')
+            my_bonus = request.form.get('bonus')
+            my_basic_allowance = request.form.get('basic_allowance')
+            my_medical_allowance = request.form.get('medical_allowance')
+            my_provident_fund = request.form.get('provident_fund')
+            my_tax = request.form.get('tax')
+
+            one_salary_hourly_pay = {
+                "salary_details": {
+                    "salary": 0 if not my_salary else float(request.form.get('salary')),
+                    "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
+                    "allowances": {
+                        "basic_allowance": 0 if not my_basic_allowance else float(
+                            request.form.get('basic_allowance')),
+                        "medical_allowance": 0 if not my_medical_allowance else float(
+                            request.form.get('medical_allowance')),
+                        "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
+                        "tax": 0 if not my_tax else float(request.form.get('tax'))
+                    }
                 }
             }
-
-            insert_data.update(salary_hourly_details)
-
-            # If the is a Manager? then insert the user into the table
-            if request.form.get('is_manager'):
-                manager_data = {
-                    "_id": insert_data["_id"],
-                    "manager_first_name": insert_data["first_name"],
-                    "manager_last_name": insert_data["last_name"],
-                    "manager_role_id": insert_data['user_role_id'],
-                    "manager_department_id": insert_data["department_id"]
+        else:
+            myhourly_pay = request.form.get('hourly_pay')
+            one_salary_hourly_pay = {
+                "hourly_pay_details": {
+                    "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
                 }
-                mongo.db.managers.insert_one(manager_data)
+            }
+        print(fetched_value_before_json)
+        fetched_value_before_json.update(one_salary_hourly_pay)
+        fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
 
-            # Insert the employees  data into the employees collection
-            mongo.db.employees.insert_one(insert_data)
-        return redirect(url_for("admin.adminHome"))
+        collect_data_to_append = {}
+        if converted_json == fetched_val_json:
+            print("They are Exactly the same, so don't update the db")
+        else:
+            print("11111111: ", fetched_value_before_json["last_date"], found_one_from_db_before_json["last_date"])
+            if (fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]):
+                collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
+            if (fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]):
+                collect_data_to_append["last_name"] = fetched_value_before_json["last_name"]
+            if (fetched_value_before_json["phone_number"] != found_one_from_db_before_json["phone_number"]):
+                collect_data_to_append["phone_number"] = fetched_value_before_json["phone_number"]
+            if (fetched_value_before_json["email_address"] != found_one_from_db_before_json["email_address"]):
+                collect_data_to_append["email_address"] = fetched_value_before_json["email_address"]
+            if (fetched_value_before_json["user_role_id"] != found_one_from_db_before_json["user_role_id"]):
+                collect_data_to_append["user_role_id"] = fetched_value_before_json["user_role_id"]
+            if (fetched_value_before_json["user_manager_id"] != found_one_from_db_before_json["user_manager_id"]):
+                collect_data_to_append["user_manager_id"] = fetched_value_before_json["user_manager_id"]
+            if (fetched_value_before_json["gender"] != found_one_from_db_before_json["gender"]):
+                collect_data_to_append["gender"] = fetched_value_before_json["gender"]
+            if (fetched_value_before_json["profile_image_name"] != found_one_from_db_before_json[
+                "profile_image_name"]):
+                collect_data_to_append["profile_image_name"] = fetched_value_before_json["profile_image_name"]
+            if (fetched_value_before_json["is_active"] != found_one_from_db_before_json["is_active"]):
+                collect_data_to_append["is_active"] = fetched_value_before_json["is_active"]
+            if (fetched_value_before_json["employee_type_id"] != found_one_from_db_before_json["employee_type_id"]):
+                collect_data_to_append["employee_type_id"] = fetched_value_before_json["employee_type_id"]
+            if (fetched_value_before_json["department_id"] != found_one_from_db_before_json["department_id"]):
+                collect_data_to_append["department_id"] = fetched_value_before_json["department_id"]
+            if (fetched_value_before_json["date_of_birth"] != found_one_from_db_before_json["date_of_birth"]):
+                collect_data_to_append["date_of_birth"] = fetched_value_before_json["date_of_birth"]
+            if (fetched_value_before_json["date_of_joining"] != found_one_from_db_before_json["date_of_joining"]):
+                collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
+            if (fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]):
+                collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
+            if (fetched_value_before_json["official_email_address"] != found_one_from_db_before_json[
+                "official_email_address"]):
+                collect_data_to_append["official_email_address"] = fetched_value_before_json[
+                    "official_email_address"]
+            if (fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]):
+                collect_data_to_append["is_manager"] = fetched_value_before_json["is_manager"]
 
+            if (fetched_value_before_json["address"]['current_address'] != found_one_from_db_before_json["address"][
+                'current_address']):
+                if 'address' in collect_data_to_append:
+                    collect_data_to_append['address'].update({
+                        'current_address': fetched_value_before_json["address"]['current_address']
+                    })
+                else:
+                    collect_data_to_append.update({'address': {
+                        'current_address': fetched_value_before_json["address"]['current_address']
+                    }
+                    })
+                # collect_data_to_append["address"]['current_address'] = fetched_value_before_json["address"]['current_address']
+            if (fetched_value_before_json["address"]['permanent_address'] !=
+                    found_one_from_db_before_json["address"]['permanent_address']):
+                print("SAY YES: ", 'address' in collect_data_to_append, collect_data_to_append)
+                if 'address' in collect_data_to_append:
+                    collect_data_to_append['address'].update({
+                        'permanent_address': fetched_value_before_json["address"]['permanent_address']
+                    })
+                else:
+                    collect_data_to_append.update({'address': {
+                        'permanent_address': fetched_value_before_json["address"]['permanent_address']
+                    }
+                    })
+            if (fetched_value_before_json["bank_details"]['bank_name'] !=
+                    found_one_from_db_before_json["bank_details"]['bank_name']):
+                if 'bank_details' in collect_data_to_append:
+                    collect_data_to_append['bank_details'].update({
+                        'bank_name': fetched_value_before_json["bank_details"]['bank_name']
+                    })
+                else:
+                    collect_data_to_append.update({'bank_details': {
+                        'bank_name': fetched_value_before_json["bank_details"]['bank_name']
+                    }
+                    })
+            if (fetched_value_before_json["bank_details"]['account_number'] !=
+                    found_one_from_db_before_json["bank_details"]['account_number']):
+                if 'bank_details' in collect_data_to_append:
+                    collect_data_to_append['bank_details'].update({
+                        'account_number': fetched_value_before_json["bank_details"]['account_number']
+                    })
+                else:
+                    collect_data_to_append.update({'bank_details': {
+                        'account_number': fetched_value_before_json["bank_details"]['account_number']
+                    }
+                    })
+            if (fetched_value_before_json["bank_details"]['UAN_number'] !=
+                    found_one_from_db_before_json["bank_details"]['UAN_number']):
+                if 'bank_details' in collect_data_to_append:
+                    collect_data_to_append['bank_details'].update({
+                        'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
+                    })
+                else:
+                    collect_data_to_append.update({'bank_details': {
+                        'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
+                    }
+                    })
+            if 'hourly_pay_details' in fetched_value_before_json:
+                if fetched_value_before_json["hourly_pay_details"]['hourly_pay'] != \
+                        found_one_from_db_before_json["hourly_pay_details"]['hourly_pay']:
+                    collect_data_to_append.update(
+                        {
+                            'hourly_pay_details': {
+                                'hourly_pay': fetched_value_before_json["hourly_pay_details"]['hourly_pay']
+                            }
+                        })
+            else:
+                if fetched_value_before_json["salary_details"]['salary'] != \
+                        found_one_from_db_before_json["salary_details"]['salary']:
+                    if 'salary_details' in collect_data_to_append:
+                        collect_data_to_append['salary_details'].update(
+                            {
+                                'salary': fetched_value_before_json["salary_details"]['salary']
+                            })
+                    else:
+                        collect_data_to_append.update(
+                            {
+                                'salary_details': {
+                                    'salary': fetched_value_before_json["salary_details"]['salary']
+                                }
+                            })
+                if fetched_value_before_json["salary_details"]['bonus'] != \
+                        found_one_from_db_before_json["salary_details"]['bonus']:
+                    if 'salary_details' in collect_data_to_append:
+                        collect_data_to_append['salary_details'].update(
+                            {
+                                'bonus': fetched_value_before_json["salary_details"]['bonus']
+                            })
+                    else:
+                        collect_data_to_append.update(
+                            {
+                                'salary_details': {
+                                    'bonus': fetched_value_before_json["salary_details"]['bonus']
+                                }
+                            })
+                if fetched_value_before_json["salary_details"]['allowances'] != \
+                        found_one_from_db_before_json["salary_details"]['allowances']:
+                    if fetched_value_before_json["salary_details"]['allowances']['basic_allowance'] != \
+                            found_one_from_db_before_json["salary_details"]['allowances']['basic_allowance']:
+                        if 'salary_details' in collect_data_to_append:
+                            if 'allowances' in collect_data_to_append['salary_details']:
+                                collect_data_to_append['salary_details']['allowances'].update(
+                                    {
+                                        'basic_allowance':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'basic_allowance']
+                                    })
+                            else:
+                                collect_data_to_append['salary_details'].update({
+                                    'allowances': {
+                                        'basic_allowance':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'basic_allowance']
+                                    }
+                                })
+                        else:
+                            collect_data_to_append.update(
+                                {
+                                    'salary_details': {
+                                        'allowances': {
+                                            'basic_allowance':
+                                                fetched_value_before_json["salary_details"]["allowances"][
+                                                    'basic_allowance']
+                                        }
+                                    }
+                                })
+                    if fetched_value_before_json["salary_details"]['allowances']['medical_allowance'] != \
+                            found_one_from_db_before_json["salary_details"]['allowances']['medical_allowance']:
+                        if 'salary_details' in collect_data_to_append:
+                            if 'allowances' in collect_data_to_append['salary_details']:
+                                collect_data_to_append['salary_details']['allowances'].update(
+                                    {
+                                        'medical_allowance':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'medical_allowance']
+                                    })
+                            else:
+                                collect_data_to_append['salary_details'].update({
+                                    'allowances': {
+                                        'medical_allowance':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'medical_allowance']
+                                    }
+                                })
+                        else:
+                            collect_data_to_append.update(
+                                {
+                                    'salary_details': {
+                                        'allowances': {
+                                            'medical_allowance':
+                                                fetched_value_before_json["salary_details"]["allowances"][
+                                                    'medical_allowance']
+                                        }
+                                    }
+                                })
+                    if fetched_value_before_json["salary_details"]['allowances']['provident_fund'] != \
+                            found_one_from_db_before_json["salary_details"]['allowances']['provident_fund']:
+                        if 'salary_details' in collect_data_to_append:
+                            if 'allowances' in collect_data_to_append['salary_details']:
+                                collect_data_to_append['salary_details']['allowances'].update(
+                                    {
+                                        'provident_fund':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'provident_fund']
+                                    })
+                            else:
+                                collect_data_to_append['salary_details'].update({
+                                    'allowances': {
+                                        'provident_fund': fetched_value_before_json["salary_details"]["allowances"][
+                                            'provident_fund']
+                                    }
+                                })
+                        else:
+                            collect_data_to_append.update(
+                                {
+                                    'salary_details': {
+                                        'allowances': {
+                                            'provident_fund':
+                                                fetched_value_before_json["salary_details"]["allowances"][
+                                                    'provident_fund']
+                                        }
+                                    }
+                                })
+                    if fetched_value_before_json["salary_details"]['allowances']['tax'] != \
+                            found_one_from_db_before_json["salary_details"]['allowances']['tax']:
+                        if 'salary_details' in collect_data_to_append:
+                            if 'allowances' in collect_data_to_append['salary_details']:
+                                collect_data_to_append['salary_details']['allowances'].update(
+                                    {
+                                        'tax':
+                                            fetched_value_before_json["salary_details"]["allowances"][
+                                                'tax']
+                                    })
+                            else:
+                                collect_data_to_append['salary_details'].update({
+                                    'allowances': {
+                                        'tax': fetched_value_before_json["salary_details"]["allowances"]['tax']
+                                    }
+                                })
+                        else:
+                            collect_data_to_append.update(
+                                {
+                                    'salary_details': {
+                                        'allowances': {
+                                            'tax': fetched_value_before_json["salary_details"]["allowances"][
+                                                'tax']
+                                        }
+                                    }
+                                })
+
+            print("COLECTION *******", collect_data_to_append)
+            mongo.db.employees.update_one(
+                {'_id': id},
+                {'$set': collect_data_to_append}
+            )
 
 @app.route("/editEmployee/<int:id>")
 def editEmployee(id):
     # Fetch only the particular employee whose Id matches in the database
     find_one = database_connection.fetch_only_one_employee(id)
     form = InformForm()
-    print("***************** ", 'hourly_pay_details' in find_one)
+    print("***************** ", find_one)
     one_salary_hourly_pay = {}
     if 'hourly_pay_details' in find_one:
         one_salary_hourly_pay = {
@@ -448,6 +826,8 @@ def editAnEmployee(id):
         mongo.save_file(profile_image.filename, profile_image)
         requestForm = {}
         form = InformForm()
+
+        print("|re: ", type(request.form.get('employee_type_id')), request.form)
 
         if (not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
                 "role_id") or not request.form.get("department_id")):
@@ -489,6 +869,7 @@ def editAnEmployee(id):
                                    one_employee=found_one_from_db_before_json)
         elif int(request.form.get("employee_type_id")) != 1000 and request.form.get(
                 "is_manager"):  # If manager cannot be in Hourly rate
+            print("SHIt")
             error = []
             error.append("Manager Cannot be on an hourly rate")
             requestForm.update({'role_id': int(request.form.get("role_id"))})
@@ -508,325 +889,50 @@ def editAnEmployee(id):
                                    requestForm=requestForm,
                                    one_employee=found_one_from_db_before_json)
         else:
-            converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
+            # editEmployeeComparison(found_one_from_db_before_json)
 
-            one_salary_hourly_pay = {}
+            print("REP MAAGER: ", request.form.get('manager_id'), request.form.get('department_id'),
+                  type(request.form.get('department_id')))
 
-            fetched_value_before_json = {
-                '_id': id,
-                'first_name': request.form.get('first_name'),
-                'last_name': request.form.get('last_name'),
-                'phone_number': request.form.get('phoneNumber'),
-                'email_address': request.form.get('email_address'),
-                'user_role_id': int(request.form.get('role_id')),
-                'user_manager_id': int(request.form.get('manager_id')) if found_one_from_db_before_json[
-                    "user_manager_id"] else found_one_from_db_before_json["user_manager_id"],
-                'gender': request.form.get('gender'),
-                'profile_image_name': profile_image.filename if profile_image.filename else
-                found_one_from_db_before_json[
-                    "profile_image_name"],
-                'is_active': True if request.form.get('is_active') else False,
-                'employee_type_id': int(request.form.get('employee_type_id')),
-                'department_id': int(request.form.get('department_id')),
-                'date_of_birth': request.form.get('date_of_birth'),
-                'date_of_joining': request.form.get('date_of_joining'),
-                'last_date': request.form.get('last_date'),
-                'official_email_address': request.form.get('official_email_address'),
-                'is_manager': True if request.form.get('is_manager') else False,
-                'bank_details': {
-                    'bank_name': request.form.get('bank_name'),
-                    'account_number': request.form.get('account_number'),
-                    'UAN_number': request.form.get('UAN_number'),
-                },
-                'address': {
-                    'current_address': request.form.get('current_address'),
-                    'permanent_address': request.form.get('permanent_address')
-                }
-            }
+            manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
+            manager_dept_all = [doc for doc in manager_dept]
 
-            if int(request.form.get('employee_type_id')) == 1000:
-                my_salary = request.form.get('salary')
-                my_bonus = request.form.get('bonus')
-                my_basic_allowance = request.form.get('basic_allowance')
-                my_medical_allowance = request.form.get('medical_allowance')
-                my_provident_fund = request.form.get('provident_fund')
-                my_tax = request.form.get('tax')
-
-                one_salary_hourly_pay = {
-                    "salary_details": {
-                        "salary": 0 if not my_salary else float(request.form.get('salary')),
-                        "bonus": 0 if not my_bonus else float(request.form.get('bonus')),
-                        "allowances": {
-                            "basic_allowance": 0 if not my_basic_allowance else float(
-                                request.form.get('basic_allowance')),
-                            "medical_allowance": 0 if not my_medical_allowance else float(
-                                request.form.get('medical_allowance')),
-                            "provident_fund": 0 if not my_provident_fund else float(request.form.get('provident_fund')),
-                            "tax": 0 if not my_tax else float(request.form.get('tax'))
-                        }
-                    }
-                }
+            print("MANAGER:::: ", manager_dept_all)
+            if len(manager_dept_all) == 0:
+                print("IS  none: ")
+                editEmployeeComparison(found_one_from_db_before_json, id)
+                return redirect(url_for("admin.adminHome"))
             else:
-                myhourly_pay = request.form.get('hourly_pay')
-                one_salary_hourly_pay = {
-                    "hourly_pay_details": {
-                        "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
-                    }
-                }
-            print(fetched_value_before_json)
-            fetched_value_before_json.update(one_salary_hourly_pay)
-            fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
-
-            collect_data_to_append = {}
-            if converted_json == fetched_val_json:
-                print("They are Exactly the same, so don't update the db")
-            else:
-                print("11111111: ", fetched_value_before_json["last_date"], found_one_from_db_before_json["last_date"])
-                if (fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]):
-                    collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
-                if (fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]):
-                    collect_data_to_append["last_name"] = fetched_value_before_json["last_name"]
-                if (fetched_value_before_json["phone_number"] != found_one_from_db_before_json["phone_number"]):
-                    collect_data_to_append["phone_number"] = fetched_value_before_json["phone_number"]
-                if (fetched_value_before_json["email_address"] != found_one_from_db_before_json["email_address"]):
-                    collect_data_to_append["email_address"] = fetched_value_before_json["email_address"]
-                if (fetched_value_before_json["user_role_id"] != found_one_from_db_before_json["user_role_id"]):
-                    collect_data_to_append["user_role_id"] = fetched_value_before_json["user_role_id"]
-                if (fetched_value_before_json["user_manager_id"] != found_one_from_db_before_json["user_manager_id"]):
-                    collect_data_to_append["user_manager_id"] = fetched_value_before_json["user_manager_id"]
-                if (fetched_value_before_json["gender"] != found_one_from_db_before_json["gender"]):
-                    collect_data_to_append["gender"] = fetched_value_before_json["gender"]
-                if (fetched_value_before_json["profile_image_name"] != found_one_from_db_before_json[
-                    "profile_image_name"]):
-                    collect_data_to_append["profile_image_name"] = fetched_value_before_json["profile_image_name"]
-                if (fetched_value_before_json["is_active"] != found_one_from_db_before_json["is_active"]):
-                    collect_data_to_append["is_active"] = fetched_value_before_json["is_active"]
-                if (fetched_value_before_json["employee_type_id"] != found_one_from_db_before_json["employee_type_id"]):
-                    collect_data_to_append["employee_type_id"] = fetched_value_before_json["employee_type_id"]
-                if (fetched_value_before_json["department_id"] != found_one_from_db_before_json["department_id"]):
-                    collect_data_to_append["department_id"] = fetched_value_before_json["department_id"]
-                if (fetched_value_before_json["date_of_birth"] != found_one_from_db_before_json["date_of_birth"]):
-                    collect_data_to_append["date_of_birth"] = fetched_value_before_json["date_of_birth"]
-                if (fetched_value_before_json["date_of_joining"] != found_one_from_db_before_json["date_of_joining"]):
-                    collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
-                if (fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]):
-                    collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
-                if (fetched_value_before_json["official_email_address"] != found_one_from_db_before_json[
-                    "official_email_address"]):
-                    collect_data_to_append["official_email_address"] = fetched_value_before_json[
-                        "official_email_address"]
-                if (fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]):
-                    collect_data_to_append["is_manager"] = fetched_value_before_json["is_manager"]
-
-                if (fetched_value_before_json["address"]['current_address'] != found_one_from_db_before_json["address"][
-                    'current_address']):
-                    if 'address' in collect_data_to_append:
-                        collect_data_to_append['address'].update({
-                            'current_address': fetched_value_before_json["address"]['current_address']
-                        })
-                    else:
-                        collect_data_to_append.update({'address': {
-                            'current_address': fetched_value_before_json["address"]['current_address']
-                        }
-                        })
-                    # collect_data_to_append["address"]['current_address'] = fetched_value_before_json["address"]['current_address']
-                if (fetched_value_before_json["address"]['permanent_address'] !=
-                        found_one_from_db_before_json["address"]['permanent_address']):
-                    print("SAY YES: ", 'address' in collect_data_to_append, collect_data_to_append)
-                    if 'address' in collect_data_to_append:
-                        collect_data_to_append['address'].update({
-                            'permanent_address': fetched_value_before_json["address"]['permanent_address']
-                        })
-                    else:
-                        collect_data_to_append.update({'address': {
-                            'permanent_address': fetched_value_before_json["address"]['permanent_address']
-                        }
-                        })
-                if (fetched_value_before_json["bank_details"]['bank_name'] !=
-                        found_one_from_db_before_json["bank_details"]['bank_name']):
-                    if 'bank_details' in collect_data_to_append:
-                        collect_data_to_append['bank_details'].update({
-                            'bank_name': fetched_value_before_json["bank_details"]['bank_name']
-                        })
-                    else:
-                        collect_data_to_append.update({'bank_details': {
-                            'bank_name': fetched_value_before_json["bank_details"]['bank_name']
-                        }
-                        })
-                if (fetched_value_before_json["bank_details"]['account_number'] !=
-                        found_one_from_db_before_json["bank_details"]['account_number']):
-                    if 'bank_details' in collect_data_to_append:
-                        collect_data_to_append['bank_details'].update({
-                            'account_number': fetched_value_before_json["bank_details"]['account_number']
-                        })
-                    else:
-                        collect_data_to_append.update({'bank_details': {
-                            'account_number': fetched_value_before_json["bank_details"]['account_number']
-                        }
-                        })
-                if (fetched_value_before_json["bank_details"]['UAN_number'] !=
-                        found_one_from_db_before_json["bank_details"]['UAN_number']):
-                    if 'bank_details' in collect_data_to_append:
-                        collect_data_to_append['bank_details'].update({
-                            'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-                        })
-                    else:
-                        collect_data_to_append.update({'bank_details': {
-                            'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-                        }
-                        })
-                if 'hourly_pay_details' in fetched_value_before_json:
-                    if fetched_value_before_json["hourly_pay_details"]['hourly_pay'] != \
-                            found_one_from_db_before_json["hourly_pay_details"]['hourly_pay']:
-                        collect_data_to_append.update(
-                            {
-                                'hourly_pay_details': {
-                                    'hourly_pay': fetched_value_before_json["hourly_pay_details"]['hourly_pay']
-                                }
-                            })
+                print("is not none")
+                result = filter(
+                    lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(
+                        request.form.get('manager_id')), manager_dept_all)
+                list_result = list(result)
+                # not_in_list = random_id_generator not in list(result)
+                print("RESULR: ", len(list_result), list_result)
+                if len(list_result) > 0:
+                    editEmployeeComparison(found_one_from_db_before_json, id)
+                    return redirect(url_for("admin.adminHome"))
                 else:
-                    if fetched_value_before_json["salary_details"]['salary'] != \
-                            found_one_from_db_before_json["salary_details"]['salary']:
-                        if 'salary_details' in collect_data_to_append:
-                            collect_data_to_append['salary_details'].update(
-                                {
-                                    'salary': fetched_value_before_json["salary_details"]['salary']
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'salary': fetched_value_before_json["salary_details"]['salary']
-                                    }
-                                })
-                    if fetched_value_before_json["salary_details"]['bonus'] != \
-                            found_one_from_db_before_json["salary_details"]['bonus']:
-                        if 'salary_details' in collect_data_to_append:
-                            collect_data_to_append['salary_details'].update(
-                                {
-                                    'bonus': fetched_value_before_json["salary_details"]['bonus']
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'bonus': fetched_value_before_json["salary_details"]['bonus']
-                                    }
-                                })
-                    if fetched_value_before_json["salary_details"]['allowances'] != \
-                            found_one_from_db_before_json["salary_details"]['allowances']:
-                        if fetched_value_before_json["salary_details"]['allowances']['basic_allowance'] != \
-                                found_one_from_db_before_json["salary_details"]['allowances']['basic_allowance']:
-                            if 'salary_details' in collect_data_to_append:
-                                if 'allowances' in collect_data_to_append['salary_details']:
-                                    collect_data_to_append['salary_details']['allowances'].update(
-                                        {
-                                            'basic_allowance':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'basic_allowance']
-                                        })
-                                else:
-                                    collect_data_to_append['salary_details'].update({
-                                        'allowances': {
-                                            'basic_allowance': fetched_value_before_json["salary_details"]["allowances"]['basic_allowance']
-                                        }
-                                    })
-                            else:
-                                collect_data_to_append.update(
-                                    {
-                                        'salary_details': {
-                                            'allowances': {
-                                                'basic_allowance': fetched_value_before_json["salary_details"]["allowances"][
-                                                    'basic_allowance']
-                                            }
-                                        }
-                                    })
-                        if fetched_value_before_json["salary_details"]['allowances']['medical_allowance'] != \
-                                found_one_from_db_before_json["salary_details"]['allowances']['medical_allowance']:
-                            if 'salary_details' in collect_data_to_append:
-                                if 'allowances' in collect_data_to_append['salary_details']:
-                                    collect_data_to_append['salary_details']['allowances'].update(
-                                        {
-                                            'medical_allowance':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'medical_allowance']
-                                        })
-                                else:
-                                    collect_data_to_append['salary_details'].update({
-                                        'allowances': {
-                                            'medical_allowance': fetched_value_before_json["salary_details"]["allowances"]['medical_allowance']
-                                        }
-                                    })
-                            else:
-                                collect_data_to_append.update(
-                                    {
-                                        'salary_details': {
-                                            'allowances': {
-                                                'medical_allowance': fetched_value_before_json["salary_details"]["allowances"][
-                                                    'medical_allowance']
-                                            }
-                                        }
-                                    })
-                        if fetched_value_before_json["salary_details"]['allowances']['provident_fund'] != \
-                                found_one_from_db_before_json["salary_details"]['allowances']['provident_fund']:
-                            if 'salary_details' in collect_data_to_append:
-                                if 'allowances' in collect_data_to_append['salary_details']:
-                                    collect_data_to_append['salary_details']['allowances'].update(
-                                        {
-                                            'provident_fund':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'provident_fund']
-                                        })
-                                else:
-                                    collect_data_to_append['salary_details'].update({
-                                        'allowances': {
-                                            'provident_fund': fetched_value_before_json["salary_details"]["allowances"]['provident_fund']
-                                        }
-                                    })
-                            else:
-                                collect_data_to_append.update(
-                                    {
-                                        'salary_details': {
-                                            'allowances': {
-                                                'provident_fund': fetched_value_before_json["salary_details"]["allowances"][
-                                                    'provident_fund']
-                                            }
-                                        }
-                                    })
-                        if fetched_value_before_json["salary_details"]['allowances']['tax'] != \
-                                found_one_from_db_before_json["salary_details"]['allowances']['tax']:
-                            if 'salary_details' in collect_data_to_append:
-                                if 'allowances' in collect_data_to_append['salary_details']:
-                                    collect_data_to_append['salary_details']['allowances'].update(
-                                        {
-                                            'tax':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'tax']
-                                        })
-                                else:
-                                    collect_data_to_append['salary_details'].update({
-                                        'allowances': {
-                                            'tax': fetched_value_before_json["salary_details"]["allowances"]['tax']
-                                        }
-                                    })
-                            else:
-                                collect_data_to_append.update(
-                                    {
-                                        'salary_details': {
-                                            'allowances': {
-                                                'tax': fetched_value_before_json["salary_details"]["allowances"][
-                                                    'tax']
-                                            }
-                                        }
-                                    })
+                    print("Need to throw an error")
+                    error = []
+                    error.append(f"Reporting manager doesn't belong to the department you selected.")
+                    requestForm.update({'role_id': int(request.form.get("role_id"))})
+                    requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+                    requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+                    requestForm.update({'department_id': int(request.form.get("department_id"))})
 
-                print("COLECTION *******", collect_data_to_append)
-                mongo.db.employees.update_one(
-                    {'_id': id},
-                    {'$set': collect_data_to_append}
-                )
-            # TODO: Need to redirect it to the desired location
-        return redirect(url_for("admin.adminHome"))
+                    return render_template("shared-component/edit_employee.html",
+                                           display_all_roles=database_connection.role_table(all_roles),
+                                           display_all_managers=database_connection.manager_table(all_managers),
+                                           display_all_departments=fetch_all_departments,
+                                           display_all_employee_type=fetch_all_employee_type,
+                                           form=form,
+                                           error=error,
+                                           came_from="admin.adminHome",
+                                           gender_array=gender_array,
+                                           requestForm=requestForm,
+                                           one_employee=found_one_from_db_before_json)
 
 
 # Delete an Event
@@ -864,6 +970,11 @@ def editingDepartmentGET(id):
     # Insert the employees  data into the employees collection
     form = InformForm()
     one_department = mongo.db.departments.find_one({"_id": id})
+    employees_dept = mongo.db.employees.find({'department_id': id})
+    manager_dept = mongo.db.managers.find({'manager_department_id': id})
+
+    print("EMPLOYEE BELONG TO THE DEPrtment: ", [doc for doc in employees_dept])
+    print("MANAGER:::: ", [doc for doc in manager_dept])
     print("---------- ", one_department)
     return render_template("admin/edit_department.html",
                            form=form,
@@ -1115,7 +1226,8 @@ def date():
             "manager_id": int(request.form.get("manager_id"))
         }
 
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                       "%Y-%m-%d %H:%M")
         dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
         timestamp = datetime.timestamp(dt_object2)
         timestamp2 = datetime.timestamp(dt_object1)
@@ -1136,7 +1248,8 @@ def date():
         if (timestamp == timestamp2):
             print("They r same, please try something else")
             # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
-            error.append('Start date and End date are same, please try to enter the start date to be less than the end date')
+            error.append(
+                'Start date and End date are same, please try to enter the start date to be less than the end date')
             return render_template('admin/new_event_creation.html',
                                    form=form,
                                    display_all_employees=database_connection.employee_table(all_employees),

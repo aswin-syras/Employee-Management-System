@@ -12,7 +12,7 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
-    <div class="parent-edit-div">
+    <div class="parent-edit-div container">
         <h2>Editing an Employee</h2>
         <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
             <div>
@@ -210,9 +210,11 @@
                                                             <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
                                                                 {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
                                                         {% else %}
-                                                            <option value="{{ manager._id }}"
-                                                                {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
-                                                                    {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                                            {% if manager._id != one_employee._id %}
+                                                                <option value="{{ manager._id }}"
+                                                                    {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
+                                                                   {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                                            {% endif %}
                                                         {% endif %}
                                                 {% endfor %}
                                             </select>
@@ -245,7 +247,7 @@
                                     {% if requestForm %}
                                         {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control" )}} {{ form.hidden_tag() }}
                                     {% else %}
-                                        {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control", value=one_employee.date_of_joining) }} {{ form.hidden_tag() }}
+                                        {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control", value=one_employee.date_of_joining.split('T')[0]) }} {{ form.hidden_tag() }}
                                     {% endif %}
                                 </div>
 
@@ -273,7 +275,6 @@
                     <div class="tab-pane pb-3 pt-3" id="c">
                         <!-- Bank Details-->
                         <div class="checked_as-inactive">
-                            <p>Bank Details</p>
                             <div class="row">
                                 <div class="col-4">
                                     {% if requestForm %}
@@ -304,7 +305,6 @@
                         <div class="checked_as-inactive">
                             <div id="salary_complete_details">
         <!--                    {% if one_employee.salary_details %}-->
-                            <p>Salary Details</p>
                             <div class="row">
                                 <div class="col-3">
                                     {{ form.salary.label }}
@@ -367,7 +367,6 @@
 
                             <!-- Hourly Details-->
                             <div id="hourly_pay_details">
-                            <p>Hourly Details</p>
                             <div class="row">
                                 <div class="col-3">
                                     {{ form.hourly_pay.label }}

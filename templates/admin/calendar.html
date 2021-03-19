@@ -18,30 +18,25 @@
             color: black;
         }
     </style>
-    <div class="container-fluid calendar-container-fluid">
-        <ul class="nav nav-tabs">
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{ url_for('admin.adminHome') }}">Active</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{{ url_for('admin.getFullCalendar') }}">CALENDAR</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-          </li>
-        </ul>
-        <div class="ml-1">
-            <a class="btn btn-primary" href="/createNewEventPost" class="btn btn-primary"> Add a new Event </a>
+    <div class="row">
+        <div id="mySidenav" class="sidenav col-3">
+            <a href="{{ url_for('admin.adminHome') }}"><b><i class="fas fa-users-cog"></i>&nbsp; Admin</b></a>
+            <a href="{{ url_for('admin.getFullCalendar') }}" class="active-tab"><b><i class="fas fa-calendar-alt"></i>&nbsp;  Calendar</b></a>
+            <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee</b></a>
+            <a class="" href="{{ url_for('createNewDepartmentGET') }}" > <b><i class="fas fa-plus"></i>&nbsp; Add a New Department</b></a>
+            <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
+            <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
         </div>
-
-        <div id="calendar"></div>
+        <div class="col-9 add-background-calendar">
+            <div>
+                <a class="btn btn-primary create-new-event" href="/createNewEventPost" class="btn btn-primary"> <b><i class="far fa-calendar-plus"></i> &nbsp; Add a new Event</b>  </a>
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
 
         <!--  # Scroll to the top-->
         <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
-    </div>
 
     <script>
         var calendarElement = document.getElementById("calendar");

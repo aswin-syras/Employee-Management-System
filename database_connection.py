@@ -73,9 +73,12 @@ def fetch_all_tables():
             'manager': manager_table_name}
 
 
-def merge_employee_role():
+def merge_employee_role(status):
     emp_role = connect_employees_role_table_department()
-    emp = employee_table(emp_role["employee"])
+    if status == 'home':
+        emp = employee_table(emp_role["employee"])
+    else:
+        emp = status
     role = role_table(emp_role["role"])
     dept = department_table(emp_role["department"])
     print("dept: ", dept)

@@ -10,10 +10,9 @@
 
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-
+<div class="new-edit-employee container">
     <!--suppress XmlInvalidId -->
-<h1>Add New Employee</h1>
-<div class="new-edit-employee">
+    <h1>Add New Employee</h1>
     <form method="POST" action="/createNewEmployee"  enctype="multipart/form-data">
 
             {{ form.csrt_token }}
@@ -186,7 +185,7 @@
 
                 <!-- Bank Details-->
                 <div>
-                    <h3>Bank Details</h3>
+                    <h4 class="pl-1">Bank Details</h4>
                     <div class="row">
                         <div class="col-4">
                             {{ form.bank_name.label }} {{ form.bank_name(class="form-control")}} {{ form.hidden_tag() }}
@@ -201,7 +200,7 @@
                 </div>
 
                 <div id="salary_complete_details">
-                    <h3>Salary Details</h3>
+                    <h4 class="pl-1">Salary Details</h4>
                     <div class="row">
                         <div class="col-3">
                             {{ form.salary.label }}
@@ -238,7 +237,7 @@
                 </div>
 
                 <div id="hourly_pay_details">
-                    <h3>Hourly Details</h3>
+                    <h4 class="pl-1">Hourly Details</h4>
                     <div class="row">
                         <div class="col-3">
                             {{ form.hourly_pay.label }}
@@ -248,7 +247,7 @@
                 </div>
 
                 <!-- Buttons -->
-                <div class="d-flex pt-3">
+                <div class="d-flex pt-3 pl-10   ">
 
                     <div class="form-group buttons-edit">
                         <input type="submit" value="Save" class="btn btn-primary"/>

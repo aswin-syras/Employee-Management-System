@@ -23,8 +23,8 @@
         }
     </style>
 
-	<div>
-        <h3>Edit Existing Event</h3>
+	<div class="container">
+        <h3 class="pl-1">Edit Existing Event</h3>
         <form method="POST" action="/postAnExistingEvent/{{ fetched_data._id }}"  name="myForm">
             {{ form.csrt_token }}
 
@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <div class="d-flex pt-3">
+            <div class="d-flex pt-3 pl-10">
 
                 {% if toggle == 1 or toggle == 0 %}
                 <div class="form-group buttons-edit">

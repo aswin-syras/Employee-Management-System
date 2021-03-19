@@ -9,8 +9,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-    <div>
-        <h3>Edit a Role </h3>
+    <div class="container">
+        <h3 class="pl-1">Edit a Role </h3>
         <form method="POST" action="{{url_for('editingRolePOST', id=one_role._id)}}"  name="myForm">
             {{ form.csrt_token }}
 
@@ -52,7 +52,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="d-flex pt-3">
+            <div class="d-flex pt-3 pl-10">
                 <div class="form-group buttons-edit">
                     <input type="submit" value="Update" class="btn btn-primary"/>
                 </div>

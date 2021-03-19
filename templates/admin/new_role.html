@@ -9,8 +9,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-    <div>
-        <h3>Add a Role </h3>
+    <div class="container">
+        <h3 class="pl-1">Add a Role </h3>
         <form method="POST" action="{{url_for('createNewRolePOST')}}"  name="myForm">
             {{ form.csrt_token }}
 
@@ -24,10 +24,10 @@
                 <div class="col-4">
                     {{ form.role_name.label }} {{ form.role_name(class="form-control")}} {{ form.hidden_tag() }}
                 </div>
-                <div class="col-4">
+                <div class="col-3 checkbox-vertically-center">
                     {{ form.role_have_full_power(class="form-check-input", type="checkbox", checked=False)}} {{ form.role_have_full_power.label }} {{ form.hidden_tag() }}
                 </div>
-                <div class="col-4">
+                <div class="col-3 checkbox-vertically-center">
                     {{ form.role_upload_documents_profile_pictures(class="form-check-input", type="checkbox", checked=False)}} {{ form.role_upload_documents_profile_pictures.label }}  {{ form.hidden_tag() }}
                 </div>
 
@@ -51,7 +51,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="d-flex pt-3">
+            <div class="d-flex pt-3 pl-10">
 
                 <div class="form-group buttons-edit">
                     <input type="submit" value="Save" class="btn btn-primary"/>
