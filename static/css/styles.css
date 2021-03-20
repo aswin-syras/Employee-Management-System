@@ -3,7 +3,7 @@ html {
 }
 
 body {
-    background: lightgrey;
+    background: #fff;
     height: inherit;
 }
 
@@ -88,7 +88,7 @@ input[type="file"] {
 }
 
 .add-border-bottom {
-    border-bottom: 1px solid cornsilk;
+    border-bottom: 2px solid #d3d3d3;
 }
 
 .add-border-bottom:last-child {
@@ -185,4 +185,14 @@ h4 {
 
 .checkbox-vertically-center {
     padding-top: 30px;
+}
+
+.align-vertical-center {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.text-center-div {
+    justify-content: center;
 }

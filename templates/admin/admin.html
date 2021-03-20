@@ -7,7 +7,7 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
 <div class="row">
-    <div id="mySidenav" class="sidenav col-3">
+    <div id="mySidenav" class="sidenav col-2">
         <form class="form-inline d-flex p-2" method="POST" action="{{ url_for('admin.searchAnEmployee') }}"  enctype="multipart/form-data">
           <input class="form-control mr-sm-2 mr-1" type="search" placeholder="Search Name" aria-label="Search" name="search_value" value={{ value_search }}>
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
@@ -19,7 +19,7 @@
         <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
         <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
     </div>
-    <div class="col-9">
+    <div class="col-10">
         <div>
              <div class="d-flex">
                 <div class="ml-1 p-2">
@@ -42,66 +42,70 @@
                 <div class="col-3 font-size-large-bold"><b>Full Name & Email</b></div>
                 <div class="col-2 font-size-large-bold"><b>Joining Date</b></div>
                 <div class="col-1 font-size-large-bold"><b>Role</b></div>
-                <div class="col-1 font-size-large-bold"><b>Status</b></div>
+                <div class="col-1 font-size-large-bold text-center"><b>Status</b></div>
                 <div class="col-2 font-size-large-bold"><b>Department</b></div>
                 <div class="col-1"></div>
                 <div class="col-1"></div>
             </div>
 
-            {% for employee in display_all_employees %}
+            {% if display_all_employees | length %}
+                {% for employee in display_all_employees %}
                     <div class="d-flex pt-4 pb-4 row add-border-bottom">
-                        <div class="col-1">
-                            {% if employee.profile_image_name %}
-                                <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
-                            {% elif employee.gender == "Female" %}
-                                <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                            {% elif employee.gender == "Male" %}
-                                <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                            {% else %}
-                                <img src="{{ url_for('static', filename='img/avatar.jpg') }}" alt="alternate" width="50px" height="50px">
-                            {% endif %}
-                        </div>
-                        <div class="col-3">
-                            <div class="font-size-large-bold">
-                                <b>{{ employee.first_name }} {{ employee.last_name }}</b>
+                            <div class="col-1">
+                                {% if employee.profile_image_name %}
+                                    <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
+                                {% elif employee.gender == "Female" %}
+                                    <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                                {% elif employee.gender == "Male" %}
+                                    <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='img/avatar.png') }}" alt="alternate" width="50px" height="50px">
+                                {% endif %}
+                            </div>
+                            <div class="col-3 pl-10">
+                                <div class="font-size-large-bold">
+                                    <b>{{ employee.first_name }} {{ employee.last_name }}</b>
+                                </div>
+
+                                <div class="font-size-small">
+                                    {{ employee.email_address }}
+                                </div>
                             </div>
 
-                            <div class="font-size-small">
-                                {{ employee.email_address }}
+                            <div class="d-flex p-2 col-2 font-size-large-bold align-vertical-center">
+                                {{ employee.date_of_joining }}
+                            </div>
+
+                            <div class="d-flex p-2 col-1 font-size-large-bold align-vertical-center">
+                                {{ employee.role }}
+                            </div>
+
+                            <div class="d-flex p-2 col-1 font-size-large-bold align-vertical-center text-center-div">
+                                {% if employee.is_active %}
+                                    Active
+                                {% endif %}
+
+                                {% if not employee.is_active %}
+                                    In Active
+                                {% endif %}
+                            </div>
+
+                            <div class="col-2 font-size-large-bold align-vertical-center">
+                                    <a class="edit-department-name" href="{{ url_for('editingDepartmentGET', id=employee.department_id) }}">{{ employee.department_name }}</a>
+                            </div>
+
+                            <div class="col-1 align-vertical-center text-center-div">
+                                <a href="/editEmployee/{{ employee._id }}"><i class="fas fa-user-edit text-dark"></i> </a>
+                            </div>
+
+                            <div class="col-1 align-vertical-center text-center-div">
+                                <a href="/deleteExistingEmployee/{{ employee._id }}"><i class="fas fa-trash text-danger"></i></a>
                             </div>
                         </div>
-
-                        <div class="d-flex p-2 col-2 font-size-large-bold">
-                            {{ employee.date_of_joining }}
-                        </div>
-
-                        <div class="d-flex p-2 col-1 font-size-large-bold">
-                            {{ employee.role }}
-                        </div>
-
-                        <div class="d-flex p-2 col-1 font-size-large-bold">
-                            {% if employee.is_active %}
-                                Active
-                            {% endif %}
-
-                            {% if not employee.is_active %}
-                                In Active
-                            {% endif %}
-                        </div>
-
-                        <div class="col-2 font-size-large-bold">
-                                <a class="edit-department-name" href="{{ url_for('editingDepartmentGET', id=employee.department_id) }}">{{ employee.department_name }}</a>
-                        </div>
-
-                        <div class="col-1">
-                            <a href="/editEmployee/{{ employee._id }}"><i class="fas fa-user-edit text-success"></i> </a>
-                        </div>
-
-                        <div class="col-1">
-                            <a href="/deleteExistingEmployee/{{ employee._id }}"><i class="fas fa-trash text-danger"></i>   </a>
-                        </div>
-                    </div>
                 {% endfor %}
+            {% else %}
+                <div class="text-center p-3 font-size-large-bold"> <b> No Records found </b> </div>
+            {% endif %}
         </div>
 
 <!--      <div class="tab-content" id="myTabContent">-->

@@ -27,7 +27,7 @@
 
                 <!-- Upload Picture -->
                 <div class="custom-file pt-3">
-                    <img id="output" class="img-call" src="{{ url_for('static', filename='img/avatar.jpg') }}" width="50px" height="50px">
+                    <img id="output" class="img-call" src="{{ url_for('static', filename='img/avatar.png') }}" width="50px" height="50px">
                     <label for="customFile" class="custom-file-upload btn btn-primary" name="profile_image" onchange="loadFile(event)"><i class="fas fa-upload"></i>  Upload your picture</label>
                     <input type="file" class="custom-file-input" id="customFile" name="profile_image" accept="image/*" onchange="loadFile(event)">
                 </div>
@@ -164,7 +164,7 @@
                 <div class="form-group pt-3 row">
                     <!-- Date of Birth -->
                     <div class="col-3">
-                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control") }} {{ form.hidden_tag() }}
+                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", max="2005-01-01") }} {{ form.hidden_tag() }}
                     </div>
 
                     <!-- Date of Joining Date -->

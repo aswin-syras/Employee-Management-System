@@ -86,7 +86,7 @@ def merge_employee_role(status):
     merged_array = []
     for employee in emp:
         for rol in role:
-            if (employee["user_role_id"] == rol["_id"]):
+            if employee["user_role_id"] == rol["_id"]:
                 employee["role"] = rol["role_name"]
 
                 for department in dept:

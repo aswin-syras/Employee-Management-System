@@ -145,8 +145,7 @@ def profile_pictures():
 def create():
     if "profile_image" in request.files:
         profile_image = request.files["profile_image"]
-        mongo.save_file(profile_image.filename, profile_image)
-        mongo.db.users.insert({'username': request.form.get('username'), 'profile_image_name': profile_image.filename})
+        mongo.save_file(profile_image.filename.split(".")[1], profile_image)
         return 'DONE!'
 
 
@@ -208,6 +207,23 @@ def generating_random_id_departments():
         else:
             i = 1
 
+def generating_random_id_profile_picture():
+    # Generating a new random id for employees
+    i = 1
+
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000000000000000000000000000000)
+        print("uniq: ", mongo.db.fs.files.find())
+        all_employee_type_find = [docss for docss in mongo.db.fs.files.find()]
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["filename"], all_employee_type_find)
+        not_in_list = str(random_id_generator) not in list(result)
+        if (not_in_list):
+            i = 0
+            return str(random_id_generator)
+        else:
+            i = 1
 
 def generating_random_id_employee_type():
     # Generating a new random id for employees
@@ -261,12 +277,10 @@ def createNewEmployeeGET():
 
 def createNewFormComparison():
     if "profile_image" in request.files:
-        profile_image = request.files["profile_image"]
-        mongo.save_file(profile_image.filename, profile_image)
         all_employees_table = database_connection.connect_employee_table_name()
         all_emp_record = database_connection.employee_table(all_employees_table)
         salary_hourly_details = {}
-        print("--------------------: ", int(request.form.get("employee_type_id")), request.form.get("is_manager"))
+
         # Fulltime job has some benefits
         if (int(request.form.get('employee_type_id')) == 1000):
             my_salary = request.form.get('salary')
@@ -297,6 +311,16 @@ def createNewFormComparison():
                     "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
                 }
             }
+        if request.files["profile_image"].filename:
+            profile_image = request.files["profile_image"]
+            picture = generating_random_id_profile_picture()
+
+            # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
+            # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
+            mongo.save_file(picture + '.' + profile_image.filename.split(".")[1], profile_image)
+            profile_image.filename = picture + '.' + profile_image.filename.split(".")[1]
+        else:
+            profile_image = request.files["profile_image"]
 
         insert_data = {
             '_id': generating_random_id_employees(),
@@ -348,7 +372,7 @@ def createNewFormComparison():
 def createNewEmployee():
     if "profile_image" in request.files:
         profile_image = request.files["profile_image"]
-        mongo.save_file(profile_image.filename, profile_image)
+        # mongo.save_file(profile_image.filename, profile_image)
         all_employees_table = database_connection.connect_employee_table_name()
         all_emp_record = database_connection.employee_table(all_employees_table)
 
@@ -455,8 +479,17 @@ def createNewEmployee():
 def editEmployeeComparison(found_one_from_db_before_json, id):
     if "profile_image" in request.files:
         found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
-        profile_image = request.files["profile_image"]
-        mongo.save_file(profile_image.filename, profile_image)
+        if request.files["profile_image"].filename:
+            profile_image = request.files["profile_image"]
+            picture = generating_random_id_profile_picture()
+
+            # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
+            # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
+            mongo.save_file(picture + '.' + profile_image.filename.split(".")[1], profile_image)
+            profile_image.filename = picture + '.' + profile_image.filename.split(".")[1]
+        else:
+            profile_image = request.files["profile_image"]
+
         requestForm = {}
         form = InformForm()
         converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
@@ -532,7 +565,9 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         if converted_json == fetched_val_json:
             print("They are Exactly the same, so don't update the db")
         else:
-            print("11111111: ", fetched_value_before_json["last_date"], found_one_from_db_before_json["last_date"])
+            print("11111111: ", fetched_value_before_json)
+            print("22222222: ", found_one_from_db_before_json)
+
             if (fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]):
                 collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
             if (fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]):
@@ -823,7 +858,6 @@ def editAnEmployee(id):
     if "profile_image" in request.files:
         found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
         profile_image = request.files["profile_image"]
-        mongo.save_file(profile_image.filename, profile_image)
         requestForm = {}
         form = InformForm()
 
@@ -897,8 +931,7 @@ def editAnEmployee(id):
             manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
             manager_dept_all = [doc for doc in manager_dept]
 
-            print("MANAGER:::: ", manager_dept_all)
-            if len(manager_dept_all) == 0:
+            if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
                 print("IS  none: ")
                 editEmployeeComparison(found_one_from_db_before_json, id)
                 return redirect(url_for("admin.adminHome"))
