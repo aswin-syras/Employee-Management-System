@@ -178,6 +178,10 @@ h4 {
     padding-left: 10px;
 }
 
+.ptop-8 {
+    padding-top: 8px !important;
+}
+
 .edit-department-name {
     text-decoration: underline;
     color: #0d6efd;

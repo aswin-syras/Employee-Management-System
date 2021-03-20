@@ -448,10 +448,12 @@ def createNewEmployee():
                 return redirect(url_for("admin.adminHome"))
             else:
                 print("is not none")
-                result = filter(lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(request.form.get('manager_id')), manager_dept_all)
+                result = filter(
+                    lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(
+                        request.form.get('manager_id')), manager_dept_all)
                 list_result = list(result)
                 # not_in_list = random_id_generator not in list(result)
-                print("RESULR: ",len(list_result), list_result)
+                print("RESULR: ", len(list_result), list_result)
                 if len(list_result) > 0:
                     createNewFormComparison()
                     return redirect(url_for("admin.adminHome"))
@@ -479,7 +481,8 @@ def createNewEmployee():
 def editEmployeeComparison(found_one_from_db_before_json, id):
     if "profile_image" in request.files:
         found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
-        if request.files["profile_image"].filename:
+        if request.files["profile_image"].filename and found_one_from_db_before_json["profile_image_name"] != \
+                request.files["profile_image"].filename:
             profile_image = request.files["profile_image"]
             picture = generating_random_id_profile_picture()
 
@@ -557,6 +560,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                     "hourly_pay": 0 if not myhourly_pay else float(request.form.get('hourly_pay'))
                 }
             }
+        fetched_value_before_json.update(one_salary_hourly_pay)
         print(fetched_value_before_json)
         fetched_value_before_json.update(one_salary_hourly_pay)
         fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
@@ -568,40 +572,40 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             print("11111111: ", fetched_value_before_json)
             print("22222222: ", found_one_from_db_before_json)
 
-            if (fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]):
+            if fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]:
                 collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
-            if (fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]):
+            if fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]:
                 collect_data_to_append["last_name"] = fetched_value_before_json["last_name"]
-            if (fetched_value_before_json["phone_number"] != found_one_from_db_before_json["phone_number"]):
+            if fetched_value_before_json["phone_number"] != found_one_from_db_before_json["phone_number"]:
                 collect_data_to_append["phone_number"] = fetched_value_before_json["phone_number"]
-            if (fetched_value_before_json["email_address"] != found_one_from_db_before_json["email_address"]):
+            if fetched_value_before_json["email_address"] != found_one_from_db_before_json["email_address"]:
                 collect_data_to_append["email_address"] = fetched_value_before_json["email_address"]
-            if (fetched_value_before_json["user_role_id"] != found_one_from_db_before_json["user_role_id"]):
+            if fetched_value_before_json["user_role_id"] != found_one_from_db_before_json["user_role_id"]:
                 collect_data_to_append["user_role_id"] = fetched_value_before_json["user_role_id"]
-            if (fetched_value_before_json["user_manager_id"] != found_one_from_db_before_json["user_manager_id"]):
+            if fetched_value_before_json["user_manager_id"] != found_one_from_db_before_json["user_manager_id"]:
                 collect_data_to_append["user_manager_id"] = fetched_value_before_json["user_manager_id"]
-            if (fetched_value_before_json["gender"] != found_one_from_db_before_json["gender"]):
+            if fetched_value_before_json["gender"] != found_one_from_db_before_json["gender"]:
                 collect_data_to_append["gender"] = fetched_value_before_json["gender"]
             if (fetched_value_before_json["profile_image_name"] != found_one_from_db_before_json[
                 "profile_image_name"]):
                 collect_data_to_append["profile_image_name"] = fetched_value_before_json["profile_image_name"]
-            if (fetched_value_before_json["is_active"] != found_one_from_db_before_json["is_active"]):
+            if fetched_value_before_json["is_active"] != found_one_from_db_before_json["is_active"]:
                 collect_data_to_append["is_active"] = fetched_value_before_json["is_active"]
-            if (fetched_value_before_json["employee_type_id"] != found_one_from_db_before_json["employee_type_id"]):
+            if fetched_value_before_json["employee_type_id"] != found_one_from_db_before_json["employee_type_id"]:
                 collect_data_to_append["employee_type_id"] = fetched_value_before_json["employee_type_id"]
-            if (fetched_value_before_json["department_id"] != found_one_from_db_before_json["department_id"]):
+            if fetched_value_before_json["department_id"] != found_one_from_db_before_json["department_id"]:
                 collect_data_to_append["department_id"] = fetched_value_before_json["department_id"]
-            if (fetched_value_before_json["date_of_birth"] != found_one_from_db_before_json["date_of_birth"]):
+            if fetched_value_before_json["date_of_birth"] != found_one_from_db_before_json["date_of_birth"]:
                 collect_data_to_append["date_of_birth"] = fetched_value_before_json["date_of_birth"]
-            if (fetched_value_before_json["date_of_joining"] != found_one_from_db_before_json["date_of_joining"]):
+            if fetched_value_before_json["date_of_joining"] != found_one_from_db_before_json["date_of_joining"]:
                 collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
-            if (fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]):
+            if fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]:
                 collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
             if (fetched_value_before_json["official_email_address"] != found_one_from_db_before_json[
                 "official_email_address"]):
                 collect_data_to_append["official_email_address"] = fetched_value_before_json[
                     "official_email_address"]
-            if (fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]):
+            if fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]:
                 collect_data_to_append["is_manager"] = fetched_value_before_json["is_manager"]
 
             if (fetched_value_before_json["address"]['current_address'] != found_one_from_db_before_json["address"][
@@ -814,11 +818,27 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                                     }
                                 })
 
-            print("COLECTION *******", collect_data_to_append)
-            mongo.db.employees.update_one(
-                {'_id': id},
-                {'$set': collect_data_to_append}
-            )
+            # Check whether collect_data_to_append is an empty dict
+            res = bool(collect_data_to_append)
+
+            if res:
+                if 'is_manager' in collect_data_to_append:
+                    if collect_data_to_append["is_manager"]:
+                        manager_data = {
+                            "_id": id,
+                            "manager_first_name": fetched_value_before_json["first_name"],
+                            "manager_last_name": fetched_value_before_json["last_name"],
+                            "manager_role_id": fetched_value_before_json['user_role_id'],
+                            "manager_department_id": fetched_value_before_json["department_id"]
+                        }
+                        mongo.db.managers.insert_one(manager_data)
+                    else:
+                        mongo.db.managers.delete_one({'_id': id})
+
+                mongo.db.employees.update_one(
+                    {'_id': id},
+                    {'$set': collect_data_to_append}
+                )
 
 @app.route("/editEmployee/<int:id>")
 def editEmployee(id):
@@ -863,8 +883,8 @@ def editAnEmployee(id):
 
         print("|re: ", type(request.form.get('employee_type_id')), request.form)
 
-        if (not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
-                "role_id") or not request.form.get("department_id")):
+        if ((not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
+                "role_id") or not request.form.get("department_id")) and id != 0):
 
             error = []
 
@@ -874,7 +894,7 @@ def editAnEmployee(id):
             elif request.form.get("role_id"):
                 requestForm.update({'role_id': int(request.form.get("role_id"))})
 
-            if not request.form.get("manager_id"):
+            if not request.form.get("manager_id") and id != 0:
                 error.append("Please Select the Reporting Manager")
             elif request.form.get("manager_id"):
                 requestForm.update({'manager_id': int(request.form.get("manager_id"))})
@@ -931,41 +951,46 @@ def editAnEmployee(id):
             manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
             manager_dept_all = [doc for doc in manager_dept]
 
-            if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
-                print("IS  none: ")
-                editEmployeeComparison(found_one_from_db_before_json, id)
-                return redirect(url_for("admin.adminHome"))
-            else:
-                print("is not none")
-                result = filter(
-                    lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(
-                        request.form.get('manager_id')), manager_dept_all)
-                list_result = list(result)
-                # not_in_list = random_id_generator not in list(result)
-                print("RESULR: ", len(list_result), list_result)
-                if len(list_result) > 0:
+            if id != 0:
+                if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
+                    print("IS  none: ")
                     editEmployeeComparison(found_one_from_db_before_json, id)
                     return redirect(url_for("admin.adminHome"))
                 else:
-                    print("Need to throw an error")
-                    error = []
-                    error.append(f"Reporting manager doesn't belong to the department you selected.")
-                    requestForm.update({'role_id': int(request.form.get("role_id"))})
-                    requestForm.update({'manager_id': int(request.form.get("manager_id"))})
-                    requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
-                    requestForm.update({'department_id': int(request.form.get("department_id"))})
+                    print("is not none")
+                    result = filter(
+                        lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x[
+                            '_id'] == int(
+                            request.form.get('manager_id')), manager_dept_all)
+                    list_result = list(result)
+                    # not_in_list = random_id_generator not in list(result)
+                    print("RESULR: ", len(list_result), list_result)
+                    if len(list_result) > 0:
+                        editEmployeeComparison(found_one_from_db_before_json, id)
+                        return redirect(url_for("admin.adminHome"))
+                    else:
+                        print("Need to throw an error")
+                        error = []
+                        error.append(f"Reporting manager doesn't belong to the department you selected.")
+                        requestForm.update({'role_id': int(request.form.get("role_id"))})
+                        requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+                        requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+                        requestForm.update({'department_id': int(request.form.get("department_id"))})
 
-                    return render_template("shared-component/edit_employee.html",
-                                           display_all_roles=database_connection.role_table(all_roles),
-                                           display_all_managers=database_connection.manager_table(all_managers),
-                                           display_all_departments=fetch_all_departments,
-                                           display_all_employee_type=fetch_all_employee_type,
-                                           form=form,
-                                           error=error,
-                                           came_from="admin.adminHome",
-                                           gender_array=gender_array,
-                                           requestForm=requestForm,
-                                           one_employee=found_one_from_db_before_json)
+                        return render_template("shared-component/edit_employee.html",
+                                               display_all_roles=database_connection.role_table(all_roles),
+                                               display_all_managers=database_connection.manager_table(all_managers),
+                                               display_all_departments=fetch_all_departments,
+                                               display_all_employee_type=fetch_all_employee_type,
+                                               form=form,
+                                               error=error,
+                                               came_from="admin.adminHome",
+                                               gender_array=gender_array,
+                                               requestForm=requestForm,
+                                               one_employee=found_one_from_db_before_json)
+            else:  # if its a CEO Just return
+                editEmployeeComparison(found_one_from_db_before_json, id)
+                return redirect(url_for("admin.adminHome"))
 
 
 # Delete an Event
@@ -1433,6 +1458,7 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
         return redirect(url_for('admin.getFullCalendar'))
     else:
         return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen))
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
