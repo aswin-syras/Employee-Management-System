@@ -45,7 +45,7 @@ def home(name):
 def hello():
     return render_template("base.html")
 
-@app.route("/login", methods=["GET"])
+@app.route("/login", methods=["GET","POST"])
 def login():
     return render_template("shared-component/login.html")
 
