@@ -158,10 +158,14 @@ a {
     margin: 0px;
 }
 
-.outline-active-tab:focus {
+.outline-active-tab {
     background: #32a852;
     color: #fff;
     font-weight: bold;
+}
+
+.add-opacity {
+    opacity: 0.7;
 }
 
 h4 {
@@ -176,6 +180,11 @@ h4 {
 
 .pl-10 {
     padding-left: 10px;
+}
+
+.pl-pr-15 {
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .ptop-8 {
@@ -199,4 +208,89 @@ h4 {
 
 .text-center-div {
     justify-content: center;
+}
+
+.dept-img-call .img-call {
+    width: 100px;
+    height: 100px;
+}
+
+.parent-parent-div {
+    margin: auto;
+    width: 20%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0px 0px 5px 2px #D3D3D3;
+}
+
+.children-children-div {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0px 0px 5px 2px #D3D3D3;
+}
+
+.parent-children-div {
+    margin: auto;
+    width: fit-content;
+}
+
+.add-border-padding {
+    padding-bottom: 15px;
+}
+
+.basic-info-employee {
+    border-top: 1px solid #D3D3D3;
+    padding-top: 15px;
+}
+
+.dept-personal-info {
+    padding-bottom: 10px;
+}
+
+.blue-color {
+    color: #1092de;
+}
+
+.dept-icon  {
+    color: #808080;
+}
+
+.no-of-employees {
+    font-size: 12px;
+    background: aqua;
+}
+
+.overall-heading {
+    margin-bottom: 20px;
+}
+
+.active-inactive-btn {
+    border-radius: 0px;
+}
+
+.all-btns-active-inactive {
+    margin-top: 20px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.remove-border-right {
+    border-right: 0px;
+}
+
+@media (max-width: 1024px) {
+    .parent-parent-div {
+        width: 27%;
+        padding: 20px !important;
+    }
+
+    .children-children-div {
+        margin-left: 10px !important;
+        margin: 16px !important;
+        margin-right: 10px !important;
+    }
 }

@@ -36,13 +36,13 @@ fetch_database_connection = database_connection.database_connection()
 
 #### Fetch only certain table
 all_roles = database_connection.connect_role_table_name()
-all_managers = database_connection.connect_manager_table_name()
-all_employees = database_connection.connect_employee_table_name()
-fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
-fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+# all_managers = database_connection.connect_manager_table_name()
+# all_employees = database_connection.connect_employee_table_name()
+# fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+# fetch_all_departments = [doc for doc in mongo.db.departments.find()]
 
-print("Employee type", fetch_all_employee_type)
-print("Department type", fetch_all_departments)
+# print("Employee type", fetch_all_employee_type)
+# print("Department type", fetch_all_departments)
 
 # all_work_schedule = database_connection.connect_workSchedule_table_name()
 
@@ -207,6 +207,7 @@ def generating_random_id_departments():
         else:
             i = 1
 
+
 def generating_random_id_profile_picture():
     # Generating a new random id for employees
     i = 1
@@ -224,6 +225,7 @@ def generating_random_id_profile_picture():
             return str(random_id_generator)
         else:
             i = 1
+
 
 def generating_random_id_employee_type():
     # Generating a new random id for employees
@@ -264,7 +266,13 @@ def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
     # all_managers = database_connection.connect_manager_table_name()
     form = InformForm()
+
+    all_managers = database_connection.connect_manager_table_name()
     print("NEW MANER: ", database_connection.manager_table(all_managers))
+    fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+    fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+    all_managers = database_connection.connect_manager_table_name()
     return render_template("shared-component/new_employee.html",
                            display_all_roles=database_connection.role_table(all_roles),
                            display_all_managers=database_connection.manager_table(all_managers),
@@ -405,6 +413,11 @@ def createNewEmployee():
             elif request.form.get("department_id"):
                 requestForm.update({'department_id': int(request.form.get("department_id"))})
 
+            print([doc for doc in mongo.db.departments.find()])
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
             return render_template("shared-component/new_employee.html",
                                    display_all_roles=database_connection.role_table(all_roles),
                                    display_all_managers=database_connection.manager_table(all_managers),
@@ -423,7 +436,10 @@ def createNewEmployee():
             requestForm.update({'manager_id': int(request.form.get("manager_id"))})
             requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
             requestForm.update({'department_id': int(request.form.get("department_id"))})
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
+            all_managers = database_connection.connect_manager_table_name()
             return render_template("shared-component/new_employee.html",
                                    display_all_roles=database_connection.role_table(all_roles),
                                    display_all_managers=database_connection.manager_table(all_managers),
@@ -466,6 +482,10 @@ def createNewEmployee():
                     requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
                     requestForm.update({'department_id': int(request.form.get("department_id"))})
 
+                    fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+                    fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+                    all_managers = database_connection.connect_manager_table_name()
                     return render_template("shared-component/new_employee.html",
                                            display_all_roles=database_connection.role_table(all_roles),
                                            display_all_managers=database_connection.manager_table(all_managers),
@@ -840,6 +860,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                     {'$set': collect_data_to_append}
                 )
 
+
 @app.route("/editEmployee/<int:id>")
 def editEmployee(id):
     # Fetch only the particular employee whose Id matches in the database
@@ -861,7 +882,10 @@ def editEmployee(id):
             "tax": find_one['salary_details']['allowances']['tax']
         }
     find_one.update(one_salary_hourly_pay)
+    fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+    fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
+    all_managers = database_connection.connect_manager_table_name()
     return render_template("shared-component/edit_employee.html",
                            form=form,
                            one_employee=find_one,
@@ -910,6 +934,10 @@ def editAnEmployee(id):
                 requestForm.update({'department_id': int(request.form.get("department_id"))})
 
             print("FORMS EI|T|: ", request.form)
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
             return render_template("shared-component/edit_employee.html",
                                    display_all_roles=database_connection.role_table(all_roles),
                                    display_all_managers=database_connection.manager_table(all_managers),
@@ -930,7 +958,10 @@ def editAnEmployee(id):
             requestForm.update({'manager_id': int(request.form.get("manager_id"))})
             requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
             requestForm.update({'department_id': int(request.form.get("department_id"))})
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
+            all_managers = database_connection.connect_manager_table_name()
             return render_template("shared-component/edit_employee.html",
                                    display_all_roles=database_connection.role_table(all_roles),
                                    display_all_managers=database_connection.manager_table(all_managers),
@@ -976,7 +1007,10 @@ def editAnEmployee(id):
                         requestForm.update({'manager_id': int(request.form.get("manager_id"))})
                         requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
                         requestForm.update({'department_id': int(request.form.get("department_id"))})
+                        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+                        fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
+                        all_managers = database_connection.connect_manager_table_name()
                         return render_template("shared-component/edit_employee.html",
                                                display_all_roles=database_connection.role_table(all_roles),
                                                display_all_managers=database_connection.manager_table(all_managers),
@@ -1030,14 +1064,138 @@ def editingDepartmentGET(id):
     one_department = mongo.db.departments.find_one({"_id": id})
     employees_dept = mongo.db.employees.find({'department_id': id})
     manager_dept = mongo.db.managers.find({'manager_department_id': id})
+    all_mgrs = [doc for doc in manager_dept]
+    all_emp = [doc for doc in employees_dept]
+    no_of_employees = list(filter(lambda x: x["_id"] != 0, all_emp))
 
-    print("EMPLOYEE BELONG TO THE DEPrtment: ", [doc for doc in employees_dept])
-    print("MANAGER:::: ", [doc for doc in manager_dept])
+
+    for emp in all_emp:
+        for mgr in all_mgrs:
+            if emp["_id"] == mgr["_id"]:
+                mgr["email_address"] = emp["email_address"]
+                mgr["phone_number"] = emp["phone_number"]
+                mgr["profile_image_name"] = emp["profile_image_name"]
+
+    mgr_count = 0
+    emp_count = 0
+    for mgr in all_mgrs:
+        mgr_count += 1
+        mgr['children'] = []
+        for emp in all_emp:
+            if mgr["_id"] == emp["user_manager_id"]:
+                mgr['children'].append(emp)
+                emp_count += 1
+
+    take_separately = []
+    for mgr_children in all_mgrs:
+        if len(mgr_children['children']):
+            take_separately.append(mgr_children)
+
+    # Find the grandchildren
+    for mgr_children in all_mgrs:
+        for segregate in take_separately:
+
+            if len(mgr_children['children']) > 0:
+                for mgr_grand_children in mgr_children['children']:
+
+                    if segregate["_id"] == mgr_grand_children["_id"]:
+                        mgr_grand_children["children"] = []
+                        for seg in segregate["children"]:
+                            mgr_grand_children["children"].append(seg)
+
+    # Delete the repeated ones in the manager
+    map_add_level = []
+    for mgr in all_mgrs:
+        for mgr_1 in all_mgrs:
+            for mgr_children1 in mgr_1["children"]:
+                if mgr_children1["_id"] == mgr["_id"]:
+                    map_add_level.append(mgr["_id"])
+
+    all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] not in map_add_level, all_mgrs))
+    all_roles = mongo.db.role.find()
+    all_roles1 = [doc for doc in all_roles]
+
+    for mgr_emp in all_emp_in_mgrs_table:
+        for role in all_roles1:
+            if role["_id"] == mgr_emp["manager_role_id"]:
+                mgr_emp["manager_role_description"] = role["role_name"]
+                print("Mgr_emp: ", mgr_emp)
+
+            for mgr_children in mgr_emp["children"]:
+                for role1 in all_roles1:
+                    if 'user_manager_id' in mgr_children:
+                        if role1["_id"] == mgr_children["user_role_id"]:
+                            mgr_children["manager_role_description"] = role1["role_name"]
+
+                            if 'children' in mgr_children:
+                                # print("mgr_: ", 'children' in mgr_children, mgr_children["children"])
+                                for mgr_grand_children in mgr_children["children"]:
+                                    for role2 in all_roles1:
+                                        print("mgr_*********: ", role2["_id"], mgr_grand_children)
+
+                                        if role2["_id"] == mgr_grand_children["user_role_id"]:
+                                            mgr_grand_children["manager_role_description"] = role2["role_name"]
+
+    print("ALL MR: ", all_mgrs)
+    print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
+    # for emp in all_emp:
+    #     if emp['user_manager_id'] == 0 and emp['_id'] != 0:
+    #         emp['level'] = 2
+    #     elif emp['_id'] == 0:
+    #         emp['level'] = 1
+
+    # for emp in all_emp:
+    #     if emp['level'] == 2:
+
+    print("MANAGER:::: ", all_mgrs)
     print("---------- ", one_department)
+
+    # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
+    # print("map_all_mgr: ", map_all_mgr)
+
+    # All the employees who are managers
+    # all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] in map_all_mgr, all_emp))
+
+    # for mgr in all_emp_in_mgrs_table:
+    #     if 'level' not in mgr:
+    #         mgr['level'] = 3
+
+    # Last level employees
+    # all_emp_not_mgr_table = list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp))
+    #
+    # for emp in all_emp:
+    #     if 'level' not in emp:
+    #         emp['level'] = 4
+    #
+    # all_emps = sorted(all_emp, key=lambda k: k['level'])
+
+    # Get the managers of the employees
+    # map_fetch_mgr_from_emp = list(map(lambda x: x['user_manager_id'], all_emp_in_mgrs_table))
+
+    # Team Leads getting reported to Director of the department
+    # 1st level reporting managerx
+    # mgrs_reporting_to = list(filter(lambda x: x['_id'] in map_fetch_mgr_from_emp, all_emp_in_mgrs_table))
+
+    # print("EMPLOYEE BELONG TO THE DEPrtment: ", all_emp, all_emps)
+
+    # print("All the managers who are employees", all_emp_in_mgrs_table)
+    # print("Fetcg all the managers who are form the list: ", map_fetch_mgr_from_emp)
+    # print("A;l Emp not in managers table: ", all_emp_not_mgr_table)
+    # print("Managers reporting to: ", mgrs_reporting_to)
+
+    # for emp in all_emp:
+    #     for mgr in all_mgrs:
+    #         if emp['_id'] == mgr['_id']:
+    #             print(emp)
+
+    # result = list(filter(lambda x: x['_id'] in all_emp, all_mgrs))
+    # print("result: ", (result))
     return render_template("admin/edit_department.html",
                            form=form,
                            one_department=one_department,
-                           came_from="admin.adminHome")
+                           came_from="admin.adminHome",
+                           all_emp_in_mgrs_table=all_emp_in_mgrs_table,
+                           no_of_employees=len(no_of_employees))
 
 
 @app.route("/editDepartmentPOST/<int:id>", methods=['GET', 'POST'])
@@ -1099,6 +1257,8 @@ def editingEmployeeTypePOST(id):
 @app.route("/createNewRole", methods=['GET', 'POST'])
 def createNewRoleGET():
     form = InformForm()
+    fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+
     return render_template("admin/new_role.html",
                            form=form,
                            display_all_departments=fetch_all_departments,
@@ -1112,6 +1272,7 @@ def createNewRolePOST():
     if not request.form.get("department_id"):
         error.append("Please Select the Department")
 
+        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
         return render_template("admin/new_role.html",
                                display_all_departments=fetch_all_departments,
                                form=form,
@@ -1137,6 +1298,8 @@ def editingRoleGET(id):
     form = InformForm()
     one_role = mongo.db.role.find_one({"_id": id})
     print("---------- ", one_role)
+
+    fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     return render_template("admin/edit_role.html",
                            form=form,
                            display_all_departments=fetch_all_departments,
@@ -1172,15 +1335,15 @@ def editingRolePOST(id):
     if converted_json == fetched_val_json:
         print("They are Exactly the same, so don't update the db")
     else:
-        if (fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]):
+        if fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]:
             collect_data_to_append["role_name"] = fetched_value_before_json["role_name"]
-        if (fetched_value_before_json["role_have_full_power"] != fetched_one_value_before_json["role_have_full_power"]):
+        if fetched_value_before_json["role_have_full_power"] != fetched_one_value_before_json["role_have_full_power"]:
             collect_data_to_append["role_have_full_power"] = fetched_value_before_json["role_have_full_power"]
         if (fetched_value_before_json["role_upload_documents_profile_pictures"] != fetched_one_value_before_json[
             "role_upload_documents_profile_pictures"]):
             collect_data_to_append["role_upload_documents_profile_pictures"] = fetched_value_before_json[
                 "role_upload_documents_profile_pictures"]
-        if (fetched_value_before_json["role_department_id"] != fetched_one_value_before_json["role_department_id"]):
+        if fetched_value_before_json["role_department_id"] != fetched_one_value_before_json["role_department_id"]:
             collect_data_to_append["role_department_id"] = fetched_value_before_json["role_department_id"]
 
         # Update the employees  data into the employees collection
@@ -1211,6 +1374,9 @@ def createNewEventPost():
         session['startdate'] = form.startdate.data
         session['enddate'] = form.enddate.data
         return redirect(url_for("date"))
+
+    all_employees = database_connection.connect_employee_table_name()
+    all_managers = database_connection.connect_manager_table_name()
     return render_template('admin/new_event_creation.html',
                            form=form,
                            display_all_employees=database_connection.employee_table(all_employees),
@@ -1259,6 +1425,8 @@ def date():
         elif request.form.get("manager_id"):
             requestForm.update({'manager_id': int(request.form.get("manager_id"))})
 
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
         return render_template('admin/new_event_creation.html',
                                form=form,
                                error=error,
@@ -1272,6 +1440,8 @@ def date():
             'employee_id': int(request.form.get('employee_id')),
             'manager_id': int(request.form.get('manager_id'))
         }
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
         return render_template('admin/new_event_creation.html',
                                form=form,
                                error=error,
@@ -1308,6 +1478,8 @@ def date():
             # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
             error.append(
                 'Start date and End date are same, please try to enter the start date to be less than the end date')
+            all_employees = database_connection.connect_employee_table_name()
+            all_managers = database_connection.connect_manager_table_name()
             return render_template('admin/new_event_creation.html',
                                    form=form,
                                    display_all_employees=database_connection.employee_table(all_employees),
@@ -1317,6 +1489,9 @@ def date():
         elif (float(timestamp) < float(timestamp2)):
             print("Looks like the start date is greater than end date")
             error.append('Looks like the start date is greater than end date')
+
+            all_employees = database_connection.connect_employee_table_name()
+            all_managers = database_connection.connect_manager_table_name()
             return render_template('admin/new_event_creation.html',
                                    form=form,
                                    display_all_employees=database_connection.employee_table(all_employees),
@@ -1340,6 +1515,8 @@ def editExitEvent(id, toggle, employee_id):
     form = InformForm()
     # TODO we may need to show all the employees list
 
+    all_employees = database_connection.connect_employee_table_name()
+    all_managers = database_connection.connect_manager_table_name()
     return render_template('admin/edit_event_creation.html',
                            form=form,
                            display_all_employees=database_connection.employee_table(all_employees),
@@ -1386,6 +1563,8 @@ def postAnExistingEventData(id):
         print("They r same, please try something else")
         # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
         error = 'Start date and End date are same, please try to enter the start date to be less than the end date'
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
         return render_template('admin/edit_event_creation.html',
                                form=form,
                                display_all_employees=database_connection.employee_table(all_employees),
@@ -1404,6 +1583,8 @@ def postAnExistingEventData(id):
         }
         print("Looks like the start date is greater than end date")
         error = 'Looks like the start date is greater than end date'
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
         return render_template('admin/edit_event_creation.html',
                                form=form,
                                display_all_employees=database_connection.employee_table(all_employees),
@@ -1430,15 +1611,15 @@ def postAnExistingEventData(id):
         if converted_json == fetched_val_json:
             print("They are Exactly the same, so don't update the db")
         else:
-            if (fetched_value_before_json["employee_id"] != found_one_from_db_before_json["employee_id"]):
+            if fetched_value_before_json["employee_id"] != found_one_from_db_before_json["employee_id"]:
                 collect_data_to_append["employee_id"] = fetched_value_before_json["employee_id"]
-            if (fetched_value_before_json["title"] != found_one_from_db_before_json["title"]):
+            if fetched_value_before_json["title"] != found_one_from_db_before_json["title"]:
                 collect_data_to_append["title"] = fetched_value_before_json["title"]
-            if (fetched_value_before_json["manager_id"] != found_one_from_db_before_json["manager_id"]):
+            if fetched_value_before_json["manager_id"] != found_one_from_db_before_json["manager_id"]:
                 collect_data_to_append["manager_id"] = fetched_value_before_json["manager_id"]
-            if (fetched_value_before_json["start"] != found_one_from_db_before_json["start"]):
+            if fetched_value_before_json["start"] != found_one_from_db_before_json["start"]:
                 collect_data_to_append["start"] = fetched_value_before_json["start"]
-            if (fetched_value_before_json["end"] != found_one_from_db_before_json["end"]):
+            if fetched_value_before_json["end"] != found_one_from_db_before_json["end"]:
                 collect_data_to_append["end"] = fetched_value_before_json["end"]
 
             mongo.db.workSchedule.update_one(
