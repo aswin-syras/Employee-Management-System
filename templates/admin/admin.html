@@ -19,19 +19,20 @@
         <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
         <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
     </div>
+
     <div class="col-10">
-        <div>
-             <div class="d-flex">
-                <div class="ml-1 p-2">
-                    <a class="btn btn-outline-secondary outline-active-tab" href="{{ url_for('admin.employee_active_data', status='active') }}"> Active </a>
-                </div>
-                <div class="ml-1 p-2">
-                    <a class="btn btn-outline-secondary outline-inactive-tab" href="{{ url_for('admin.employee_active_data', status='Inactive') }}"> In Active </a>
-                </div>
-                <div class="p-2">
-                    <a class="btn btn-outline-secondary outline-all-tab" href="{{ url_for('admin.employee_active_data', status='all') }}"> All </a>
-                </div>
+        <div class="d-flex all-btns-active-inactive">
+            <div class="">
+                <a class="{{ 'outline-active-tab' if status == 'active' else 'add-opacity'}} btn btn-outline-secondary active-inactive-btn remove-border-right" href="{{ url_for('admin.employee_active_data', status='active') }}"> Active </a>
             </div>
+            <div class="active-inactive-btn">
+                <a class="{{ 'outline-active-tab' if status == 'Inactive'  else 'add-opacity'}} btn btn-outline-secondary active-inactive-btn remove-border-right" href="{{ url_for('admin.employee_active_data', status='Inactive') }}"> In Active </a>
+            </div>
+            <div class="active-inactive-btn">
+                <a class="{{ 'outline-active-tab' if not status  else 'add-opacity'}}  btn btn-outline-secondary outline-all-tab active-inactive-btn" href="{{ url_for('admin.employee_active_data', status='all') }}"> All </a>
+            </div>
+        </div>
+        <div>
 
 <!--          <form class="form-inline d-flex p-2" method="POST" action="{{ url_for('admin.searchAnEmployee') }}"  enctype="multipart/form-data">-->
 <!--              <input class="form-control mr-sm-2 mr-1" type="search" placeholder="Search Name" aria-label="Search" name="search_value" value={{ value_search }}>-->
@@ -91,7 +92,11 @@
                             </div>
 
                             <div class="col-2 font-size-large-bold align-vertical-center">
+                                {% if employee._id != 0 %}
                                     <a class="edit-department-name" href="{{ url_for('editingDepartmentGET', id=employee.department_id) }}">{{ employee.department_name }}</a>
+                                {% else %}
+                                    <div class="text-center full-width">-</div>
+                                {% endif %}
                             </div>
 
                             <div class="col-1 align-vertical-center text-center-div">
