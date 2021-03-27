@@ -18,22 +18,8 @@
             color: black;
         }
     </style>
-    <div class="container-fluid calendar-container-fluid">
-        <ul class="nav nav-tabs">
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{ url_for('admin.adminHome') }}">Active</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{{ url_for('admin.getFullCalendar') }}">CALENDAR</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-          </li>
-        </ul>
-        <div class="ml-1">
+    <div class="container-fluid calendar-container-fluid m-5">
+        <div class="mb-1">
             <a class="btn btn-primary" href="{{url_for('editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
         </div>
 

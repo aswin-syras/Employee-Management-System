@@ -164,17 +164,17 @@
                 <div class="form-group pt-3 row">
                     <!-- Date of Birth -->
                     <div class="col-3">
-                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", max="2005-01-01") }} {{ form.hidden_tag() }}
+                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", max=twenty_yrs_ago) }} {{ form.hidden_tag() }}
                     </div>
 
                     <!-- Date of Joining Date -->
                     <div class="col-3">
-                        {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control") }} {{ form.hidden_tag() }}
+                        {{ form.date_of_joining.label }} {{ form.date_of_joining(class="datepicker form-control", min=min_date) }} {{ form.hidden_tag() }}
                     </div>
 
                     <!-- Last date -->
                     <div class="col-3">
-                        {{ form.last_date.label }} {{ form.last_date(class="datepicker form-control") }} {{ form.hidden_tag() }}
+                        {{ form.last_date.label }} {{ form.last_date(class="datepicker form-control", min=min_date) }} {{ form.hidden_tag() }}
                     </div>
 
                     <!-- Official email address -->

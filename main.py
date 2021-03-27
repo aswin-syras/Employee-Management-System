@@ -19,6 +19,13 @@ from bson import ObjectId
 from random import randrange
 from wtforms.fields import html5 as h5fields
 from wtforms.widgets import html5 as h5widgets
+from dateutil.relativedelta import relativedelta
+
+import io
+import random
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "$%^&U$%^TYURTFY&*GU"
@@ -64,8 +71,8 @@ class InformForm(FlaskForm):
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
-    official_email_address = EmailField('Official Email address', [validators.DataRequired(), validators.Email()])
-    email_address = EmailField('Email address', [validators.DataRequired(), validators.Email()])
+    official_email_address = EmailField('Official Email address', validators=(validators.DataRequired(), validators.Email()))
+    email_address = EmailField('Email address', validators=(validators.DataRequired(), validators.Email()))
     phoneNumber = StringField('Phone Number')
     salary = h5fields.IntegerField(
         "Salary", widget=h5widgets.NumberInput(min=0)
@@ -260,7 +267,6 @@ def generating_random_id_role():
         else:
             i = 1
 
-
 @app.route("/newEmployee")
 def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
@@ -268,9 +274,15 @@ def createNewEmployeeGET():
     form = InformForm()
 
     all_managers = database_connection.connect_manager_table_name()
-    print("NEW MANER: ", database_connection.manager_table(all_managers))
+
     fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+    twenty_yrs_ago = datetime.now() - relativedelta(years=20)
+
+    today = datetime.now()
+    set_min_date = today.strftime("%Y-%m-%d")
+
+    strp_today = twenty_yrs_ago.strftime("%Y-%m-%d")
 
     all_managers = database_connection.connect_manager_table_name()
     return render_template("shared-component/new_employee.html",
@@ -280,7 +292,9 @@ def createNewEmployeeGET():
                            display_all_employee_type=fetch_all_employee_type,
                            form=form,
                            came_from="admin.adminHome",
-                           gender_array=gender_array)
+                           gender_array=gender_array,
+                           twenty_yrs_ago=strp_today,
+                           min_date=set_min_date)
 
 
 def createNewFormComparison():
@@ -866,6 +880,10 @@ def editEmployee(id):
     # Fetch only the particular employee whose Id matches in the database
     find_one = database_connection.fetch_only_one_employee(id)
     form = InformForm()
+    twenty_yrs_ago = datetime.now() - relativedelta(years=20)
+    strp_today = twenty_yrs_ago.strftime("%Y-%m-%d")
+    print("strp_today: ", strp_today)
+
     print("***************** ", find_one)
     one_salary_hourly_pay = {}
     if 'hourly_pay_details' in find_one:
@@ -894,7 +912,8 @@ def editEmployee(id):
                            display_all_departments=fetch_all_departments,
                            display_all_employee_type=fetch_all_employee_type,
                            came_from="admin.adminHome",
-                           gender_array=gender_array)
+                           gender_array=gender_array,
+                           twenty_yrs_ago=strp_today)
 
 
 @app.route("/editAnEmployee/<int:id>", methods=['POST'])
@@ -1364,11 +1383,13 @@ def createNewEventPost():
 
     # TODO remove this
     today = datetime.now()
+    set_min_date = today.strftime("%Y-%m-%d")
     strp_today = today.strftime("%Y-%m-%d %H:%M")
     curr_date_time = datetime.strptime(strp_today, "%Y-%m-%d %H:%M")
     timestamp_current_date_time = datetime.timestamp(curr_date_time)
 
     print("NOW: ", timestamp_current_date_time)
+
 
     if (form.validate_on_submit()):
         session['startdate'] = form.startdate.data
@@ -1377,10 +1398,14 @@ def createNewEventPost():
 
     all_employees = database_connection.connect_employee_table_name()
     all_managers = database_connection.connect_manager_table_name()
+    display_all_managers = database_connection.manager_table(all_managers)
+
     return render_template('admin/new_event_creation.html',
                            form=form,
                            display_all_employees=database_connection.employee_table(all_employees),
-                           display_all_managers=database_connection.manager_table(all_managers))
+                           display_all_managers=display_all_managers,
+                           str_display_all_mgr= json.dumps(display_all_managers),
+                           min_date=set_min_date)
 
 
 @app.route("/admin/calendar", methods=['POST'])
@@ -1640,6 +1665,21 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
     else:
         return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen))
 
+
+@app.route('/plot.png')
+def plot_png():
+    fig = create_figure()
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+def create_figure():
+    fig = Figure()
+    axis = fig.add_subplot(1, 1, 1)
+    xs = range(100)
+    ys = [random.randint(1, 50) for x in xs]
+    axis.plot(xs, ys)
+    return fig
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

@@ -114,9 +114,9 @@
                            <div class="d-flex row pt-3">
                                <div class="form-group col-4">
                                    {% if requestForm %}
-                                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", max="2005-01-01" )}} {{ form.hidden_tag() }}
+                                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", max=twenty_yrs_ago )}} {{ form.hidden_tag() }}
                                     {% else %}
-                                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", value=one_employee.date_of_birth,  max="2005-01-01") }} {{ form.hidden_tag() }}
+                                        {{ form.date_of_birth.label }} {{ form.date_of_birth(class="datepicker form-control", value=one_employee.date_of_birth,  max=twenty_yrs_ago) }} {{ form.hidden_tag() }}
                                     {% endif %}
                                 </div>
 

@@ -104,41 +104,43 @@
                                    </div>
                                 </div>
 
-
-                                {% for child in children.children %}
-                                    <div class="grand-children-div">
-                                        <div class="p-5 m-5 children-children-div">
-                                             <div class="dept-img-call text-center">
-                                                {% if child.profile_image_name %}
-                                                    <img src="{{url_for('file', filename=child['profile_image_name'])}}" class="img-call" name="profile_image" id="output" width="50px" height="50px">
-                                                {% elif child.gender == "Female" %}
-                                                    <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
-                                                {% elif child.gender == "Male" %}
-                                                    <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
-                                                {% else %}
-                                                    <img src="{{ url_for('static', filename='img/avatar.png') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
-                                                {% endif %}
-                                            </div>
-
-                                            <div class=" text-center add-border-padding">
-                                                <div>
-                                                    <b>{{ child.first_name }} {{ child.last_name }}</b>
+                                <div class="d-flex">
+                                    {% for child in children.children %}
+                                        <div class="grand-children-div">
+                                            <div class="p-5 m-5 children-children-div">
+                                                 <div class="dept-img-call text-center">
+                                                    {% if child.profile_image_name %}
+                                                        <img src="{{url_for('file', filename=child['profile_image_name'])}}" class="img-call" name="profile_image" id="output" width="50px" height="50px">
+                                                    {% elif child.gender == "Female" %}
+                                                        <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
+                                                    {% elif child.gender == "Male" %}
+                                                        <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
+                                                    {% else %}
+                                                        <img src="{{ url_for('static', filename='img/avatar.png') }}" class="img-call" id="output" alt="alternate" width="50px" height="50px">
+                                                    {% endif %}
                                                 </div>
 
-                                                <div>
-                                                    <b>{{ child.manager_role_description }}</b>
+                                                <div class=" text-center add-border-padding">
+                                                    <div>
+                                                        <b>{{ child.first_name }} {{ child.last_name }}</b>
+                                                    </div>
+
+                                                    <div>
+                                                        <b>{{ child.manager_role_description }}</b>
+                                                    </div>
                                                 </div>
+
+                                                <div class="basic-info-employee">
+                                                   <div class="dept-personal-info"><b><i class="dept-icon fas fa-users"></i> <span class="blue-color">{{ one_department.department_name }}</span></b></div>
+                                                   <div class="dept-personal-info"><b><i class="dept-icon fas fa-at"></i> <span class="blue-color">{{ child.email_address }}</span></b></div>
+                                                   <div class="dept-personal-info"><b><i class="dept-icon fas fa-phone-alt"></i> <span class="blue-color">{{ child.phone_number }}</span></b></div>
+                                               </div>
                                             </div>
 
-                                            <div class="basic-info-employee">
-                                               <div class="dept-personal-info"><b><i class="dept-icon fas fa-users"></i> <span class="blue-color">{{ one_department.department_name }}</span></b></div>
-                                               <div class="dept-personal-info"><b><i class="dept-icon fas fa-at"></i> <span class="blue-color">{{ child.email_address }}</span></b></div>
-                                               <div class="dept-personal-info"><b><i class="dept-icon fas fa-phone-alt"></i> <span class="blue-color">{{ child.phone_number }}</span></b></div>
-                                           </div>
                                         </div>
+                                    {% endfor %}
+                                </div>
 
-                                    </div>
-                                {% endfor %}
                             </div>
                     {% endfor %}
                     </div>
