@@ -4,49 +4,64 @@ import pymongo
 from bson import ObjectId
 
 
-def database_connection () :
+def database_connection():
     connection_string = "mongodb+srv://Username:Password@cluster0.j1u4m.mongodb.net/EmployeeManagementSystem?retryWrites=true&w=majority"
     my_client = pymongo.MongoClient(connection_string)
     database_name = my_client["EmployeeManagementSystem"]
     return database_name
 
-#Connect the table only to login
-def connect_login_table():
-     database_name = database_connection()
-     login_table_name = database_name["login"]
-     return login_table_name
 
-#Connect the table only to employees
+# Connect the table only to login
+def connect_login_table():
+    database_name = database_connection()
+    login_table_name = database_name["login"]
+    return login_table_name
+
+
+# Connect the table only to employees
 def connect_employee_table_name():
     database_name = database_connection()
     employee_table_name = database_name["employees"]
     return employee_table_name
 
-#Connect the table only to role
+
+# Connect the table only to role
 def connect_role_table_name():
     database_name = database_connection()
     role_table_name = database_name["role"]
     return role_table_name
 
-#Connect to work_schedule
+
+# Connect to work_schedule
 def connect_workSchedule_table_name():
     database_name = database_connection()
     workSchedule_table_name = database_name["workSchedule"]
     return workSchedule_table_name
 
-#Connect the table only to role
+
+# Connect the table only to Manager
 def connect_manager_table_name():
     database_name = database_connection()
     managers_table_name = database_name["managers"]
     return managers_table_name
 
-def connect_employees_role_table ():
+
+# Connect the table only to role
+def connect_department_table_name():
+    database_name = database_connection()
+    department_table_name = database_name["departments"]
+    return department_table_name
+
+
+def connect_employees_role_table_department():
     database_name = database_connection()
     employee_table_name = database_name["employees"]
     role_table_name = database_name["role"]
-    return { "employee": employee_table_name, "role": role_table_name }
+    department_table_name = database_name["departments"]
+    return {"employee": employee_table_name, "role": role_table_name, "department": department_table_name}
 
-#Fetching all the table names to make life easier
+
+# Fetching all the table names to make life easier
 def fetch_all_tables():
     database_name = database_connection()
     login_table_name = database_name["login"]
@@ -54,26 +69,38 @@ def fetch_all_tables():
     role_table_name = database_name["role"]
     manager_table_name = database_name["managers "]
 
-    return { "login": login_table_name, "employee": employee_table_name, "role": role_table_name, 'manager': manager_table_name }
+    return {"login": login_table_name, "employee": employee_table_name, "role": role_table_name,
+            'manager': manager_table_name}
 
-def merge_employee_role ():
-    emp_role = connect_employees_role_table()
-    emp = employee_table(emp_role["employee"])
+
+def merge_employee_role(status):
+    emp_role = connect_employees_role_table_department()
+    if status == 'home':
+        emp = employee_table(emp_role["employee"])
+    else:
+        emp = status
     role = role_table(emp_role["role"])
+    dept = department_table(emp_role["department"])
+    print("dept: ", dept)
 
     merged_array = []
     for employee in emp:
         for rol in role:
-            if ( employee["user_role_id"] == rol["_id"] ) :
+            if employee["user_role_id"] == rol["_id"]:
                 employee["role"] = rol["role_name"]
-                employee["department"] = rol["department"]
-                merged_array.append(employee)
+
+                for department in dept:
+                    if (employee["department_id"] == department["_id"]):
+                        employee["department_name"] = department["department_name"]
+                        merged_array.append(employee)
     return merged_array
 
-def login_table (login):
+
+def login_table(login):
     fetch_values = login.find()
     login_user = [record for record in fetch_values]
     return login_user
+
 
 def employee_table(employee):
     fetch_values = employee.find()
@@ -81,36 +108,67 @@ def employee_table(employee):
     return employee_user
 
 
+def department_table(department):
+    fetch_values = department.find()
+    department_user = [record for record in fetch_values]
+    return department_user
+
+
 def role_table(role):
     fetch_values = role.find()
     role_user = [record for record in fetch_values]
     return role_user
+
 
 def workSchedule_table(schedule):
     fetch_values = schedule.find()
     schedule_user = [record for record in fetch_values]
     return schedule_user
 
+
 def manager_table(manager):
     fetch_values = manager.find()
     manager_user = [record for record in fetch_values]
     return manager_user
 
+
 def fetch_only_one_employee(id):
     fetch_one = connect_employee_table_name()
-    query = { '_id' : id }
+    query = {'_id': id}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
 def fetch_only_one_work_schedule(id):
     fetch_one = connect_workSchedule_table_name()
-    query = { '_id' : ObjectId(id) }
+    query = {'_id': ObjectId(id)}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
+def fetch_work_schedule_particular_emp(empId):
+    fetch_one = connect_workSchedule_table_name()
+    query = {'employee_id': empId}
+    find_work_schedule_emp = [doc for doc in fetch_one.find(query)]
+    return find_work_schedule_emp
+
+
 def fetch_employee_search_name(values):
     connected_employees = connect_employee_table_name()
-    fetch_me = connected_employees.find({ "$or": [{"first_name": {"$regex": f".*{values}.*"}}, {"last_name": {"$regex": f".*{values}.*"}}]} )
 
-    overall_fetch = [ doc for doc in fetch_me ]
+    # the below query will fetch all case insensitive characters
+    fetch_me = connected_employees.find({"$or": [{"first_name": {"$regex": f".*{values}.*", "$options": 'i'}},
+                                                 {"last_name": {"$regex": f".*{values}.*", "$options": 'i'}}]})
+
+    overall_fetch = [doc for doc in fetch_me]
     return overall_fetch
+
+
+def fetch_active_inactive_employee(status):
+    fetch_one = connect_employee_table_name()
+    if status == 'all':
+        find_staus_employee = fetch_one.find()
+    else:
+        print("STATUS: ", status)
+        find_staus_employee = fetch_one.find({'is_active': status})
+    fetch_status_employee = [doc for doc in find_staus_employee]
+
+    return fetch_status_employee
