@@ -12,7 +12,7 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, TextAreaField, IntegerField
 from wtforms.fields.html5 import DateField, TimeField
 from wtforms.validators import DataRequired, required, NumberRange, Optional
-from wtforms import validators, SubmitField, StringField
+from wtforms import validators, SubmitField, StringField, form
 from wtforms.fields.html5 import DateTimeLocalField, EmailField
 from wtforms_components import DateRange
 from bson import ObjectId
@@ -126,9 +126,19 @@ def hello():
 def login():
     return render_template("shared-component/login.html")
 
+@app.route("/login_validation", methods=["POST","GET"])
+def login_validation():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    return "The email is {} and the password is {}".format(username,password)
+
+
+
+
 @app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
-def RegistrationForm():
+def register():
     return render_template("shared-component/RegistrationForm.html")
+
 # http://127.0.0.1:5001/hello
 @app.route("/employees", methods=["GET"])
 def greet():
