@@ -1,20 +1,14 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, app
 
 login = Blueprint("login", __name__, static_folder="static", template_folder="templates")
-class User:
-    def __init__(self,username,password):
-        self.username = username
-        self.password = password
-users = []
-users.append((User(username="aswin" , password="password")))
 
-@login.route("/login.py", methods=['GET',"POST"])
+@login.route('shared-component/login.py', methods=['GET', 'POST'])
 def home():
+    error = None
     if request.method == 'POST':
-        username = request.form['uname']
-        password = request.form['psw']
-        if username == "aswin":
-            return redirect(url_for('login'))
-
-
-    return render_template("login .html")
+        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+            error = 'Invalid Credentials. Please try again.'
+        else:
+            return redirect(url_for('home'))
+    return render_template('index', error=error)
+    return render_template("index .html")

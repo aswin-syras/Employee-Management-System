@@ -89,7 +89,7 @@ def employee_active_data(status):
         employee["date_of_joining"]=datetime.datetime.strptime(employee["date_of_joining"], '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
     print("is_active_status: ", is_active_status)
     return render_template("admin/admin.html", display_all_employees=employees, came_from="admin.adminHome",
-                           search_result="")
+                           search_result="", status=status)
 
 
 @admin.route("/EditEmployee/event/<int:empId>")

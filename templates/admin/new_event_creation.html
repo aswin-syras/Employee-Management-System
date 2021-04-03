@@ -16,6 +16,10 @@
         $(function() {
           $('.selectpicker').selectpicker();
         });
+        console.log("Togetger");
+        function selectEmployeeEvent (val){
+            console.log("Memver: ", val);
+        }
     </script>
     <style>
         .btn.dropdown-toggle.btn-default:after {
@@ -33,11 +37,10 @@
                     <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ errors }}</div>
                 {% endfor %}
             {% endif %}
-
             <div class="form-group pt-3 row">
                 <div class="col-4">
                       <label for="" class="" >Employee Name</label>
-                      <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id">
+                      <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id" onchange="return selectEmployeeEvent()">
                           <option selected disabled>Open this select menu</option>
                           {% for employee in display_all_employees %}
                               {% if employee._id %}
@@ -76,7 +79,7 @@
 
             <div class="form-group pt-3 row">
                 <div class="col-3">
-                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
+                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", min=min_date ,onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
                 </div>
                 <div class="col-3">
                     {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control end-date-class") }} {{ form.hidden_tag() }}
