@@ -58,7 +58,11 @@
                        <div class="manager-info add-border-padding">
                             <div class="text-center add-border-padding">
                                 <div class="dept-personal-info">
-                                    <b>{{ employee.manager_first_name }} {{ employee.manager_last_name }}</b>
+                                    <b>
+                                        {% if employee.manager_first_name and employee.manager_last_name %}
+                                            {{ employee.manager_first_name }} {{ employee.manager_last_name }}
+                                        {% endif %}
+                                    </b>
                                 </div>
                                 <div class="dept-personal-info">
                                     <b>{{ employee.manager_role_description }}</b>
