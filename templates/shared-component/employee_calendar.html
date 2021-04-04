@@ -1,5 +1,5 @@
 {% extends "shared-component/index.html" %}
-{% block title %} Edit Employee {% endblock title %}
+{% block title %} EMS-Employee Calendar {% endblock title %}
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -31,8 +31,6 @@
 
     <script>
         var calendarElement = document.getElementById("calendar");
-        console.log("calendarElement:", calendarElement);
-
         var calendar = new FullCalendar.Calendar(calendarElement, {
             events: [
                 {% for event in events %}
@@ -59,25 +57,39 @@
             },
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
+            eventDrop: function(info) {
+				alert(info.event.title + " was dropped on " + info.event.start.toISOString());
+				if (!confirm("Are you sure about this change?")) {
+				  info.revert();
+				}
 
-			eventClick: function(info) {
-				info.jsEvent.preventDefault(); // don't let the browser navigate
-				//window.open("https://www.google.com/");
-				console.log("OPEN ME");
-
-				console.log("PARAMS: ", info, info.event.extendedProps);
 				var eventData = {
 						title: info.event.title ,
-						start: info.event.start.toISOString(),
-
+						start: info.event.start.toISOString()
 				};
 				eventData = {...eventData, ...info.event.extendedProps}
 
-
-				console.log("*********------: ", eventData._id);
-
-				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
-				 //   'start': info.event.start.toISOString()} )
+				$.ajax({
+					type: "POST",
+					url: '{{url_for("admin.return_data")}}',
+					data: JSON.stringify({'eventData' : eventData}),
+					contentType: "application/json",
+					dataType: 'json',
+					success: function(response) {
+						// do something
+					},
+					error: function (xhr, status, error) {
+						console.log(error);
+					}
+				});
+			},
+			eventClick: function(info) {
+				info.jsEvent.preventDefault(); // don't let the browser navigate
+				var eventData = {
+                    title: info.event.title ,
+                    start: info.event.start.toISOString(),
+				};
+				eventData = {...eventData, ...info.event.extendedProps}
 
 				$.ajax({
 				type: "GET",
@@ -87,7 +99,6 @@
 					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,"_self");
 					},
 				error: function (xhr, status, error) {
-					console.log(error);
 					}
 				});
 			}

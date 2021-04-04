@@ -132,17 +132,26 @@ def manager_table(manager):
     return manager_user
 
 
+def fetch_only_one_manager(id):
+    fetch_one = connect_manager_table_name()
+    query = {'_id': id}
+    find_one_mgr = fetch_one.find_one(query)
+    return find_one_mgr
+
+
 def fetch_only_one_employee(id):
     fetch_one = connect_employee_table_name()
     query = {'_id': id}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
+
 def fetch_only_one_work_schedule(id):
     fetch_one = connect_workSchedule_table_name()
     query = {'_id': ObjectId(id)}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
+
 
 def fetch_work_schedule_particular_emp(empId):
     fetch_one = connect_workSchedule_table_name()
