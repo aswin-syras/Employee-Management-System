@@ -1,5 +1,5 @@
 {% extends "shared-component/index.html" %}
-{% block title %} Edit Employee {% endblock title %}
+{% block title %} EMS-Full Calendar {% endblock title %}
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -40,8 +40,6 @@
 
     <script>
         var calendarElement = document.getElementById("calendar");
-        console.log("calendarElement:", calendarElement);
-
         var calendar = new FullCalendar.Calendar(calendarElement, {
             events: [
                 {% for event in events %}
@@ -69,20 +67,16 @@
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
 			eventDrop: function(info) {
-				alert(info.event.title + " was dropped on " + info.event.start.toISOString() + " "+ info.event.employee_id +  "  "+ info.event.employee_id);
-				console.log(info);
+				alert(info.event.title + " was dropped on " + info.event.start.toISOString());
 				if (!confirm("Are you sure about this change?")) {
 				  info.revert();
 				}
-				console.log("PARAMS: ", info, info.event.extendedProps);
+
 				var eventData = {
 						title: info.event.title ,
 						start: info.event.start.toISOString()
 				};
 				eventData = {...eventData, ...info.event.extendedProps}
-
-				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
-				 //   'start': info.event.start.toISOString()} )
 
 				$.ajax({
 					type: "POST",
@@ -101,21 +95,13 @@
 			eventClick: function(info) {
 				info.jsEvent.preventDefault(); // don't let the browser navigate
 				//window.open("https://www.google.com/");
-				console.log("OPEN ME");
 
-				console.log("PARAMS: ", info, info.event.extendedProps);
 				var eventData = {
 						title: info.event.title ,
 						start: info.event.start.toISOString(),
 
 				};
 				eventData = {...eventData, ...info.event.extendedProps}
-
-
-				console.log("*********------: ", eventData._id);
-
-				//$.post('{{url_for("admin.return_data")}}', { 'title': info.event.title ,
-				 //   'start': info.event.start.toISOString()} )
 
 				$.ajax({
 				type: "GET",

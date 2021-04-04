@@ -882,6 +882,20 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                         mongo.db.managers.insert_one(manager_data)
                     else:
                         mongo.db.managers.delete_one({'_id': id})
+                elif 'user_role_id' in collect_data_to_append:
+                    print("user_role_id ************* ",
+                          database_connection.fetch_only_one_manager(fetched_value_before_json['_id']))
+                    exists_in_mgr_table = database_connection.fetch_only_one_manager(fetched_value_before_json['_id'])
+                    if exists_in_mgr_table:
+                        print("True")
+                        mongo.db.managers.update_one(
+                            {'_id': id},
+                            {'$set': {
+                                'manager_role_id': collect_data_to_append['user_role_id']
+                            }}
+                        )
+                    else:
+                        print("False")
 
                 mongo.db.employees.update_one(
                     {'_id': id},
@@ -1540,9 +1554,9 @@ def date():
             "manager_id": int(request.form.get("manager_id"))
         }
 
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + converted_start_date,
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
                                        "%Y-%m-%d %H:%M")
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + converted_end_date, "%Y-%m-%d %H:%M")
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
         timestamp = datetime.timestamp(dt_object2)
         timestamp2 = datetime.timestamp(dt_object1)
 
@@ -1641,8 +1655,18 @@ def postAnExistingEventData(id):
     # converted_end_at = convert24(request.form.get('end_at'))
     # print("converted_end_date: ", converted_start_at, converted_end_at)
 
-    dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
-    dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+    ############# START AT ###############
+    if len(request.form.get('start_at')) >= 8:
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M:%S")
+    else:
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+
+    ############# END AT ###############
+    if len(request.form.get('end_at')) >= 8:
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M:%S")
+    else:
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+
     timestamp = datetime.timestamp(dt_object2)
     timestamp2 = datetime.timestamp(dt_object1)
     error = None

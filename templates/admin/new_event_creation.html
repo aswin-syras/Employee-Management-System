@@ -1,5 +1,5 @@
 {% extends "shared-component/index.html" %}
-{% block title %}New Event Creation {% endblock title %}
+{% block title %}EMS-New Event Creation {% endblock title %}
 {% block content %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -128,10 +128,10 @@
 
             <div class="form-group pt-3 row">
                 <div class="col-3">
-                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", min=min_date ,onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
+                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", id="start-date-event", min=min_date ,onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
                 </div>
                 <div class="col-3">
-                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control end-date-class") }} {{ form.hidden_tag() }}
+                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control end-date-class", id="end-date-event") }} {{ form.hidden_tag() }}
                 </div>
 
                 <div class="col-3">
