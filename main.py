@@ -124,13 +124,27 @@ def hello():
 
 @app.route("/login", methods=["GET","POST"])
 def login():
-    return render_template("shared-component/login.html")
+    if 'username' in session:
+        return 'You are logged in as' + session['username']
+    return render_template('shared-component/login.html')
 
-@app.route("/login_validation", methods=["POST","GET"])
-def login_validation():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    return "The email is {} and the password is {}".format(username,password)
+@app.route("/register", methods=["POST","GET"])
+def login_validation(bcrypt=None, utf=None):
+    if request.method == 'POST':
+        users = mongo.db.users
+        existing_user = users.find_one({'name': request.form['username']})
+        if existing_user is None:
+            hashpass = bcrypt.hashpw(request.form['password'].encode(utf-8),bcrypt.getsalt())
+            users.insert({'name':request.form['username'],'password':hashpass})
+            session['username'] = request.form['username']
+            return redirect(url_for('index'))
+        return 'Already exist'
+    return render_template('shared-component/register.html')
+    
+
+    #username = request.form.get('username')
+    #password = request.form.get('password')
+    #return "The email is {} and the password is {}".format(username,password)
 
 
 

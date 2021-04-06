@@ -2,6 +2,6 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 
 login = Blueprint("login", __name__, static_folder="static", template_folder="templates")
 
-@login.route('/login_validation', methods=['GET', 'POST'])
+@login.route('/login', methods=['GET', 'POST'])
 def home():
     return User().login()
