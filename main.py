@@ -37,7 +37,7 @@ app.register_blueprint(employees, url_prefix="/employees")
 
 app.config[
     "MONGO_URI"] = "mongodb+srv://Username:Password@cluster0.j1u4m.mongodb.net/EmployeeManagementSystem?retryWrites=true&w=majority"
-mongo = PyMongo(app)
+mongo: PyMongo = PyMongo(app)
 
 fetch_database_connection = database_connection.database_connection()
 
@@ -114,19 +114,31 @@ class InformForm(FlaskForm):
 
 @app.route("/<name>")
 def home(name):
-    return render_template("shared-component/index.html", content=name)
-
+    if 'username' in session:
+        return 'You are logged in as' + session['username']
+    return render_template('shared-component/login.html')
 
 # http://127.0.0.1:5001/
 @app.route("/", methods=["GET"])
 def hello():
     return render_template("base.html")
 
-@app.route("/login", methods=["GET","POST"])
-def login():
-    if 'username' in session:
-        return 'You are logged in as' + session['username']
-    return render_template('shared-component/login.html')
+@app.route("/login_validation", methods=["POST"])
+def login(bcrypt=None):
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user_found = database_connection.find_one({"username": username})
+        email_found = database_connection.find_one({"password": password})
+        if user_found:
+            message = 'There already is a user by that name'
+            return render_template('shared-component/', message=message)
+        else:
+            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            user_input = {'name': username, 'password': hashed}
+            database_connection.insert_one(user_input)
+        return "The email is {} and the password is {}".format(username,password)
+
 
 @app.route("/register", methods=["POST","GET"])
 def login_validation(bcrypt=None, utf=None):

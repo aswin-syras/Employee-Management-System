@@ -4,4 +4,6 @@ login = Blueprint("login", __name__, static_folder="static", template_folder="te
 
 @login.route('/login', methods=['GET', 'POST'])
 def home():
-    return User().login()
+    if 'username' in session:
+        return 'You are logged in as' + session['username']
+    return render_template('shared-component/login.html')
