@@ -172,3 +172,34 @@ def fetch_active_inactive_employee(status):
     fetch_status_employee = [doc for doc in find_staus_employee]
 
     return fetch_status_employee
+
+
+# Connect to Employee_type
+def connect_employee_type_table_name():
+    database_name = database_connection()
+    employee_type_table_name = database_name["employee_type "]
+    return employee_type_table_name
+
+
+def employee_type_table(emp_type):
+    fetch_values = emp_type.find()
+    emp_type_user = [record for record in fetch_values]
+    return emp_type_user
+
+def merge_employee_one_role(id):
+    emp_role = connect_employees_role_table_department()
+    emp = fetch_only_one_employee(id)
+
+    role = role_table(emp_role["role"])
+    dept = department_table(emp_role["department"])
+
+    merged_array = []
+    for rol in role:
+        if emp["user_role_id"] == rol["_id"]:
+            emp["role"] = rol["role_name"]
+
+            for department in dept:
+                if (emp["department_id"] == department["_id"]):
+                    emp["department_name"] = department["department_name"]
+                    merged_array.append(emp)
+    return merged_array
