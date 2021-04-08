@@ -125,20 +125,20 @@ def home(name):
 def hello():
     return render_template("base.html")
 
-@app.route("/login_validation", methods=["POST"])
-def login(bcrypt=None, current_user=None):
-    return render_template('shared-component/login.html', title='Login')
-
-
-@app.route("/register", methods=["POST","GET"])
-def login_validation():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    return "The email is {} and the password is {}".format(username,password)
-
-@app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
-def register():
-    return render_template("shared-component/RegistrationForm.html")
+# @app.route("/login_validation", methods=["POST"])
+# def login(bcrypt=None, current_user=None):
+#     return render_template('shared-component/login.html', title='Login')
+#
+#
+# @app.route("/register", methods=["POST","GET"])
+# def login_validation():
+#     username = request.form.get('username')
+#     password = request.form.get('password')
+#     return "The email is {} and the password is {}".format(username,password)
+#
+# @app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
+# def register():
+#     return render_template("shared-component/RegistrationForm.html")
 
 # http://127.0.0.1:5001/hello
 @app.route("/employees", methods=["GET"])
