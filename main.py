@@ -38,7 +38,7 @@ app.register_blueprint(employees, url_prefix="/employees")
 
 app.config[
     "MONGO_URI"] = "mongodb+srv://Username:Password@cluster0.j1u4m.mongodb.net/EmployeeManagementSystem?retryWrites=true&w=majority"
-mongo = PyMongo(app)
+mongo: PyMongo = PyMongo(app)
 
 fetch_database_connection = database_connection.database_connection()
 
@@ -116,26 +116,25 @@ class InformForm(FlaskForm):
 
 @app.route("/<name>")
 def home(name):
-    return render_template("shared-component/index.html", content=name)
-
+    if 'username' in session:
+        return 'You are logged in as' + session['username']
+    return render_template('shared-component/login.html')
 
 # http://127.0.0.1:5001/
 @app.route("/", methods=["GET"])
 def hello():
     return render_template("base.html")
 
-@app.route("/login", methods=["GET","POST"])
-def login():
-    return render_template("shared-component/login.html")
+@app.route("/login_validation", methods=["POST"])
+def login(bcrypt=None, current_user=None):
+    return render_template('shared-component/login.html', title='Login')
 
-@app.route("/login_validation", methods=["POST","GET"])
+
+@app.route("/register", methods=["POST","GET"])
 def login_validation():
     username = request.form.get('username')
     password = request.form.get('password')
     return "The email is {} and the password is {}".format(username,password)
-
-
-
 
 @app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
 def register():
