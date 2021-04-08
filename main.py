@@ -20,6 +20,7 @@ from random import randrange
 from wtforms.fields import html5 as h5fields
 from wtforms.widgets import html5 as h5widgets
 from dateutil.relativedelta import relativedelta
+import numpy as np
 
 import io
 import random
@@ -71,7 +72,8 @@ class InformForm(FlaskForm):
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
-    official_email_address = EmailField('Official Email address', validators=(validators.DataRequired(), validators.Email()))
+    official_email_address = EmailField('Official Email address',
+                                        validators=(validators.DataRequired(), validators.Email()))
     email_address = EmailField('Email address', validators=(validators.DataRequired(), validators.Email()))
     phoneNumber = StringField('Phone Number')
     salary = h5fields.IntegerField(
@@ -287,6 +289,7 @@ def generating_random_id_role():
             return random_id_generator
         else:
             i = 1
+
 
 @app.route("/newEmployee")
 def createNewEmployeeGET():
@@ -553,7 +556,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
 
         one_salary_hourly_pay = {}
-
+        print("request.form.get('manager_id'): ")
         fetched_value_before_json = {
             '_id': id,
             'first_name': request.form.get('first_name'),
@@ -561,8 +564,11 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             'phone_number': request.form.get('phoneNumber'),
             'email_address': request.form.get('email_address'),
             'user_role_id': int(request.form.get('role_id')),
-            'user_manager_id': int(request.form.get('manager_id')) if found_one_from_db_before_json[
-                "user_manager_id"] else found_one_from_db_before_json["user_manager_id"],
+            'user_manager_id': int(request.form.get('manager_id')) if (found_one_from_db_before_json[
+                                                                           "user_manager_id"] == 0 or
+                                                                       found_one_from_db_before_json[
+                                                                           "user_manager_id"] != 0) else
+            found_one_from_db_before_json["user_manager_id"],
             'gender': request.form.get('gender'),
             'profile_image_name': profile_image.filename if profile_image.filename else
             found_one_from_db_before_json[
@@ -876,6 +882,8 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             # Check whether collect_data_to_append is an empty dict
             res = bool(collect_data_to_append)
 
+            print("collect_data_to_append: ", collect_data_to_append)
+
             if res:
                 if 'is_manager' in collect_data_to_append:
                     if collect_data_to_append["is_manager"]:
@@ -889,6 +897,20 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                         mongo.db.managers.insert_one(manager_data)
                     else:
                         mongo.db.managers.delete_one({'_id': id})
+                elif 'user_role_id' in collect_data_to_append:
+                    print("user_role_id ************* ",
+                          database_connection.fetch_only_one_manager(fetched_value_before_json['_id']))
+                    exists_in_mgr_table = database_connection.fetch_only_one_manager(fetched_value_before_json['_id'])
+                    if exists_in_mgr_table:
+                        print("True")
+                        mongo.db.managers.update_one(
+                            {'_id': id},
+                            {'$set': {
+                                'manager_role_id': collect_data_to_append['user_role_id']
+                            }}
+                        )
+                    else:
+                        print("False")
 
                 mongo.db.employees.update_one(
                     {'_id': id},
@@ -1108,87 +1130,109 @@ def editingDepartmentGET(id):
     all_emp = [doc for doc in employees_dept]
     no_of_employees = list(filter(lambda x: x["_id"] != 0, all_emp))
 
-
-    for emp in all_emp:
-        for mgr in all_mgrs:
-            if emp["_id"] == mgr["_id"]:
-                mgr["email_address"] = emp["email_address"]
-                mgr["phone_number"] = emp["phone_number"]
-                mgr["profile_image_name"] = emp["profile_image_name"]
-
-    mgr_count = 0
-    emp_count = 0
-    for mgr in all_mgrs:
-        mgr_count += 1
-        mgr['children'] = []
+    if len(all_mgrs):
         for emp in all_emp:
-            if mgr["_id"] == emp["user_manager_id"]:
-                mgr['children'].append(emp)
-                emp_count += 1
+            for mgr in all_mgrs:
+                if emp["_id"] == mgr["_id"]:
+                    mgr["email_address"] = emp["email_address"]
+                    mgr["phone_number"] = emp["phone_number"]
+                    mgr["profile_image_name"] = emp["profile_image_name"]
 
-    take_separately = []
-    for mgr_children in all_mgrs:
-        if len(mgr_children['children']):
-            take_separately.append(mgr_children)
+        print("all_mgrs1: ", all_mgrs)
 
-    # Find the grandchildren
-    for mgr_children in all_mgrs:
-        for segregate in take_separately:
+        mgr_count = 0
+        emp_count = 0
+        for mgr in all_mgrs:
+            mgr_count += 1
+            mgr['children'] = []
+            for emp in all_emp:
+                if mgr["_id"] == emp["user_manager_id"]:
+                    mgr['children'].append(emp)
+                    emp_count += 1
 
-            if len(mgr_children['children']) > 0:
-                for mgr_grand_children in mgr_children['children']:
+        take_separately = []
+        for mgr_children in all_mgrs:
+            if len(mgr_children['children']):
+                take_separately.append(mgr_children)
 
-                    if segregate["_id"] == mgr_grand_children["_id"]:
-                        mgr_grand_children["children"] = []
-                        for seg in segregate["children"]:
-                            mgr_grand_children["children"].append(seg)
+        # Find the grandchildren
+        for mgr_children in all_mgrs:
+            for segregate in take_separately:
 
-    # Delete the repeated ones in the manager
-    map_add_level = []
-    for mgr in all_mgrs:
-        for mgr_1 in all_mgrs:
-            for mgr_children1 in mgr_1["children"]:
-                if mgr_children1["_id"] == mgr["_id"]:
-                    map_add_level.append(mgr["_id"])
+                if len(mgr_children['children']) > 0:
+                    for mgr_grand_children in mgr_children['children']:
 
-    all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] not in map_add_level, all_mgrs))
-    all_roles = mongo.db.role.find()
-    all_roles1 = [doc for doc in all_roles]
+                        if segregate["_id"] == mgr_grand_children["_id"]:
+                            mgr_grand_children["children"] = []
+                            for seg in segregate["children"]:
+                                mgr_grand_children["children"].append(seg)
 
-    for mgr_emp in all_emp_in_mgrs_table:
-        for role in all_roles1:
-            if role["_id"] == mgr_emp["manager_role_id"]:
-                mgr_emp["manager_role_description"] = role["role_name"]
-                print("Mgr_emp: ", mgr_emp)
+        # Delete the repeated ones in the manager
+        map_add_level = []
+        for mgr in all_mgrs:
+            for mgr_1 in all_mgrs:
+                for mgr_children1 in mgr_1["children"]:
+                    if mgr_children1["_id"] == mgr["_id"]:
+                        map_add_level.append(mgr["_id"])
 
-            for mgr_children in mgr_emp["children"]:
-                for role1 in all_roles1:
-                    if 'user_manager_id' in mgr_children:
-                        if role1["_id"] == mgr_children["user_role_id"]:
-                            mgr_children["manager_role_description"] = role1["role_name"]
+        all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] not in map_add_level, all_mgrs))
+        all_roles = mongo.db.role.find()
+        all_roles1 = [doc for doc in all_roles]
 
-                            if 'children' in mgr_children:
-                                # print("mgr_: ", 'children' in mgr_children, mgr_children["children"])
-                                for mgr_grand_children in mgr_children["children"]:
-                                    for role2 in all_roles1:
-                                        print("mgr_*********: ", role2["_id"], mgr_grand_children)
+        for mgr_emp in all_emp_in_mgrs_table:
+            for role in all_roles1:
+                if role["_id"] == mgr_emp["manager_role_id"]:
+                    mgr_emp["manager_role_description"] = role["role_name"]
+                    print("Mgr_emp: ", mgr_emp)
 
-                                        if role2["_id"] == mgr_grand_children["user_role_id"]:
-                                            mgr_grand_children["manager_role_description"] = role2["role_name"]
+                for mgr_children in mgr_emp["children"]:
+                    for role1 in all_roles1:
+                        if 'user_manager_id' in mgr_children:
+                            if role1["_id"] == mgr_children["user_role_id"]:
+                                mgr_children["manager_role_description"] = role1["role_name"]
 
-    print("ALL MR: ", all_mgrs)
-    print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
-    # for emp in all_emp:
-    #     if emp['user_manager_id'] == 0 and emp['_id'] != 0:
-    #         emp['level'] = 2
-    #     elif emp['_id'] == 0:
-    #         emp['level'] = 1
+                                if 'children' in mgr_children:
+                                    # print("mgr_: ", 'children' in mgr_children, mgr_children["children"])
+                                    for mgr_grand_children in mgr_children["children"]:
+                                        for role2 in all_roles1:
+                                            print("mgr_*********: ", role2["_id"], mgr_grand_children)
 
-    # for emp in all_emp:
-    #     if emp['level'] == 2:
+                                            if role2["_id"] == mgr_grand_children["user_role_id"]:
+                                                mgr_grand_children["manager_role_description"] = role2["role_name"]
 
-    print("MANAGER:::: ", all_mgrs)
-    print("---------- ", one_department)
+        # Is there any other employees (other than the one in the manager's table) reporting directly to CEO
+        print("All emp: ", all_emp)
+        # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
+        # all_emp_not_in_mgr_table = list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp)) #All emp not in mgr table
+        # arr1 = np.array(all_emp_in_mgrs_table)
+        #
+        # arr2 = np.array(all_emp_not_in_mgr_table)
+        #
+        # all_emp_in_mgrs_table = np.concatenate((arr1, arr2))
+
+        print("Combining: arr", all_emp_in_mgrs_table)
+        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
+        # print("all_emp_not_in_mgr_table: ", all_emp_not_in_mgr_table)
+
+        # print("++++++++++++++++++",list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp)))
+
+        # print("ALL MR: ", all_mgrs)
+        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
+        # for emp in all_emp:
+        #     if emp['user_manager_id'] == 0 and emp['_id'] != 0:
+        #         emp['level'] = 2
+        #     elif emp['_id'] == 0:
+        #         emp['level'] = 1
+
+        # for emp in all_emp:
+        #     if emp['level'] == 2:
+
+        # print("MANAGER:::: ", all_mgrs)
+        # print("---------- ", one_department)
+    else:
+        print("no_of_employees: ", no_of_employees)
+        all_emp_in_mgrs_table = []
+        all_emp_in_mgrs_table = no_of_employees
 
     # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
     # print("map_all_mgr: ", map_all_mgr)
@@ -1395,6 +1439,28 @@ def editingRolePOST(id):
     return redirect(url_for("admin.adminHome"))
 
 
+# Function to convert the date format
+def convert24(str1):
+    # Checking if last two elements of time
+    # is AM and first two elements are 12
+    if str1[-2:] == "AM" and str1[:2] == "12":
+        return "00" + str1[2:-2]
+
+    # remove the AM
+    elif str1[-2:] == "AM":
+        return str1[:-2]
+
+    # Checking if last two elements of time
+    # is PM and first two elements are 12
+    elif str1[-2:] == "PM" and str1[:2] == "12":
+        return str1[:-2]
+
+    else:
+
+        # add 12 to hours and remove PM
+        return str(int(str1[:2]) + 12) + str1[2:8]
+
+
 # ********************************** CREATING CALENDAR EVENT ***************************** #
 @app.route("/createNewEventPost", methods=['GET', 'POST'])
 def createNewEventPost():
@@ -1411,7 +1477,6 @@ def createNewEventPost():
 
     print("NOW: ", timestamp_current_date_time)
 
-
     if (form.validate_on_submit()):
         session['startdate'] = form.startdate.data
         session['enddate'] = form.enddate.data
@@ -1425,7 +1490,7 @@ def createNewEventPost():
                            form=form,
                            display_all_employees=database_connection.employee_table(all_employees),
                            display_all_managers=display_all_managers,
-                           str_display_all_mgr= json.dumps(display_all_managers),
+                           str_display_all_mgr=json.dumps(display_all_managers),
                            min_date=set_min_date)
 
 
@@ -1453,6 +1518,10 @@ def date():
 
     print("NEW: ", request.form.get("employee_id"))
     print("FORM: ", request.form, datetime.now())
+
+    converted_start_date = convert24(request.form.get('start_at'))
+    converted_end_date = convert24(request.form.get('end_at'))
+    print("converted_end_date: ", converted_end_date, converted_start_date)
 
     form = InformForm()
 
@@ -1506,6 +1575,18 @@ def date():
         timestamp = datetime.timestamp(dt_object2)
         timestamp2 = datetime.timestamp(dt_object1)
 
+        # split_start_date = request.form.get('startdate').split('-')
+        # split_end_date = request.form.get('enddate').split('-')
+        # split_start_at = str(converted_start_date).split(':')
+        # split_end_at = str(converted_end_date).split(':')
+        #
+        # print(type(converted_start_date), split_start_at)
+        # d1 = datetime(int(split_start_date[0]), int(split_start_date[1]), int(split_start_date[2]), int(split_start_at[0]),
+        #               int(split_start_at[1]))
+        # d2 = datetime(int(split_end_date[0]), int(split_end_date[1]), int(split_end_date[2]), int(split_end_at[0]), int(split_end_at[1]))
+        #
+        # print("d1", d1, d2, d1 > d2)
+
         # Today's timestamp
         today = datetime.now()
         strp_today = today.strftime("%Y-%m-%d %H:%M")
@@ -1515,8 +1596,8 @@ def date():
         today = datetime.now()
         print("NOW: ", float(timestamp_current_date_time) < float(timestamp))
         print("Float: ", float(timestamp_current_date_time), float(timestamp))
-        print("timestamo: ", timestamp, dt_object2)
-        print("timestamo2: ", timestamp2, dt_object1)
+        print("timestamo End date: ", float(timestamp), dt_object2)
+        print("timestamo2 Start date: ", float(timestamp2), dt_object1)
 
         error = []
         if (timestamp == timestamp2):
@@ -1548,8 +1629,8 @@ def date():
             mongo.db.workSchedule.insert_one({
                 'employee_id': int(request.form.get('employee_id')),
                 'title': request.form.get('title'),
-                'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
-                'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+                'start': request.form.get('startdate') + 'T' + converted_start_date,
+                'end': request.form.get('enddate') + 'T' + converted_end_date,
                 'manager_id': int(request.form.get('manager_id'))})
             return redirect(url_for("admin.getFullCalendar"))
 
@@ -1585,8 +1666,22 @@ def postAnExistingEventData(id):
     value_date1 = request.form.get('startdate') + ' ' + request.form.get('start_at')
     print("+++++++++++++++++++++: ", value_date1)
 
-    dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
-    dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+    # converted_start_at = convert24(request.form.get('start_at'))
+    # converted_end_at = convert24(request.form.get('end_at'))
+    # print("converted_end_date: ", converted_start_at, converted_end_at)
+
+    ############# START AT ###############
+    if len(request.form.get('start_at')) >= 8:
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M:%S")
+    else:
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+
+    ############# END AT ###############
+    if len(request.form.get('end_at')) >= 8:
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M:%S")
+    else:
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+
     timestamp = datetime.timestamp(dt_object2)
     timestamp2 = datetime.timestamp(dt_object1)
     error = None
@@ -1642,6 +1737,8 @@ def postAnExistingEventData(id):
     else:
         found_one_from_db_before_json = database_connection.fetch_only_one_work_schedule(ObjectId(id))
 
+        print("request.form.get('manager_id'): ", request.form.get('manager_id'))
+
         del found_one_from_db_before_json["_id"]
         converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
         fetched_value_before_json = {
@@ -1694,6 +1791,7 @@ def plot_png():
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
+
 def create_figure():
     fig = Figure()
     axis = fig.add_subplot(1, 1, 1)
@@ -1701,6 +1799,7 @@ def create_figure():
     ys = [random.randint(1, 50) for x in xs]
     axis.plot(xs, ys)
     return fig
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

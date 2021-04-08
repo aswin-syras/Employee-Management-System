@@ -1,5 +1,5 @@
 {% extends "shared-component/index.html" %}
-{% block title %}New Event Creation {% endblock title %}
+{% block title %}EMS-Edit Department {% endblock title %}
 {% block content %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -58,7 +58,11 @@
                        <div class="manager-info add-border-padding">
                             <div class="text-center add-border-padding">
                                 <div class="dept-personal-info">
-                                    <b>{{ employee.manager_first_name }} {{ employee.manager_last_name }}</b>
+                                    <b>
+                                        {% if employee.manager_first_name and employee.manager_last_name %}
+                                            {{ employee.manager_first_name }} {{ employee.manager_last_name }}
+                                        {% endif %}
+                                    </b>
                                 </div>
                                 <div class="dept-personal-info">
                                     <b>{{ employee.manager_role_description }}</b>

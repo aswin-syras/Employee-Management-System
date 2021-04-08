@@ -59,7 +59,11 @@ def return_data():
     # print(today)
     # print(end_time[1])
 
-    end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M")
+    if len(old_end_date) >= 19:
+        end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M:%S")
+    else:
+        end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M")
+
     start_date_string = datetime.datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
 
     new_format_end_time = "%H:%M:%S"

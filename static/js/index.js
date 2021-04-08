@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     //       console.log("document.getElementsByClassName::: ", document.getElementsByClassName("checked_as-inactive")[0]);
         }
     } if (document.getElementsByClassName('start-date-class').length || document.getElementsByClassName('end-date-class').length) {
-        onstartDateChange();
+        onstartDateChange('onloading');
     }
  })
 
@@ -115,8 +115,9 @@ function isActiveCheck () {
     }
 }
 
-function onstartDateChange () {
+function onstartDateChange (onloading) {
     document.getElementsByClassName('end-date-class')[0].setAttribute('min', document.getElementsByClassName('start-date-class')[0].value)
+    !onloading ?  document.getElementById("end-date-event").value = document.getElementById("start-date-event").value : false
 }
 
 function callRadioEmployee (value) {
@@ -163,4 +164,6 @@ function callRadioEmployee (value) {
 //    request.send()
 
 }
+
+
 
