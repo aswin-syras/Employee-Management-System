@@ -131,16 +131,10 @@ def login(bcrypt=None, current_user=None):
 
 
 @app.route("/register", methods=["POST","GET"])
-def register(current_user=None):
-
-    
-
+def login_validation():
     username = request.form.get('username')
     password = request.form.get('password')
     return "The email is {} and the password is {}".format(username,password)
-
-
-
 
 @app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
 def register():
