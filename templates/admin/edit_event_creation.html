@@ -1,5 +1,5 @@
 {% extends "shared-component/index.html" %}
-{% block title %}New Event Creation {% endblock title %}
+{% block title %}EMS-Edit Event Creation {% endblock title %}
 {% block content %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -15,6 +15,58 @@
         $(function() {
           $('.selectpicker').selectpicker();
         });
+
+        function selectEmployeeEvent (val) {
+            var managers = JSON.parse('{{ display_all_managers | tojson | safe}}');
+            var employees = JSON.parse('{{ display_all_employees | tojson | safe}}');
+
+            var selected_employee = parseInt(document.getElementById("select-employee").value)
+            var selected_emp_arr = employees.filter( emp => emp._id == selected_employee );
+            var selected_mgr = managers.findIndex( mgr => mgr._id == selected_emp_arr[0].user_manager_id );
+
+            var activeTab = document.getElementById('select-manager'),
+                activePrevSibling = activeTab.previousElementSibling,
+                activeNextSibling = activeTab.nextElementSibling,
+                op_children = activePrevSibling.children[1].children,
+                text_change = activePrevSibling.previousElementSibling,
+                set_title_mgr_name = managers[selected_mgr].manager_first_name + ' ' + managers[selected_mgr].manager_last_name
+
+            console.log("activeTab::: ", activeTab.options);
+
+            for (var i = 0; i < op_children.length; i++) {
+                if ( i != selected_mgr + 1 ) {
+                      op_children[i].classList.add("disabled");
+                      op_children[i].classList.remove("selected");
+                      op_children[i].classList.remove("active");
+                } else {
+                    op_children[i].classList.remove("disabled");
+                    text_change.setAttribute("title", set_title_mgr_name)
+                    text_change.children[0].innerText = set_title_mgr_name
+                }
+            }
+
+            var options_selected = activeTab.options
+            for (var i = 0; i < options_selected.length; i++) {
+                if ( i != selected_mgr + 1 ) {
+                    options_selected[i].disabled = true;
+                    options_selected[i].removeAttribute("selected");
+                } else {
+                        options_selected[i].disabled = false;
+                        options_selected[i].setAttribute("selected", true);
+
+                        console.log("121212121: ", options_selected[i]);
+                }
+            }
+
+            console.log("options_selected:::: ", options_selected);
+
+            if (op_children[0].classList.contains('selected')) {
+                op_children[0].classList.remove('selected')
+            }
+            op_children[selected_mgr + 1].classList.add('selected')
+            op_children[selected_mgr + 1].classList.add('active')
+        }
+
     </script>
 
     <style>
@@ -35,7 +87,7 @@
             <div class="form-group pt-3 row">
                 <div class="col-4">
                     <label for="" class="" >Employee Name</label>
-                          <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id">
+                          <select class="form-control selectpicker" id="select-employee" data-live-search="true" name="employee_id" onchange="return selectEmployeeEvent()">
                                <option selected disabled>Open this select menu</option>
                                 {% for employee in display_all_employees %}
                                     {% if employee._id %}
@@ -52,7 +104,7 @@
                          <option selected disabled>Open this select menu</option>
                         {% for manager in display_all_managers %}
                                 <option value="{{ manager._id }}"
-                                {% if  manager._id == fetched_data.manager_id %} selected="selected" {% endif %}>{{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                {% if  manager._id == fetched_data.manager_id %} selected="selected" {% else %}  disabled="disabled"  {% endif %}>{{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -65,10 +117,10 @@
 
             <div class="form-group pt-3 row">
                 <div class="col-3">
-                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", value=fetched_data['start'].split("T")[0] , onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
+                    {{ form.startdate.label }} {{ form.startdate(class="datepicker form-control start-date-class", id="start-date-event", value=fetched_data['start'].split("T")[0] , onchange='onstartDateChange()') }} {{ form.hidden_tag() }}
                 </div>
                 <div class="col-3">
-                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control end-date-class", value=fetched_data['end'].split("T")[0]) }} {{ form.hidden_tag() }}
+                    {{ form.enddate.label }} {{ form.enddate(class="datepicker form-control end-date-class", id="end-date-event", value=fetched_data['end'].split("T")[0]) }} {{ form.hidden_tag() }}
                 </div>
 
                 <div class="col-3">
