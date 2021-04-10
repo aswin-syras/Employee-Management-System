@@ -1,5 +1,5 @@
-{% extends "shared-component/only_admin_header.html" %}
-{% block title %} EMS-Full Calendar {% endblock title %}
+{% extends "shared-component/index.html" %}
+{% block title %} EMS-Employee Calendar {% endblock title %}
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -18,25 +18,16 @@
             color: black;
         }
     </style>
-    <div class="row">
-        <div id="mySidenav" class="sidenav col-2">
-            <a href="{{ url_for('admin.adminHome') }}"><b><i class="fas fa-users-cog"></i>&nbsp; Admin</b></a>
-            <a href="{{ url_for('admin.getFullCalendar') }}" class="active-tab"><b><i class="fas fa-calendar-alt"></i>&nbsp;  Calendar</b></a>
-            <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee</b></a>
-            <a class="" href="{{ url_for('createNewDepartmentGET') }}" > <b><i class="fas fa-plus"></i>&nbsp; Add a New Department</b></a>
-            <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
-            <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
+    <div class="container-fluid calendar-container-fluid m-5">
+        <div class="mb-1">
+            <a class="btn btn-primary" href="{{url_for('editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
         </div>
-        <div class="col-10 add-background-calendar">
-            <div>
-                <a class="btn btn-primary create-new-event" href="/createNewEventPost" class="btn btn-primary"> <b><i class="far fa-calendar-plus"></i> &nbsp; Add a new Event</b>  </a>
-                <div id="calendar"></div>
-            </div>
-        </div>
-    </div>
 
-    <!--  # Scroll to the top-->
-    <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
+        <div id="calendar"></div>
+
+        <!--  # Scroll to the top-->
+        <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
+    </div>
 
     <script>
         var calendarElement = document.getElementById("calendar");
@@ -66,7 +57,7 @@
             },
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
-			eventDrop: function(info) {
+            eventDrop: function(info) {
 				alert(info.event.title + " was dropped on " + info.event.start.toISOString());
 				if (!confirm("Are you sure about this change?")) {
 				  info.revert();
@@ -94,24 +85,20 @@
 			},
 			eventClick: function(info) {
 				info.jsEvent.preventDefault(); // don't let the browser navigate
-				//window.open("https://www.google.com/");
-
 				var eventData = {
-						title: info.event.title ,
-						start: info.event.start.toISOString(),
-
+                    title: info.event.title ,
+                    start: info.event.start.toISOString(),
 				};
 				eventData = {...eventData, ...info.event.extendedProps}
 
 				$.ajax({
 				type: "GET",
-				url: '/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
+				url: '/getExistingEvent/'+ info.event.extendedProps._id+ '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
 				success: function(response) {
 					// do something
-					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + '0',"_self");
+					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,"_self");
 					},
 				error: function (xhr, status, error) {
-					console.log(error);
 					}
 				});
 			}

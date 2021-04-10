@@ -4,3 +4,4 @@ pymongo
 Flask-PyMongo
 dnspython
 flask-restful
+matplotlib
