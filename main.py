@@ -7,11 +7,12 @@ from admin import admin
 from employees import employees
 from flask_pymongo import PyMongo
 import database_connection
+import random_id_generation
 import json
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, TextAreaField, IntegerField
 from wtforms.fields.html5 import DateField, TimeField
-from wtforms.validators import DataRequired, required, NumberRange, Optional
+from wtforms.validators import DataRequired, required, NumberRange, Optional, url
 from wtforms import validators, SubmitField, StringField, form
 from wtforms.fields.html5 import DateTimeLocalField, EmailField
 from wtforms_components import DateRange
@@ -44,23 +45,9 @@ fetch_database_connection = database_connection.database_connection()
 
 #### Fetch only certain table
 all_roles = database_connection.connect_role_table_name()
-# all_managers = database_connection.connect_manager_table_name()
-# all_employees = database_connection.connect_employee_table_name()
-# fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
-# fetch_all_departments = [doc for doc in mongo.db.departments.find()]
-
-# print("Employee type", fetch_all_employee_type)
-# print("Department type", fetch_all_departments)
-
-# all_work_schedule = database_connection.connect_workSchedule_table_name()
-
+login_table_name = database_connection.connect_login_table()
 
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
-
-
-# mongo.db.employees.delete_many({})
-# mongo.db.managers.delete_many({})
-# mongo.db.role.delete_many({})
 
 
 class InformForm(FlaskForm):
@@ -72,8 +59,7 @@ class InformForm(FlaskForm):
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
-    official_email_address = EmailField('Official Email address',
-                                        validators=(validators.DataRequired(), validators.Email()))
+    official_email_address = EmailField('Official Email address')
     email_address = EmailField('Email address', validators=(validators.DataRequired(), validators.Email()))
     phoneNumber = StringField('Phone Number')
     salary = h5fields.IntegerField(
@@ -114,31 +100,11 @@ class InformForm(FlaskForm):
     role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
 
 
-@app.route("/<name>")
-def home(name):
-    if 'username' in session:
-        return 'You are logged in as' + session['username']
-    return render_template('shared-component/login.html')
-
 # http://127.0.0.1:5001/
 @app.route("/", methods=["GET"])
-def hello():
-    return render_template("base.html")
+def redirect_login():
+    return redirect(url_for('login.login_info'))
 
-# @app.route("/login_validation", methods=["POST"])
-# def login(bcrypt=None, current_user=None):
-#     return render_template('shared-component/login.html', title='Login')
-#
-#
-# @app.route("/register", methods=["POST","GET"])
-# def login_validation():
-#     username = request.form.get('username')
-#     password = request.form.get('password')
-#     return "The email is {} and the password is {}".format(username,password)
-#
-# @app.route("/shared-component/RegistrationForm.html", methods=["GET","POST"])
-# def register():
-#     return render_template("shared-component/RegistrationForm.html")
 
 # http://127.0.0.1:5001/hello
 @app.route("/employees", methods=["GET"])
@@ -198,40 +164,6 @@ def profile(id):
     '''
 
 
-def generating_random_id_employees():
-    # Generating a new random id for employees
-    i = 1
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000)
-        all_employees_find = mongo.db.employees.find()
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["_id"], all_employees_find)
-        not_in_list = random_id_generator not in list(result)
-        if (not_in_list):
-            i = 0
-            return random_id_generator
-        else:
-            i = 1
-
-
-def generating_random_id_departments():
-    # Generating a new random id for employees
-    i = 1
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000)
-        all_departments_find = mongo.db.departments.find()
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["_id"], all_departments_find)
-        not_in_list = random_id_generator not in list(result)
-        if (not_in_list):
-            i = 0
-            return random_id_generator
-        else:
-            i = 1
-
-
 def generating_random_id_profile_picture():
     # Generating a new random id for employees
     i = 1
@@ -247,40 +179,6 @@ def generating_random_id_profile_picture():
         if (not_in_list):
             i = 0
             return str(random_id_generator)
-        else:
-            i = 1
-
-
-def generating_random_id_employee_type():
-    # Generating a new random id for employees
-    i = 1
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000)
-        all_employee_type_find = mongo.db.employee_type.find()
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["_id"], all_employee_type_find)
-        not_in_list = random_id_generator not in list(result)
-        if (not_in_list):
-            i = 0
-            return random_id_generator
-        else:
-            i = 1
-
-
-def generating_random_id_role():
-    # Generating a new random id for employees
-    i = 1
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000)
-        all_role_find = mongo.db.role.find()
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["_id"], all_role_find)
-        not_in_list = random_id_generator not in list(result)
-        if (not_in_list):
-            i = 0
-            return random_id_generator
         else:
             i = 1
 
@@ -322,7 +220,7 @@ def createNewFormComparison():
         salary_hourly_details = {}
 
         # Fulltime job has some benefits
-        if (int(request.form.get('employee_type_id')) == 1000):
+        if int(request.form.get('employee_type_id')) == 1000:
             my_salary = request.form.get('salary')
             my_bonus = request.form.get('bonus')
             my_basic_allowance = request.form.get('basic_allowance')
@@ -363,7 +261,7 @@ def createNewFormComparison():
             profile_image = request.files["profile_image"]
 
         insert_data = {
-            '_id': generating_random_id_employees(),
+            '_id': random_id_generation.generating_random_id_employees(),
             'first_name': request.form.get('first_name'),
             'last_name': request.form.get('last_name'),
             'phone_number': request.form.get('phoneNumber'),
@@ -378,7 +276,8 @@ def createNewFormComparison():
             'date_of_birth': request.form.get('date_of_birth'),
             'date_of_joining': request.form.get('date_of_joining') + "T08:00",
             'last_date': request.form.get('last_date'),
-            'official_email_address': request.form.get('official_email_address'),
+            'username': request.form.get('first_name') + '.' + request.form.get('last_name'),
+            'official_email_address': request.form.get('first_name') + '.' + request.form.get('last_name') + '@ems.com',
             'is_manager': True if request.form.get('is_manager') else False,
             'bank_details': {
                 'bank_name': request.form.get('bank_name'),
@@ -403,6 +302,19 @@ def createNewFormComparison():
                 "manager_department_id": insert_data["department_id"]
             }
             mongo.db.managers.insert_one(manager_data)
+
+        insert_data_Login = {
+            "_id": random_id_generation.generating_random_id_login(),
+            "username": request.form.get('first_name') + '.' + request.form.get('last_name'),
+            "password": "",
+            "remember_me": "on",
+            "first_name": request.form.get('first_name'),
+            "last_name": request.form.get('last_name'),
+            "email_address": request.form.get('first_name') + '.' + request.form.get('last_name') + '@ems.com',
+            'is_admin': False
+        }
+
+        login_table_name.insert_one(insert_data_Login)
 
         # Insert the employees  data into the employees collection
         mongo.db.employees.insert_one(insert_data)
@@ -573,7 +485,8 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             'date_of_birth': request.form.get('date_of_birth'),
             'date_of_joining': request.form.get('date_of_joining') + "T08:00",
             'last_date': request.form.get('last_date'),
-            'official_email_address': request.form.get('official_email_address'),
+            'username': found_one_from_db_before_json['username'],
+            'official_email_address': found_one_from_db_before_json['official_email_address'],
             'is_manager': True if request.form.get('is_manager') else False,
             'bank_details': {
                 'bank_name': request.form.get('bank_name'),
@@ -906,6 +819,14 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                     else:
                         print("False")
 
+                if 'first_name' in collect_data_to_append or 'last_name' in collect_data_to_append:
+                    # Keep Login page updated as well
+                    login_table_name.update_one(
+                        {'username': found_one_from_db_before_json['username']},
+                        {'$set': {'first_name': request.form.get('first_name'),
+                                  'last_name': request.form.get('last_name')}}
+                    )
+
                 mongo.db.employees.update_one(
                     {'_id': id},
                     {'$set': collect_data_to_append}
@@ -1090,6 +1011,10 @@ def deleteExistingEmployee(id):
     fetch_one_employee = mongo.db.employees.find_one({'_id': id})
     if fetch_one_employee['is_manager']:
         mongo.db.managers.delete_one({'_id': id})
+
+    # Delete the login who has the same username
+    mongo.db.login.delete_one({'username': fetch_one_employee['username']})
+
     mongo.db.employees.delete_one({'_id': id})
     return redirect(url_for('admin.adminHome'))
 
@@ -1107,7 +1032,7 @@ def createNewDepartmentGET():
 def createNewDepartmentPOST():
     # Insert the employees  data into the employees collection
     mongo.db.departments.insert_one({
-        '_id': generating_random_id_departments(),
+        '_id': random_id_generation.generating_random_id_departments(),
         'department_name': request.form.get('department_name')
     })
     return redirect(url_for("admin.adminHome"))
@@ -1301,7 +1226,7 @@ def createNewEmployeeTypeGET():
 def createNewEmployeeTypePOST():
     # Insert the employees  data into the employees collection
     mongo.db.employee_type.insert_one({
-        '_id': generating_random_id_employee_type(),
+        '_id': random_id_generation.generating_random_id_employee_type(),
         'employee_type_description': request.form.get('employee_type_description')
     })
     return redirect(url_for("admin.adminHome"))
@@ -1361,7 +1286,7 @@ def createNewRolePOST():
     else:
         # Insert the employees  data into the employees collection
         mongo.db.role.insert_one({
-            '_id': generating_random_id_role(),
+            '_id': random_id_generation.generating_random_id_role(),
             'role_name': request.form.get('role_name'),
             'role_have_full_power': True if request.form.get('role_have_full_power') else False,
             'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
@@ -1666,13 +1591,16 @@ def postAnExistingEventData(id):
 
     ############# START AT ###############
     if len(request.form.get('start_at')) >= 8:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M:%S")
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                       "%Y-%m-%d %H:%M:%S")
     else:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'), "%Y-%m-%d %H:%M")
+        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                       "%Y-%m-%d %H:%M")
 
     ############# END AT ###############
     if len(request.form.get('end_at')) >= 8:
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M:%S")
+        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
+                                       "%Y-%m-%d %H:%M:%S")
     else:
         dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
 

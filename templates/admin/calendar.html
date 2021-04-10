@@ -1,4 +1,4 @@
-{% extends "shared-component/index.html" %}
+{% extends "shared-component/only_admin_header.html" %}
 {% block title %} EMS-Full Calendar {% endblock title %}
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -19,7 +19,7 @@
         }
     </style>
     <div class="row">
-        <div id="mySidenav" class="sidenav col-3">
+        <div id="mySidenav" class="sidenav col-2">
             <a href="{{ url_for('admin.adminHome') }}"><b><i class="fas fa-users-cog"></i>&nbsp; Admin</b></a>
             <a href="{{ url_for('admin.getFullCalendar') }}" class="active-tab"><b><i class="fas fa-calendar-alt"></i>&nbsp;  Calendar</b></a>
             <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee</b></a>
@@ -27,7 +27,7 @@
             <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
             <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
         </div>
-        <div class="col-9 add-background-calendar">
+        <div class="col-10 add-background-calendar">
             <div>
                 <a class="btn btn-primary create-new-event" href="/createNewEventPost" class="btn btn-primary"> <b><i class="far fa-calendar-plus"></i> &nbsp; Add a new Event</b>  </a>
                 <div id="calendar"></div>
@@ -35,8 +35,8 @@
         </div>
     </div>
 
-        <!--  # Scroll to the top-->
-        <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
+    <!--  # Scroll to the top-->
+    <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>
 
     <script>
         var calendarElement = document.getElementById("calendar");

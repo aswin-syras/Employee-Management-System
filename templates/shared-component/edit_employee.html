@@ -1,4 +1,4 @@
-{% extends "shared-component/index.html" %}
+{% extends "shared-component/only_admin_header.html" %}
 {% block title %} EMS-Edit Employee {% endblock title %}
 {% block content %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -338,7 +338,7 @@
                                 </div>
 
                                 <!-- Official email address -->
-                                <div class="col-4">
+                                <div class="col-4 opacity-low">
                                     {% if requestForm %}
                                         {{ form.official_email_address.label }} {{ form.official_email_address(class="form-control" )}} {{ form.hidden_tag() }}
                                     {% else %}
