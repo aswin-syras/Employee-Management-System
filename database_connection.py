@@ -25,6 +25,13 @@ def connect_employee_table_name():
     return employee_table_name
 
 
+# Connect the table only to employees
+def connect_employee_type_table_name():
+    database_name = database_connection()
+    employee_type_table_name = database_name["employee_type "]
+    return employee_type_table_name
+
+
 # Connect the table only to role
 def connect_role_table_name():
     database_name = database_connection()
@@ -81,7 +88,6 @@ def merge_employee_role(status):
         emp = status
     role = role_table(emp_role["role"])
     dept = department_table(emp_role["department"])
-    print("dept: ", dept)
 
     merged_array = []
     for employee in emp:
@@ -90,7 +96,7 @@ def merge_employee_role(status):
                 employee["role"] = rol["role_name"]
 
                 for department in dept:
-                    if (employee["department_id"] == department["_id"]):
+                    if employee["department_id"] == department["_id"]:
                         employee["department_name"] = department["department_name"]
                         merged_array.append(employee)
     return merged_array
@@ -132,17 +138,26 @@ def manager_table(manager):
     return manager_user
 
 
+def fetch_only_one_manager(id):
+    fetch_one = connect_manager_table_name()
+    query = {'_id': id}
+    find_one_mgr = fetch_one.find_one(query)
+    return find_one_mgr
+
+
 def fetch_only_one_employee(id):
     fetch_one = connect_employee_table_name()
     query = {'_id': id}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
 
+
 def fetch_only_one_work_schedule(id):
     fetch_one = connect_workSchedule_table_name()
     query = {'_id': ObjectId(id)}
     find_one_employee = fetch_one.find_one(query)
     return find_one_employee
+
 
 def fetch_work_schedule_particular_emp(empId):
     fetch_one = connect_workSchedule_table_name()
@@ -167,7 +182,6 @@ def fetch_active_inactive_employee(status):
     if status == 'all':
         find_staus_employee = fetch_one.find()
     else:
-        print("STATUS: ", status)
         find_staus_employee = fetch_one.find({'is_active': status})
     fetch_status_employee = [doc for doc in find_staus_employee]
 

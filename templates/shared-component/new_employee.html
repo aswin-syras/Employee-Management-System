@@ -1,5 +1,5 @@
-{% extends "shared-component/index.html" %}
-{% block title %}New Employee {% endblock title %}
+{% extends "shared-component/only_admin_header.html" %}
+{% block title %}EMS-New Employee {% endblock title %}
 {% block content %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -10,6 +10,84 @@
 
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+<script>
+    // Reporting Manager changes
+    function selectReportDept (val) {
+        var selected_manager = parseInt(document.getElementById("select-manager").value)
+        if ( selected_manager != 0) {
+            var managers = JSON.parse('{{ display_all_managers | tojson | safe}}');
+            var department = JSON.parse('{{ display_all_departments | tojson | safe}}');
+
+            var mgr_info = managers[managers.findIndex( mgr => mgr["_id"] === selected_manager )];
+            console.log("mgr_info::: ", mgr_info);
+
+            var selected_dept_arr = department.findIndex( dept => dept._id == mgr_info["manager_department_id"] );
+
+            var activeTab = document.getElementById('select-department'),
+                activePrevSibling = activeTab.previousElementSibling,
+                activeNextSibling = activeTab.nextElementSibling,
+                op_children = activePrevSibling.children[1].children,
+                text_change = activePrevSibling.previousElementSibling,
+                set_title_dept_name = department[selected_dept_arr].department_name + ' ' + department[selected_dept_arr].department_name
+
+            for (var i = 0; i < op_children.length; i++) {
+                if ( i != selected_dept_arr + 1 ) {
+                      op_children[i].classList.add("disabled");
+                      op_children[i].classList.remove("selected");
+                      op_children[i].classList.remove("active");
+                } else {
+                    op_children[i].classList.remove("disabled");
+                    text_change.setAttribute("title", set_title_dept_name)
+                    text_change.children[0].innerText = set_title_dept_name
+                }
+            }
+
+            var options_selected = activeTab.options
+            for (var i = 0; i < options_selected.length; i++) {
+                if ( i != selected_dept_arr + 1 ) {
+                    options_selected[i].disabled = true;
+                    options_selected[i].removeAttribute("selected");
+                } else {
+                    options_selected[i].disabled = false;
+                    options_selected[i].setAttribute("selected", true);
+                }
+            }
+
+            if (op_children[0].classList.contains('selected')) {
+                op_children[0].classList.remove('selected')
+            }
+            op_children[selected_dept_arr + 1].classList.add('selected')
+            op_children[selected_dept_arr + 1].classList.add('active')
+        } else {
+            var activeTab = document.getElementById('select-department'),
+                activePrevSibling = activeTab.previousElementSibling,
+                activeNextSibling = activeTab.nextElementSibling,
+                op_children = activePrevSibling.children[1].children,
+                text_change = activePrevSibling.previousElementSibling;
+
+            for (var i = 0; i < op_children.length; i++) {
+                if ( i == 0 ) {
+                    op_children[i].classList.add("disabled");
+                } else {
+                    op_children[i].classList.remove("disabled");
+                }
+            }
+
+            var options_selected = activeTab.options
+            for (var i = 0; i < options_selected.length; i++) {
+                if ( i == 0 ) {
+                    options_selected[i].disabled = true;
+                    options_selected[i].setAttribute("selected", true);
+                } else {
+                    options_selected[i].disabled = false;
+                    options_selected[i].removeAttribute("selected");
+                }
+            }
+        }
+    }
+</script>
+
 <div class="new-edit-employee container">
     <!--suppress XmlInvalidId -->
     <h1>Add New Employee</h1>
@@ -59,8 +137,6 @@
                         {{ form.email_address.label }} {{ form.email_address(class="form-control")}} {{ form.hidden_tag() }}
                     </div>
                     <div class="form-group col-4">
-<!--                        <label for="" class="" >Phone Number</label>-->
-<!--                        <input type="tel" name="phoneNumber" class="form-control"/>-->
                             {{ form.phoneNumber.label }} {{ form.phoneNumber(class="form-control", type="tel" )}} {{ form.hidden_tag() }}
                     </div>
                 </div>
@@ -110,7 +186,7 @@
                     <!-- Reporting Manager-->
                     <div class="col-3">
                         <label for="" class="" >Reporting Manager</label>
-                        <select class="custom-select form-control selectpicker" data-live-search="true" name="manager_id">
+                        <select class="custom-select form-control selectpicker" id="select-manager" data-live-search="true" name="manager_id" onchange="selectReportDept()">
                              <option selected disabled>Open this select menu</option>
                             {% for manager in display_all_managers %}
                                     {% if requestForm %}
@@ -144,7 +220,7 @@
                     <!--Department Type-->
                     <div class="col-3">
                         <label for="" class="" >Department Type</label>
-                        <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
+                        <select class="form-control selectpicker" id="select-department" data-live-search="true" name="department_id">
                              <option selected disabled>Please Select the options</option>
                             {% for department in display_all_departments %}
                                 {% if department._id %}
@@ -178,7 +254,7 @@
                     </div>
 
                     <!-- Official email address -->
-                    <div class="col-3">
+                    <div class="col-3 opacity-low">
                         {{ form.official_email_address.label }} {{ form.official_email_address(class="form-control")}} {{ form.hidden_tag() }}
                     </div>
                 </div>

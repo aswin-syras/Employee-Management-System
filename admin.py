@@ -17,10 +17,12 @@ work_schedle_db = database_connection.connect_workSchedule_table_name()
 def adminHome():
     employees = database_connection.merge_employee_role('home')
     for employee in employees:
-        employee["date_of_joining"]=datetime.datetime.strptime(employee["date_of_joining"], '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
+        employee["date_of_joining"] = datetime.datetime.strptime(employee["date_of_joining"],
+                                                                 '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
 
     return render_template("admin/admin.html", display_all_employees=employees, came_from="admin.adminHome",
                            search_result="")
+
 
 @admin.route("/search", methods=["POST"])
 def searchAnEmployee():
@@ -39,6 +41,7 @@ def getFullCalendar():
     events = work_scheule
 
     return render_template("admin/calendar.html", events=events)
+
 
 # Drag the event from one date to the other date
 @admin.route("/postData", methods=['GET', 'POST'])
@@ -59,7 +62,11 @@ def return_data():
     # print(today)
     # print(end_time[1])
 
-    end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M")
+    if len(old_end_date) >= 19:
+        end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M:%S")
+    else:
+        end_date_string = datetime.datetime.strptime(old_end_date, "%Y-%m-%dT%H:%M")
+
     start_date_string = datetime.datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S.%fZ")
 
     new_format_end_time = "%H:%M:%S"
@@ -84,9 +91,10 @@ def employee_active_data(status):
     else:
         return redirect(url_for('admin.adminHome'))
     is_active_status = database_connection.fetch_active_inactive_employee(is_active)
-    employees = database_connection.merge_employee_role(is_active_status) # Merging 3 tables
+    employees = database_connection.merge_employee_role(is_active_status)  # Merging 3 tables
     for employee in employees:
-        employee["date_of_joining"]=datetime.datetime.strptime(employee["date_of_joining"], '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
+        employee["date_of_joining"] = datetime.datetime.strptime(employee["date_of_joining"],
+                                                                 '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
     print("is_active_status: ", is_active_status)
     return render_template("admin/admin.html", display_all_employees=employees, came_from="admin.adminHome",
                            search_result="", status=status)
