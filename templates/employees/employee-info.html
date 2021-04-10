@@ -1,42 +1,32 @@
 {% extends "shared-component/index.html" %}
-{% block title %} Login form {% endblock title %}
+{% block title %} Employee Profile {% endblock title %}
 {% block content %}
 <script src="https://kit.fontawesome.com/dcd863c3d4.js" crossorigin="anonymous"></script>
 
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/employee.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
 <div class="row">
-  <div class="d-flex pt-4 row ">
-          <div class="col-1"></div>
-          <div class="col-3 font-size-large-bold"><b>Full Name & Email</b></div>
-          <div class="col-2 font-size-large-bold"><b>Joining Date</b></div>
-          <div class="col-1 font-size-large-bold"><b>Role</b></div>
-          <div class="col-1 font-size-large-bold text-center"><b>Status</b></div>
-          <div class="col-2 font-size-large-bold"><b>Department</b></div>
-          <div class="col-1"></div>
-          <div class="col-1"></div>
-    </div>
-    {% if display_all_employees | length %}
         {% for employee in display_all_employees %}
             <div class="d-flex pt-4 pb-4 row add-border-bottom">
                     <div class="col-1">
                         {% if employee.profile_image_name %}
-                            <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="50px" height="50px">
+                            <img src="{{url_for('file', filename=employee['profile_image_name'])}}" width="200px" height="150px">
                         {% elif employee.gender == "Female" %}
-                            <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            <img src="{{ url_for('static', filename='img/female_avatar.jpg') }}" alt="profile picture" width="200px" height="150px">
                         {% elif employee.gender == "Male" %}
-                            <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="alternate" width="50px" height="50px">
+                            <img src="{{ url_for('static', filename='img/male_avatar.jpg') }}" alt="profile picture" width="200px" height="150px">
                         {% else %}
-                            <img src="{{ url_for('static', filename='img/avatar.png') }}" alt="alternate" width="50px" height="50px">
+                            <img src="{{ url_for('static', filename='img/avatar.png') }}" alt="profile picture" width="200px" height="150px">
                         {% endif %}
                     </div>
                     <div class="col-3 ptop-8 ">
-                        <div class="font-size-large-bold">
+                        <div class="font-size-large-bold align-div ">
                             <b>{{ employee.first_name }} {{ employee.last_name }}</b>
                         </div>
 
-                        <div class="font-size-small">
+                        <div class="font-size-small align-div">
                             {{ employee.email_address }}
                         </div>
                     </div>
@@ -70,11 +60,8 @@
                     <div class="col-1 align-vertical-center text-center-div">
                         <a href="/employees/editEmployee/770301"><i class="fas fa-user-edit text-dark"></i> </a>
                     </div>
-                </div>
+            </div>
         {% endfor %}
-    {% else %}
-        <div class="text-center p-3 font-size-large-bold"> <b> No Records found </b> </div>
-    {% endif %}
 </div>
 
       </div>

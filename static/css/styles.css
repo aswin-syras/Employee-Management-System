@@ -93,6 +93,7 @@ input[type="file"] {
     border-bottom: 2px solid #d3d3d3;
 }
 
+
 .add-border-bottom:last-child {
     border-bottom: 0px solid cornsilk;
 }
