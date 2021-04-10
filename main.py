@@ -47,9 +47,7 @@ fetch_database_connection = database_connection.database_connection()
 all_roles = database_connection.connect_role_table_name()
 login_table_name = database_connection.connect_login_table()
 
-
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
-
 
 
 class InformForm(FlaskForm):
@@ -106,6 +104,7 @@ class InformForm(FlaskForm):
 @app.route("/", methods=["GET"])
 def redirect_login():
     return redirect(url_for('login.login_info'))
+
 
 # http://127.0.0.1:5001/hello
 @app.route("/employees", methods=["GET"])
@@ -823,8 +822,9 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                 if 'first_name' in collect_data_to_append or 'last_name' in collect_data_to_append:
                     # Keep Login page updated as well
                     login_table_name.update_one(
-                        {'username': found_one_from_db_before_json['username'] },
-                        {'$set': {'first_name': request.form.get('first_name'), 'last_name': request.form.get('last_name')}}
+                        {'username': found_one_from_db_before_json['username']},
+                        {'$set': {'first_name': request.form.get('first_name'),
+                                  'last_name': request.form.get('last_name')}}
                     )
 
                 mongo.db.employees.update_one(
@@ -1011,6 +1011,10 @@ def deleteExistingEmployee(id):
     fetch_one_employee = mongo.db.employees.find_one({'_id': id})
     if fetch_one_employee['is_manager']:
         mongo.db.managers.delete_one({'_id': id})
+
+    # Delete the login who has the same username
+    mongo.db.login.delete_one({'username': fetch_one_employee['username']})
+
     mongo.db.employees.delete_one({'_id': id})
     return redirect(url_for('admin.adminHome'))
 
