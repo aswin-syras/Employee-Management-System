@@ -1,5 +1,5 @@
-{% extends "shared-component/index.html" %}
-{% block title %} Edit Employee {% endblock title %}
+{% extends "shared-component/only_admin_header.html" %}
+{% block title %} EMS-Edit Employee {% endblock title %}
 {% block content %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -8,13 +8,13 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
 <script src="https://kit.fontawesome.com/dcd863c3d4.js" crossorigin="anonymous"></script>
 
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
     <div class="parent-edit-div container">
         <h2>Editing an Employee</h2>
-        <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('editAnIndividualEmployee', id=session['employee_id']) }}"  enctype="multipart/form-data">
             <div>
             {{ form.csrt_token }}
 
@@ -24,7 +24,7 @@
                 {% endfor %}
             {% endif %}
             <div>
-                <div>
+                <div class="opacity-low">
                     {% if requestForm %}
                         {{ form.is_active( class="form-check-input is-active-class", type="checkbox", onchange="isActiveCheck()" )}} {{ form.is_active.label }} {{ form.hidden_tag() }}
                     {% else %}
@@ -79,7 +79,7 @@
                             </div>
 
                             <!-- Is Manager Check -->
-                            <div class="row pt-3">
+                            <div class="row pt-3 opacity-low">
                                 <div class="form-group col-4">
                                     <div>
                                         {% if requestForm %}
@@ -122,7 +122,7 @@
 
                                <!-- Gender-->
                                <div class="form-group col-4">
-                                    <label>Gender</label>
+                                    <label for="" class="" >Gender</label>
                                     <select class="custom-select form-control" name="gender">
                                         {% for gender in gender_array %}
                                             <option value="{{ gender }}"
@@ -155,31 +155,30 @@
                        </div>
 
                    </div>
-                   <div class="tab-pane pb-3 pt-3" id="b">
-                       <div class="checked_as-inactive">
-                           <!-- Job Position-->
+                   <div class="tab-pane pb-3 pt-3 opacity-low" id="b">
+                        <div class="checked_as-inactive">
+                            <!-- Job Position-->
                             <div class="form-group pt-3 row">
                                 <div class="col-4">
-                                    <label>Job Position</label>
+                                    <label for="" class="" >Job Position</label>
                                     <select class="custom-select form-control selectpicker" data-live-search="true" name="role_id" onchange="roleChange()">
-                                         <option selected disabled>Please Select the options</option>
+                                        <option selected disabled>Please Select the options</option>
                                         {% for role in display_all_roles %}
-            <!--                             <option selected >Open this select menu</option>-->
-                                        {% if requestForm %}
+                                            {% if requestForm %}
                                                 <option value="{{ role._id }}"{% if  role._id == requestForm.role_id %} selected="selected" {% endif %}>
                                                     {{ role.role_name }}</option>
                                             {% else %}
                                                 <option value="{{ role._id }}"
-                                                        {% if  role._id == one_employee.user_role_id %} selected="selected" {% endif %}>{{ role.role_name }}</option>
-                                        {% endif %}
-
+                                                    {% if  role._id == one_employee.user_role_id %} selected="selected" {% endif %}>{{ role.role_name }}
+                                                </option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>
 
                                 <!--Employement Type-->
                                 <div class="col-4">
-                                    <label>Employment Type</label>
+                                    <label for="" class="" >Employment Type</label>
                                     <select class="form-control selectpicker" id="select-employment_type" data-live-search="true" name="employee_type_id" onchange="employee_type_function()">
                                          <option selected disabled>Please Select the options</option>
                                         {% for employee_type in display_all_employee_type %}
@@ -201,21 +200,20 @@
                                <!-- Reporting Manager-->
                                 {% if one_employee._id %}
                                         <div class="col-4">
-                                            <label>Reporting Manager</label>
-                                            <select class="custom-select form-control selectpicker" data-live-search="true" name="manager_id">
+                                            <label for="" class="" >Reporting Manager</label>
+                                            <select class="custom-select form-control selectpicker" id="select-manager" data-live-search="true" name="manager_id">
                                                  <option selected disabled>Open this select menu</option>
                                                 {% for manager in display_all_managers %}
-                                                    <!-- <option selected>Open this select menu</option>-->
-                                                        {% if requestForm %}
-                                                            <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
+                                                    {% if requestForm %}
+                                                        <option value="{{ manager._id }}"{% if  manager._id == requestForm.manager_id %} selected="selected" {% endif %}>
+                                                            {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
+                                                    {% else %}
+                                                        {% if manager._id != one_employee._id %}
+                                                            <option value="{{ manager._id }}"
+                                                                {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
                                                                 {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
-                                                        {% else %}
-                                                            {% if manager._id != one_employee._id %}
-                                                                <option value="{{ manager._id }}"
-                                                                    {% if  manager._id == one_employee.user_manager_id %} selected="selected" {% endif %}>
-                                                                   {{ manager.manager_first_name }} {{ manager.manager_last_name }}</option>
-                                                            {% endif %}
                                                         {% endif %}
+                                                    {% endif %}
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -223,8 +221,8 @@
 
                                <!--Department Type-->
                                 <div class="col-4">
-                                    <label>Department Type</label>
-                                    <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
+                                    <label for="" class="" >Department Type</label>
+                                    <select class="form-control selectpicker" id="select-department" data-live-search="true" name="department_id">
                                          <option selected disabled>Please Select the options</option>
                                         {% for department in display_all_departments %}
                                             {% if department._id %}
@@ -261,7 +259,7 @@
                                 </div>
 
                                 <!-- Official email address -->
-                                <div class="col-4">
+                                <div class="col-4 opacity-low">
                                     {% if requestForm %}
                                         {{ form.official_email_address.label }} {{ form.official_email_address(class="form-control" )}} {{ form.hidden_tag() }}
                                     {% else %}
@@ -269,8 +267,8 @@
                                     {% endif %}
                                 </div>
                            </div>
-                       </div>
-                   </div>
+                        </div>
+                    </div>
 
                     <div class="tab-pane pb-3 pt-3" id="c">
                         <!-- Bank Details-->
@@ -300,11 +298,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane pb-3 pt-3" id="d">
+                    <div class="tab-pane pb-3 pt-3 opacity-low" id="d">
                         <!-- Salary Details-->
                         <div class="checked_as-inactive">
                             <div id="salary_complete_details">
-        <!--                    {% if one_employee.salary_details %}-->
                             <div class="row">
                                 <div class="col-3">
                                     {{ form.salary.label }}
@@ -315,7 +312,6 @@
                                     {% endif %}
                                 </div>
                                 <div class="col-3">
-        <!--                            {{ form.bonus.label }} {{ form.bonus(class="form-control", id="bonusId")}} {{ form.hidden_tag() }}-->
                                     {{ form.bonus.label }}
                                     {% if requestForm %}
                                         {{ form.bonus(class="form-control", id="bonusId", type="number")}} {{ form.hidden_tag() }}
@@ -349,7 +345,6 @@
                                     {% else %}
                                         <input id="pfId" class="form-control" min="0" name="provident_fund" type="number" value="{{one_employee.provident_fund}}">
                                     {% endif %}
-
                                 </div>
 
                                 <div class="col-3">
@@ -360,9 +355,7 @@
                                         <input id="taxId" class="form-control" min="0" name="tax" type="number" value="{{one_employee.tax}}">
                                     {% endif %}
                                 </div>
-
                             </div>
-        <!--                    {% endif %}-->
                         </div>
 
                             <!-- Hourly Details-->
@@ -382,7 +375,7 @@
                     </div>
 
                     <div class="tab-pane pb-3 pt-3 text-center mt-3" id="e">
-                        <a href="{{ url_for('admin.getEditEmployeeEventCalendar', empId=one_employee._id) }}" class="btn btn-success"><i class="fas fa-calendar-alt"></i> &nbsp;  Click here to view the work schedule </a>
+                        <a href="{{ url_for('employees.getEditEmployeeEventCalendar', empId=one_employee._id) }}" class="btn btn-success"><i class="fas fa-calendar-alt"></i> &nbsp;  Click here to view the work schedule </a>
                     </div>
                 </div>
             </div>
@@ -393,10 +386,7 @@
                     <input type="submit" value="Update" class="btn btn-primary"/>
                 </div>
                 <div class="form-group buttons-edit">
-                    <a href="{{ url_for('admin.adminHome') }}" class="btn btn-secondary">Cancel</a>
-                </div>
-                <div class="form-group buttons-edit">
-                    <a class="btn btn-danger" href="/deleteExistingEmployee/{{ one_employee._id }}">Delete</a>
+                    <a href="{{ url_for('employees.home') }}" class="btn btn-secondary">Cancel</a>
                 </div>
             </div>
         </div>

@@ -105,10 +105,10 @@
 
 				$.ajax({
 				type: "GET",
-				url: '/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
+				url: '/admin/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
 				success: function(response) {
 					// do something
-					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + '0',"_self");
+					window.open(window.location.origin+'/admin/getExistingEvent/'+ info.event.extendedProps._id + '/' + 1 + "/" + 'empId' + '/' + '0',"_self");
 					},
 				error: function (xhr, status, error) {
 					console.log(error);

@@ -1,4 +1,4 @@
-{% extends "shared-component/index.html" %}
+{% extends "shared-component/only_admin_header.html" %}
 {% block title %} EMS-Employee Calendar {% endblock title %}
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -20,7 +20,13 @@
     </style>
     <div class="container-fluid calendar-container-fluid m-5">
         <div class="mb-1">
-            <a class="btn btn-primary" href="{{url_for('editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
+			{% if login_employee_only %}
+				<a class="btn btn-primary" href="{{url_for('employees.editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
+			{% else %}
+			<!-- If this is coming from Admin page -->
+				<a class="btn btn-primary" href="{{url_for('editEmployee', id=employee_id)}}" class="btn btn-primary"> <i class="fas fa-chevron-left"></i>&nbsp;  Back to the Employee </a>
+			{% endif %}
+
         </div>
 
         <div id="calendar"></div>
@@ -58,30 +64,32 @@
             editable: true,
             dayMaxEvents: true, // when too many events in a day, show the popover
             eventDrop: function(info) {
-				alert(info.event.title + " was dropped on " + info.event.start.toISOString());
-				if (!confirm("Are you sure about this change?")) {
-				  info.revert();
-				}
-
-				var eventData = {
-						title: info.event.title ,
-						start: info.event.start.toISOString()
-				};
-				eventData = {...eventData, ...info.event.extendedProps}
-
-				$.ajax({
-					type: "POST",
-					url: '{{url_for("admin.return_data")}}',
-					data: JSON.stringify({'eventData' : eventData}),
-					contentType: "application/json",
-					dataType: 'json',
-					success: function(response) {
-						// do something
-					},
-					error: function (xhr, status, error) {
-						console.log(error);
+				{% if drag_drop_enable %}
+					alert(info.event.title + " was dropped on " + info.event.start.toISOString());
+					if (!confirm("Are you sure about this change?")) {
+					info.revert();
 					}
-				});
+					
+					var eventData = {
+							title: info.event.title ,
+							start: info.event.start.toISOString()
+					};
+					eventData = {...eventData, ...info.event.extendedProps}
+
+					$.ajax({
+						type: "POST",
+						url: '{{url_for("admin.return_data")}}',
+						data: JSON.stringify({'eventData' : eventData}),
+						contentType: "application/json",
+						dataType: 'json',
+						success: function(response) {
+							// do something
+						},
+						error: function (xhr, status, error) {
+							console.log(error);
+						}
+					});
+				{% endif %}
 			},
 			eventClick: function(info) {
 				info.jsEvent.preventDefault(); // don't let the browser navigate
@@ -93,10 +101,10 @@
 
 				$.ajax({
 				type: "GET",
-				url: '/getExistingEvent/'+ info.event.extendedProps._id+ '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
+				url: '/employees/getExistingEvent/'+ info.event.extendedProps._id+ '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,
 				success: function(response) {
 					// do something
-					window.open(window.location.origin+'/getExistingEvent/'+ info.event.extendedProps._id + '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,"_self");
+					window.open(window.location.origin+'/employees/getExistingEvent/'+ info.event.extendedProps._id + '/' + 0 + "/" + 'empId' + '/' + info.event.extendedProps.employee_id,"_self");
 					},
 				error: function (xhr, status, error) {
 					}

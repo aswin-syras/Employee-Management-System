@@ -12,33 +12,35 @@
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     <div class="container-val">
-        <div class="p-4">
-            <h3 class="pl-1">Edit a Department </h3>
-            <form method="POST" action="{{ url_for('editingDepartmentPOST', id=one_department._id) }}"  name="myForm">
-                {{ form.csrt_token }}
-                {% if error %}
-                    {% for errors in error %}
-                        <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ errors }}</div>
-                    {% endfor %}
-                {% endif %}
-                <div class="form-group pt-3 row">
-                    <div class="col-4">
-                        {{ form.department_name.label }} {{ form.department_name(class="form-control", value=one_department.department_name)}} {{ form.hidden_tag() }}
+        {% if not session['employee_id'] %}
+            <div class="p-4">
+                <h3 class="pl-1">Edit a Department </h3>
+                <form method="POST" action="{{ url_for('editingDepartmentPOST', id=one_department._id) }}"  name="myForm">
+                    {{ form.csrt_token }}
+                    {% if error %}
+                        {% for errors in error %}
+                            <div class="alert alert-danger" role="alert"><strong>Error:</strong> {{ errors }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="form-group pt-3 row">
+                        <div class="col-4">
+                            {{ form.department_name.label }} {{ form.department_name(class="form-control", value=one_department.department_name)}} {{ form.hidden_tag() }}
+                        </div>
                     </div>
-                </div>
 
-                <!-- Buttons -->
-                <div class="d-flex pt-3 pl-10">
+                    <!-- Buttons -->
+                    <div class="d-flex pt-3 pl-10">
 
-                    <div class="form-group buttons-edit">
-                        <input type="submit" value="Update" class="btn btn-primary"/>
+                        <div class="form-group buttons-edit">
+                            <input type="submit" value="Update" class="btn btn-primary"/>
+                        </div>
+                        <div class="form-group buttons-edit">
+                            <a href="{{ url_for(came_from) }}" class="btn btn-secondary">Cancel</a>
+                        </div>
                     </div>
-                    <div class="form-group buttons-edit">
-                        <a href="{{ url_for(came_from) }}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
+        {% endif %}
         <h3 class="text-center overall-heading">List of Employees work in <b>{{ one_department.department_name }}</b> Department <span class="no-of-employees">( {{no_of_employees}} employees)</span></h3>
         <div class="grand-parent-div">
             {% for employee in all_emp_in_mgrs_table %}

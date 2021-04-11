@@ -67,6 +67,13 @@ def connect_employees_role_table_department():
     department_table_name = database_name["departments"]
     return {"employee": employee_table_name, "role": role_table_name, "department": department_table_name}
 
+def connect_role_dept_mgr_table():
+    database_name = database_connection()
+    role_table_name = database_name["role"]
+    department_table_name = database_name["departments"]
+    manager_table_name = database_name["managers"]
+    return {"role": role_table_name, "department": department_table_name, "manager": manager_table_name}
+
 
 # Fetching all the table names to make life easier
 def fetch_all_tables():
@@ -189,9 +196,16 @@ def fetch_active_inactive_employee(status):
 
 
 # Connect to Employee_type
+def connect_fs_files():
+    database_name = database_connection()
+    fs_files_table_name = database_name["fs.files"]
+    return fs_files_table_name
+
+
+# Connect to Employee_type
 def connect_employee_type_table_name():
     database_name = database_connection()
-    employee_type_table_name = database_name["employee_type "]
+    employee_type_table_name = database_name["employee_type"]
     return employee_type_table_name
 
 

@@ -78,8 +78,6 @@ window.onscroll = function(ev) {
             document.getElementById("back-to-top").style.display = "none";
         }
     }
-
-
 };
 
 function roleChange ( role) {

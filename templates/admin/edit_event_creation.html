@@ -77,7 +77,7 @@
 
 	<div class="container">
         <h3 class="pl-1">Edit Existing Event</h3>
-        <form method="POST" action="/postAnExistingEvent/{{ fetched_data._id }}"  name="myForm">
+        <form method="POST" action="/postAnExistingEvent/{{ toggle }}/{{ fetched_data._id }}"  name="myForm">
             {{ form.csrt_token }}
 
               {% if error %}
@@ -133,28 +133,29 @@
             </div>
 
             <div class="d-flex pt-3 pl-10">
-
-                {% if toggle == 1 or toggle == 0 %}
-                <div class="form-group buttons-edit">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-                {% endif %}
-
-                {% if toggle == 1 or toggle == 0 %}
-                <div class="form-group buttons-edit">
-                    <a class="btn btn-danger" href="/deleteEvent/{{ fetched_data._id }}/{{ toggle }}/empId/{{ coming_from_emp_edit_screen }}">Delete the Event</a>
-                </div>
-                {% endif %}
-
-                <div class="form-group buttons-edit">
-                    {% if toggle == 1 %}
-                        <a class="btn btn-secondary" href="{{ url_for('admin.getFullCalendar') }}">Back</a>
+                {% if show_all_btns == None %}
+                    <a class="btn btn-secondary" href="{{ url_for('employees.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen) }}"><i class="fas fa-arrow-left"></i>  Back</a>
+                {% else %}
+                    {% if toggle == 1 or toggle == 0 %}
+                        <div class="form-group buttons-edit">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    {% endif %}
+                    {% if toggle == 1 or toggle == 0 %}
+                        <div class="form-group buttons-edit">
+                            <a class="btn btn-danger" href="/deleteEvent/{{ fetched_data._id }}/{{ toggle }}/empId/{{ coming_from_emp_edit_screen }}"><i class="fas fa-trash"></i>  Delete the Event</a>
+                        </div>
                     {% endif %}
 
-                    {% if toggle == 0 %}
-                        <a class="btn btn-secondary" href="{{ url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen) }}">Back</a>
-                    {% endif %}
-                </div>
+                    <div class="form-group buttons-edit">
+                        {% if toggle == 1 %}
+                            <a class="btn btn-secondary" href="{{ url_for('admin.getFullCalendar') }}"> <i class="fas fa-arrow-left"></i>  Back</a>
+                        {% endif %}
+                        {% if toggle == 0 %}
+                            <a class="btn btn-secondary" href="{{ url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen) }}"> <i class="fas fa-arrow-left"></i>  Back</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
 
         </form>

@@ -1,3 +1,4 @@
+from flask import Flask, request, render_template, url_for, session, redirect, flash
 from datetime import datetime
 from flask import Blueprint, render_template
 import database_connection
@@ -17,10 +18,14 @@ from dateutil.relativedelta import relativedelta
 
 department_db = database_connection.connect_department_table_name()
 employee_type_db = database_connection.connect_employee_type_table_name()
+employee_table_name_db = database_connection.connect_employee_table_name()
+manager_table_name_db = database_connection.connect_manager_table_name()
 all_roles = database_connection.connect_role_table_name()
+
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
 
 employees = Blueprint("employees", __name__, static_folder="static", template_folder="templates")
+
 
 class InformForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
@@ -31,7 +36,8 @@ class InformForm(FlaskForm):
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
-    official_email_address = EmailField('Official Email address', validators=(validators.DataRequired(), validators.Email()))
+    official_email_address = EmailField('Official Email address',
+                                        validators=(validators.DataRequired(), validators.Email()))
     email_address = EmailField('Email address', validators=(validators.DataRequired(), validators.Email()))
     phoneNumber = StringField('Phone Number')
     salary = h5fields.IntegerField(
@@ -71,31 +77,34 @@ class InformForm(FlaskForm):
     role_have_full_power = BooleanField('Assign Full Power?')
     role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
 
+
 @employees.route("/")
 # @employees.route("/<int:id>")
 def home():
-    # return render_template("employees/employee.html")
-    # print()
-    employees_one = database_connection.merge_employee_one_role(499155)
-    print("-----: ", employees_one)
-    for employee in employees_one:
-        employee["date_of_joining"] = datetime.strptime(employee["date_of_joining"],
-                                                                 '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
+    if 'employee_id' in session:
+        employees_one = database_connection.merge_employee_one_role(session['employee_id'])
+        session['employee_id'] = session['employee_id']
+        print("-----: ", session)
+        for employee in employees_one:
+            employee["date_of_joining"] = datetime.strptime(employee["date_of_joining"],
+                                                            '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
 
-    return render_template("employees/employee-info.html", display_all_employees=employees_one, came_from="employees.home",
-                           search_result="")
+        return render_template("employees/employee-info.html", display_all_employees=employees_one,
+                               came_from="employees.home",
+                               search_result="")
+    else:
+        return redirect(url_for('login.login_info'))
 
 
 @employees.route("/editEmployee/<int:id>")
 def editEmployee(id):
     # Fetch only the particular employee whose Id matches in the database
-    dbdepartment=database_connection.department_table(department_db)
-    dbemployee=database_connection.employee_type_table(employee_type_db)
+    dbdepartment = database_connection.department_table(department_db)
+    db_employee_type = database_connection.employee_type_table(employee_type_db)
     find_one = database_connection.fetch_only_one_employee(id)
     form = InformForm()
     twenty_yrs_ago = datetime.now() - relativedelta(years=20)
     strp_today = twenty_yrs_ago.strftime("%Y-%m-%d")
-    print("strp_today: ", strp_today)
 
     print("***************** ", find_one)
     one_salary_hourly_pay = {}
@@ -115,10 +124,11 @@ def editEmployee(id):
     find_one.update(one_salary_hourly_pay)
     print(dbdepartment)
     fetch_all_departments = [doc for doc in dbdepartment]
-    fetch_all_employee_type = [doc for doc in dbemployee]
+    fetch_all_employee_type = [doc for doc in db_employee_type]
 
     all_managers = database_connection.connect_manager_table_name()
-    return render_template("shared-component/edit_employee.html",
+    print("find_one: ", find_one)
+    return render_template("employees/employee.html",
                            form=form,
                            one_employee=find_one,
                            display_all_roles=database_connection.role_table(all_roles),
@@ -129,3 +139,71 @@ def editEmployee(id):
                            gender_array=gender_array,
                            twenty_yrs_ago=strp_today)
 
+
+@employees.route("/EditEmployee/event/<int:empId>")
+def getEditEmployeeEventCalendar(empId):
+    events = database_connection.fetch_work_schedule_particular_emp(empId)
+    return render_template("shared-component/employee_calendar.html", employee_id=empId, events=events,
+                           login_employee_only=True)
+
+
+@employees.route("/yourProfile")
+def yourProfileInfo():
+    if 'employee_id' in session:
+        query = {
+            "_id": session['employee_id']
+        }
+        fetch_empl_one = employee_table_name_db.find_one(query)
+
+        fetch_empl_one["date_of_joining"] = datetime.strptime(fetch_empl_one["date_of_joining"],
+                                                              '%Y-%m-%dT%H:%M%S').strftime("%B %d, %Y")
+        fetch_empl_one["date_of_birth"] = datetime.strptime(fetch_empl_one["date_of_birth"],
+                                                            '%Y-%m-%d').strftime("%B %d, %Y")
+
+        # ROle find one Query
+        role_find_one = all_roles.find_one({"_id": fetch_empl_one["user_role_id"]})
+
+        # Department find one Query
+        dept_find_one = department_db.find_one({"_id": fetch_empl_one["department_id"]})
+
+        # Manager findOne Query
+        mgr_find_one = manager_table_name_db.find_one({"_id": fetch_empl_one["user_manager_id"]})
+
+        # Employee Type Query
+        emp_type_one = employee_type_db.find_one({'_id': fetch_empl_one["employee_type_id"]})
+
+        fetch_empl_one["role_name"] = role_find_one["role_name"]
+        fetch_empl_one["department_name"] = dept_find_one["department_name"]
+        fetch_empl_one["employee_type_description"] = emp_type_one["employee_type_description"]
+
+        fetch_empl_one["manager_fullname"] = mgr_find_one["manager_first_name"] + " " + mgr_find_one[
+            "manager_last_name"]
+
+        # Again find the Managers role id
+        fetch_role_mgr = all_roles.find_one({"_id": mgr_find_one["manager_role_id"]})
+        fetch_empl_one["mgr_role_name"] = fetch_role_mgr["role_name"]
+
+    return render_template("shared-component/yourProfileInfo.html",
+                           employee=fetch_empl_one)
+
+
+@employees.route("/getExistingEvent/<id>/<int:toggle>/empId/<int:employee_id>", methods=['GET', 'POST'])
+def editExitEvent(id, toggle, employee_id):
+    one_element = database_connection.fetch_only_one_work_schedule(ObjectId(id))
+    print("DATE: ", one_element, toggle, employee_id)
+    print("Session: ", session)
+
+    form = InformForm()
+
+    # TODO we may need to show all the employees list
+    print("Session: ", session, 'employee_id' not in session)
+    all_employees = database_connection.connect_employee_table_name()
+    all_managers = database_connection.connect_manager_table_name()
+    return render_template('admin/edit_event_creation.html',
+                           form=form,
+                           display_all_employees=database_connection.employee_table(all_employees),
+                           display_all_managers=database_connection.manager_table(all_managers),
+                           fetched_data=one_element,
+                           show_all_btns=True if 'employee_id' not in session else None,
+                           toggle=toggle,
+                           coming_from_emp_edit_screen=employee_id)

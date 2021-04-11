@@ -14,7 +14,7 @@
         </form>
         <a href="{{ url_for('admin.adminHome') }}" class="active-tab"><b><i class="fas fa-users-cog"></i>&nbsp; Admin</b></a>
         <a href="{{ url_for('admin.getFullCalendar') }}"><b><i class="fas fa-calendar-alt"></i>&nbsp;  Calendar</b></a>
-        <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee</b></a>
+        <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-user-plus"></i>&nbsp; Add a New Employee</b></a>
         <a class="" href="{{ url_for('createNewDepartmentGET') }}" > <b><i class="fas fa-plus"></i>&nbsp; Add a New Department</b></a>
         <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Employee Type</b> </a>
         <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i>&nbsp; Add a New Role</b></a>
@@ -33,11 +33,6 @@
             </div>
         </div>
         <div>
-
-<!--          <form class="form-inline d-flex p-2" method="POST" action="{{ url_for('admin.searchAnEmployee') }}"  enctype="multipart/form-data">-->
-<!--              <input class="form-control mr-sm-2 mr-1" type="search" placeholder="Search Name" aria-label="Search" name="search_value" value={{ value_search }}>-->
-<!--              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>-->
-<!--          </form>-->
             <div class="d-flex pt-4 row ">
                 <div class="col-1"></div>
                 <div class="col-3 font-size-large-bold"><b>Full Name & Email</b></div>
@@ -69,7 +64,7 @@
                                 </div>
 
                                 <div class="font-size-small">
-                                    {{ employee.email_address }}
+                                    {{ employee.official_email_address }}
                                 </div>
                             </div>
 
@@ -104,7 +99,9 @@
                             </div>
 
                             <div class="col-1 align-vertical-center text-center-div">
-                                <a href="/deleteExistingEmployee/{{ employee._id }}"><i class="fas fa-trash text-danger"></i></a>
+                                {% if employee._id != 0 %}
+                                    <a href="/deleteExistingEmployee/{{ employee._id }}"><i class="fas fa-trash text-danger"></i></a>
+                                {% endif %}
                             </div>
                         </div>
                 {% endfor %}
@@ -112,29 +109,6 @@
                 <div class="text-center p-3 font-size-large-bold"> <b> No Records found </b> </div>
             {% endif %}
         </div>
-
-<!--      <div class="tab-content" id="myTabContent">-->
-<!--            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">-->
-<!--                <div class="row form-group d-flex">-->
-<!--                    <div class="col-3">-->
-<!--                        <a class="" href="{{ url_for('createNewEmployeeGET') }}" ><b><i class="fas fa-plus"></i> Add a New Employee</b></a>-->
-<!--                    </div>-->
-<!--                    <div class="col-3">-->
-<!--                        <a class="" href="{{ url_for('createNewDepartmentGET') }}" > <b><i class="fas fa-plus"></i> Add a New Department</b></a>-->
-<!--                    </div>-->
-<!--                    <div class="col-3">-->
-<!--                        <a class="" href="{{ url_for('createNewEmployeeTypeGET') }}" ><b><i class="fas fa-plus"></i> Add a New Employee Type</b> </a>-->
-<!--                    </div>-->
-
-<!--                    <div class="col-3">-->
-<!--                        <a class="" href="{{ url_for('createNewRoleGET') }}" ><b><i class="fas fa-plus"></i> Add a New Role</b></a>-->
-<!--                    </div>-->
-
-<!--                </div>-->
-
-<!--            </div>-->
-<!--            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">-->
-<!--            </div>-->
       </div>
     </div>
     <a id="back-to-top" href="#" class="btn btn-light btn-lg back-to-top" role="button" ><i class="fas fa-chevron-up"></i></a>

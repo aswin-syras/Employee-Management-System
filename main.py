@@ -2,6 +2,8 @@
 from datetime import datetime
 
 from flask import Flask, request, render_template, url_for, session, redirect, flash
+from wtforms.csrf import session
+
 from login import login
 from admin import admin
 from employees import employees
@@ -29,7 +31,10 @@ from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+import string
+
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = "$%^&U$%^TYURTFY&*GU"
 
 ###### BluePrint for differernt pages
@@ -54,8 +59,10 @@ class InformForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     startdate = DateField('Start Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     enddate = DateField('End Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
-    start_at = TimeField('Start at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
-    end_at = TimeField('End at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
+    start_at = TimeField('Start at', format="'%h-%m'",
+                         validators=[DateRange(min=datetime.now()), validators.DataRequired()])
+    end_at = TimeField('End at', format="'%h-%m'",
+                       validators=[DateRange(min=datetime.now()), validators.DataRequired()])
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
@@ -164,25 +171,6 @@ def profile(id):
     '''
 
 
-def generating_random_id_profile_picture():
-    # Generating a new random id for employees
-    i = 1
-
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000000000000000000000000000000)
-        print("uniq: ", mongo.db.fs.files.find())
-        all_employee_type_find = [docss for docss in mongo.db.fs.files.find()]
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["filename"], all_employee_type_find)
-        not_in_list = str(random_id_generator) not in list(result)
-        if (not_in_list):
-            i = 0
-            return str(random_id_generator)
-        else:
-            i = 1
-
-
 @app.route("/newEmployee")
 def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
@@ -251,7 +239,7 @@ def createNewFormComparison():
             }
         if request.files["profile_image"].filename:
             profile_image = request.files["profile_image"]
-            picture = generating_random_id_profile_picture()
+            picture = random_id_generation.generating_random_id_profile_picture()
 
             # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
             # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
@@ -402,7 +390,7 @@ def createNewEmployee():
             manager_dept_all = [doc for doc in manager_dept]
 
             print("MANAGER:::: ", manager_dept_all)
-            if len(manager_dept_all) == 0:
+            if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
                 print("IS  none: ")
                 createNewFormComparison()
                 return redirect(url_for("admin.adminHome"))
@@ -448,7 +436,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         if request.files["profile_image"].filename and found_one_from_db_before_json["profile_image_name"] != \
                 request.files["profile_image"].filename:
             profile_image = request.files["profile_image"]
-            picture = generating_random_id_profile_picture()
+            picture = random_id_generation.generating_random_id_profile_picture()
 
             # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
             # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
@@ -861,6 +849,8 @@ def editEmployee(id):
     fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
+    print("fetch_all_employee_type: ", fetch_all_employee_type)
+
     all_managers = database_connection.connect_manager_table_name()
     return render_template("shared-component/edit_employee.html",
                            form=form,
@@ -1002,6 +992,136 @@ def editAnEmployee(id):
             else:  # if its a CEO Just return
                 editEmployeeComparison(found_one_from_db_before_json, id)
                 return redirect(url_for("admin.adminHome"))
+
+
+@app.route("/editAnIndividualEmployee/<int:id>", methods=['POST'])
+def editAnIndividualEmployee(id):
+    if "profile_image" in request.files:
+        found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
+        profile_image = request.files["profile_image"]
+        requestForm = {}
+        form = InformForm()
+
+        print("|re: ", type(request.form.get('employee_type_id')), request.form)
+
+        if ((not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
+                "role_id") or not request.form.get("department_id")) and id != 0):
+
+            error = []
+
+            print("request.form.get:::", request.form.get("manager_id"), request.form)
+            if not request.form.get("role_id"):
+                error.append("Please Select the Job Position")
+            elif request.form.get("role_id"):
+                requestForm.update({'role_id': int(request.form.get("role_id"))})
+
+            if not request.form.get("manager_id") and id != 0:
+                error.append("Please Select the Reporting Manager")
+            elif request.form.get("manager_id"):
+                requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+
+            if not request.form.get("employee_type_id"):
+                error.append("Please Select the Employment Type")
+            elif request.form.get("employee_type_id"):
+                requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+
+            if not request.form.get("department_id"):
+                error.append("Please Select the Department")
+            elif request.form.get("department_id"):
+                requestForm.update({'department_id': int(request.form.get("department_id"))})
+
+            print("FORMS EI|T|: ", request.form)
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
+            return render_template("employees/employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="employees.home",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm,
+                                   one_employee=found_one_from_db_before_json)
+        elif int(request.form.get("employee_type_id")) != 1000 and request.form.get(
+                "is_manager"):  # If manager cannot be in Hourly rate
+            print("SHIt")
+            error = []
+            error.append("Manager Cannot be on an hourly rate")
+            requestForm.update({'role_id': int(request.form.get("role_id"))})
+            requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+            requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+            requestForm.update({'department_id': int(request.form.get("department_id"))})
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
+            return render_template("employees/employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="employees.home",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm,
+                                   one_employee=found_one_from_db_before_json)
+        else:
+            # editEmployeeComparison(found_one_from_db_before_json)
+
+            print("REP MAAGER: ", request.form.get('manager_id'), request.form.get('department_id'),
+                  type(request.form.get('department_id')))
+
+            manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
+            manager_dept_all = [doc for doc in manager_dept]
+
+            if id != 0:
+                if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
+                    print("IS  none: ")
+                    editEmployeeComparison(found_one_from_db_before_json, id)
+                    return redirect(url_for("employees.home"))
+                else:
+                    print("is not none")
+                    result = filter(
+                        lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x[
+                            '_id'] == int(
+                            request.form.get('manager_id')), manager_dept_all)
+                    list_result = list(result)
+                    # not_in_list = random_id_generator not in list(result)
+                    print("RESULR: ", len(list_result), list_result)
+                    if len(list_result) > 0:
+                        editEmployeeComparison(found_one_from_db_before_json, id)
+                        return redirect(url_for("employees.home"))
+                    else:
+                        print("Need to throw an error")
+                        error = []
+                        error.append(f"Reporting manager doesn't belong to the department you selected.")
+                        requestForm.update({'role_id': int(request.form.get("role_id"))})
+                        requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+                        requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+                        requestForm.update({'department_id': int(request.form.get("department_id"))})
+                        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+                        fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+                        all_managers = database_connection.connect_manager_table_name()
+                        return render_template("employees/employee.html",
+                                               display_all_roles=database_connection.role_table(all_roles),
+                                               display_all_managers=database_connection.manager_table(all_managers),
+                                               display_all_departments=fetch_all_departments,
+                                               display_all_employee_type=fetch_all_employee_type,
+                                               form=form,
+                                               error=error,
+                                               came_from="employees.home",
+                                               gender_array=gender_array,
+                                               requestForm=requestForm,
+                                               one_employee=found_one_from_db_before_json)
+            else:  # if its a CEO Just return
+                editEmployeeComparison(found_one_from_db_before_json, id)
+                return redirect(url_for("employees.home"))
 
 
 # Delete an Event
@@ -1397,8 +1517,6 @@ def createNewEventPost():
     print("NOW: ", timestamp_current_date_time)
 
     if (form.validate_on_submit()):
-        session['startdate'] = form.startdate.data
-        session['enddate'] = form.enddate.data
         return redirect(url_for("date"))
 
     all_employees = database_connection.connect_employee_table_name()
@@ -1416,10 +1534,6 @@ def createNewEventPost():
 @app.route("/admin/calendar", methods=['POST'])
 def date():
     form = InformForm()
-    session['startdate'] = form.startdate.data
-    session['enddate'] = form.enddate.data
-    startdate = session["startdate"]
-    enddate = session["enddate"]
 
     # TODO Need to validate and some logics
     # https://www.dataquest.io/blog/python-datetime-tutorial/
@@ -1438,9 +1552,6 @@ def date():
     print("NEW: ", request.form.get("employee_id"))
     print("FORM: ", request.form, datetime.now())
 
-    converted_start_date = convert24(request.form.get('start_at'))
-    converted_end_date = convert24(request.form.get('end_at'))
-    print("converted_end_date: ", converted_end_date, converted_start_date)
 
     form = InformForm()
 
@@ -1548,32 +1659,16 @@ def date():
             mongo.db.workSchedule.insert_one({
                 'employee_id': int(request.form.get('employee_id')),
                 'title': request.form.get('title'),
-                'start': request.form.get('startdate') + 'T' + converted_start_date,
-                'end': request.form.get('enddate') + 'T' + converted_end_date,
+                'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+                'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
                 'manager_id': int(request.form.get('manager_id'))})
             return redirect(url_for("admin.getFullCalendar"))
 
 
-@app.route("/getExistingEvent/<id>/<int:toggle>/empId/<int:employee_id>", methods=['GET', 'POST'])
-def editExitEvent(id, toggle, employee_id):
-    one_element = database_connection.fetch_only_one_work_schedule(ObjectId(id))
-    print("DATE: ", one_element, toggle, employee_id)
-    form = InformForm()
-    # TODO we may need to show all the employees list
-
-    all_employees = database_connection.connect_employee_table_name()
-    all_managers = database_connection.connect_manager_table_name()
-    return render_template('admin/edit_event_creation.html',
-                           form=form,
-                           display_all_employees=database_connection.employee_table(all_employees),
-                           display_all_managers=database_connection.manager_table(all_managers),
-                           fetched_data=one_element,
-                           toggle=toggle,
-                           coming_from_emp_edit_screen=employee_id)
 
 
-@app.route("/postAnExistingEvent/<id>", methods=['POST'])
-def postAnExistingEventData(id):
+@app.route("/postAnExistingEvent/<int:toggle>/<id>", methods=['POST'])
+def postAnExistingEventData(id, toggle):
     requestForm = {
         "employee_id": int(request.form.get("employee_id")),
         "manager_id": int(request.form.get("manager_id"))
@@ -1588,21 +1683,46 @@ def postAnExistingEventData(id):
     # converted_start_at = convert24(request.form.get('start_at'))
     # converted_end_at = convert24(request.form.get('end_at'))
     # print("converted_end_date: ", converted_start_at, converted_end_at)
+    print("SWETiod: ", request.form)
+    if (request.form.get('startdate') and request.form.get('start_at')) and (
+            request.form.get('enddate') and request.form.get('end_at')):
+        ############# START AT ###############
+        if len(request.form.get('start_at')) >= 8:
+            dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                           "%Y-%m-%d %H:%M:%S")
+        else:
+            print("request.form.get('startdate'): ", request.form)
+            dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                           "%Y-%m-%d %H:%M")
 
-    ############# START AT ###############
-    if len(request.form.get('start_at')) >= 8:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
-                                       "%Y-%m-%d %H:%M:%S")
-    else:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
-                                       "%Y-%m-%d %H:%M")
+        ############# END AT ###############
+        if len(request.form.get('end_at')) >= 8:
+            dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
+                                           "%Y-%m-%d %H:%M:%S")
+        else:
+            dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
+                                           "%Y-%m-%d %H:%M")
 
-    ############# END AT ###############
-    if len(request.form.get('end_at')) >= 8:
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
-                                       "%Y-%m-%d %H:%M:%S")
     else:
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+        error = 'Please check the entry for Start date and time or end date and time'
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
+        one_element = {
+            "_id": ObjectId(id),
+            "employee_id": int(request.form.get("employee_id")),
+            "manager_id": int(request.form.get("manager_id")),
+            "title": request.form.get("title"),
+            'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+            'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+        }
+        return render_template('admin/edit_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers),
+                               error=error,
+                               toggle=toggle,
+                               requestForm=requestForm,
+                               fetched_data=one_element)
 
     timestamp = datetime.timestamp(dt_object2)
     timestamp2 = datetime.timestamp(dt_object1)
@@ -1633,6 +1753,7 @@ def postAnExistingEventData(id):
                                display_all_employees=database_connection.employee_table(all_employees),
                                display_all_managers=database_connection.manager_table(all_managers),
                                error=error,
+                               toggle=toggle,
                                requestForm=requestForm,
                                fetched_data=one_element)
     elif (float(timestamp) < float(timestamp2)):
@@ -1653,6 +1774,7 @@ def postAnExistingEventData(id):
                                display_all_employees=database_connection.employee_table(all_employees),
                                display_all_managers=database_connection.manager_table(all_managers),
                                error=error,
+                               toggle=toggle,
                                requestForm=requestForm,
                                fetched_data=one_element)
 
@@ -1691,7 +1813,12 @@ def postAnExistingEventData(id):
                 {'_id': ObjectId(id)},
                 {'$set': collect_data_to_append}
             )
-        return redirect(url_for('admin.getFullCalendar'))
+        print("TOGGLE: ", toggle)
+        if toggle == 1:
+            return redirect(url_for('admin.getFullCalendar'))
+        else:
+            return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=requestForm['employee_id']))
+            # return redirect(url_for('admin.getFullCalendar'))
 
 
 # Delete an Event
@@ -1704,6 +1831,11 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
         return redirect(url_for('admin.getFullCalendar'))
     else:
         return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen))
+
+
+@app.route("/help")
+def help():
+    return render_template("shared-component/help.html")
 
 
 @app.route('/plot.png')
