@@ -51,6 +51,7 @@ fetch_database_connection = database_connection.database_connection()
 #### Fetch only certain table
 all_roles = database_connection.connect_role_table_name()
 login_table_name = database_connection.connect_login_table()
+manager_table_name = database_connection.connect_manager_table_name()
 
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
 
@@ -792,22 +793,28 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                         mongo.db.managers.insert_one(manager_data)
                     else:
                         mongo.db.managers.delete_one({'_id': id})
-                elif 'user_role_id' in collect_data_to_append:
-                    print("user_role_id ************* ",
-                          database_connection.fetch_only_one_manager(fetched_value_before_json['_id']))
-                    exists_in_mgr_table = database_connection.fetch_only_one_manager(fetched_value_before_json['_id'])
-                    if exists_in_mgr_table:
-                        print("True")
-                        mongo.db.managers.update_one(
+
+                if request.form.get('is_manager'):
+                    manager_update_fetch = {}
+                    if 'department_id' in collect_data_to_append:
+                        manager_update_fetch['manager_department_id'] = collect_data_to_append['department_id']
+                    if 'first_name' in collect_data_to_append:
+                        manager_update_fetch['manager_first_name'] = collect_data_to_append['first_name']
+                    if 'last_name' in collect_data_to_append:
+                        manager_update_fetch['manager_last_name'] = collect_data_to_append['last_name']
+                    if 'user_role_id' in collect_data_to_append:
+                        manager_update_fetch['manager_role_id'] = collect_data_to_append['user_role_id']
+
+                    if manager_update_fetch:
+                        manager_table_name.update_one(
                             {'_id': id},
-                            {'$set': {
-                                'manager_role_id': collect_data_to_append['user_role_id']
-                            }}
+                            {'$set': manager_update_fetch}
                         )
-                    else:
-                        print("False")
+
+                    print("manager_update_fetch: ", manager_update_fetch)
 
                 if 'first_name' in collect_data_to_append or 'last_name' in collect_data_to_append:
+                    print("****")
                     # Keep Login page updated as well
                     login_table_name.update_one(
                         {'username': found_one_from_db_before_json['username']},
@@ -1552,7 +1559,6 @@ def date():
     print("NEW: ", request.form.get("employee_id"))
     print("FORM: ", request.form, datetime.now())
 
-
     form = InformForm()
 
     if not request.form.get("employee_id") or not request.form.get("manager_id"):
@@ -1663,8 +1669,6 @@ def date():
                 'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
                 'manager_id': int(request.form.get('manager_id'))})
             return redirect(url_for("admin.getFullCalendar"))
-
-
 
 
 @app.route("/postAnExistingEvent/<int:toggle>/<id>", methods=['POST'])
