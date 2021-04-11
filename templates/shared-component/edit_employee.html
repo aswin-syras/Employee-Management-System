@@ -90,7 +90,7 @@
 
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
     <div class="parent-edit-div container">
-        <h2>Editing an Employee</h2>
+        <h2>{{ form.first_name.label }} {{ form.last_name.label }}</h2>
         <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
             <div>
             {{ form.csrt_token }}
