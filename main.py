@@ -281,6 +281,11 @@ def createNewFormComparison():
 
         insert_data.update(salary_hourly_details)
 
+        # Insert the employees  data into the employees collection
+        mongo.db.employees.insert_one(insert_data)
+
+        print("Insert New Data: ", insert_data)
+
         # If the is a Manager? then insert the user into the table
         if request.form.get('is_manager'):
             manager_data = {
@@ -302,11 +307,8 @@ def createNewFormComparison():
             "email_address": request.form.get('first_name') + '.' + request.form.get('last_name') + '@ems.com',
             'is_admin': False
         }
-
         login_table_name.insert_one(insert_data_Login)
 
-        # Insert the employees  data into the employees collection
-        mongo.db.employees.insert_one(insert_data)
 
 
 @app.route("/createNewEmployee", methods=['POST'])
