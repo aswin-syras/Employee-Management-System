@@ -107,9 +107,12 @@ class InformForm(FlaskForm):
     role_have_full_power = BooleanField('Assign Full Power?')
     role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
 
+@app.route("/", methods=["GET"])
+def homepage():
+    return render_template('base.html')
 
 # http://127.0.0.1:5001/
-@app.route("/", methods=["GET"])
+@app.route("/login", methods=["GET"])
 def redirect_login():
     return redirect(url_for('login.login_info'))
 
