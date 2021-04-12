@@ -20,7 +20,7 @@
 
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
     <div class="parent-edit-div container">
-        <h2>Editing an Employee</h2>
+        <h2><b>{{one_employee.first_name}} {{one_employee.last_name}}</b></h2>
         <form method="POST" action="{{ url_for('editAnIndividualEmployee', id=session['employee_id']) }}"  enctype="multipart/form-data">
             <div>
             {{ form.csrt_token }}
@@ -62,6 +62,7 @@
                    <li><a href="#c" data-toggle="tab">Bank Details</a></li>
                    <li><a href="#d" data-toggle="tab">Salary/Hourly Pay Details</a></li>
                    <li><a href="#e" data-toggle="tab">Work Schedule</a></li>
+                    <li><a href="#f" data-toggle="tab">Skills and Qualities</a></li>
                 </ul>
 
                 <div class="tab-content">
@@ -378,6 +379,23 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                   </div>
+
+                   <div class="tab-pane pb-3 pt-3" id="f">
+                        <!-- Skills and Qualities-->
+                        <div class="checked_as-inactive">
+                            <div class="row">
+                                <div class="col-4">
+
+                                    {% if requestForm %}
+                                        {{ form.skills_and_qualities.label }} {{ form.skills_and_qualities(class="form-control" )}} {{ form.hidden_tag() }}
+                                    {% else %}
+                                        {{ form.bank_name.label }} {{ form.bank_name(class="form-control", value=one_employee.bank_details.bank_name)}} {{ form.hidden_tag() }}
+                                    {% endif %}
+                                </div>
+
+                            </div>
                         </div>
                     </div>
 
