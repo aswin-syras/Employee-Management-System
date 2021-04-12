@@ -20,7 +20,6 @@
             var department = JSON.parse('{{ display_all_departments | tojson | safe}}');
 
             var mgr_info = managers[managers.findIndex( mgr => mgr["_id"] === selected_manager )];
-            console.log("mgr_info::: ", mgr_info);
 
             var selected_dept_arr = department.findIndex( dept => dept._id == mgr_info["manager_department_id"] );
 
@@ -29,7 +28,7 @@
                 activeNextSibling = activeTab.nextElementSibling,
                 op_children = activePrevSibling.children[1].children,
                 text_change = activePrevSibling.previousElementSibling,
-                set_title_dept_name = department[selected_dept_arr].department_name + ' ' + department[selected_dept_arr].department_name
+                set_title_dept_name = department[selected_dept_arr].department_name
 
             for (var i = 0; i < op_children.length; i++) {
                 if ( i != selected_dept_arr + 1 ) {
@@ -223,14 +222,12 @@
                         <select class="form-control selectpicker" id="select-department" data-live-search="true" name="department_id">
                              <option selected disabled>Please Select the options</option>
                             {% for department in display_all_departments %}
-                                {% if department._id %}
                                     {% if requestForm %}
                                         <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
                                             {{ department.department_name }}</option>
                                     {% else %}
                                         <option value="{{ department._id }}">{{ department.department_name }}</option>
                                     {% endif %}
-                                {% endif %}
                             {% endfor %}
                         </select>
                     </div>
