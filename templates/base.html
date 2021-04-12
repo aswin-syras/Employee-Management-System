@@ -9,9 +9,7 @@
     <meta name="author" content="">
     <link href='https://fonts.googleapis.com/css'),?family='Raleway:100,200,300,400,500,600,700,800,900&display=swap' rel="stylesheet">
 
-    <title>Breezed HTML Bootstrap Template</title>
-
-    <!-- Additional CSS Files -->
+    <title>EMS homepage</title>
     <link rel="stylesheet" href="{{url_for('static',filename='assets/css/bootstrap.min.css')}}">
 
     <link rel="stylesheet" type="{{url_for('static',filename='text/css" href="assets/css/font-awesome.css')}}">
@@ -32,15 +30,7 @@
             <div></div>
             <div></div>
         </div>
-    </div>  
-    <!-- ***** Preloader End ***** -->
-    
-    
-    <!-- ***** Header Area Start ***** -->
-
-    <!-- ***** Header Area End ***** -->
-    
-    <!-- ***** Search Area ***** -->
+    </div>
     <div id="search">
         <button type="button" class="close">×</button>
         <fieldset>
@@ -50,8 +40,6 @@
             <button type="submit" class="main-button">Search</button>
         </fieldset>
     </div>
-
-    <!-- ***** Main Banner Area Start ***** -->
     <div class="main-banner header-text" id="top">
         <div class="Modern-Slider">
           <!-- Item -->
@@ -62,12 +50,10 @@
                   <h3>Welcome To Breezed</h3>
                   <h5>New Bootstrap Template</h5>
                   <a href="#" class="main-stroked-button">Learn More</a>
-                  <a href="#" class="main-filled-button">Login</a>
+                  <a href="{{url_for('redirect_login')}}" class="main-filled-button">Login</a>
                 </div>
             </div>
           </div>
-          <!-- // Item -->
-          <!-- Item -->
           <div class="item">
             <div class="img-fill">
                 <img src='static/assets/images/slide-02.jpg' alt="">
