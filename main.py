@@ -1401,28 +1401,12 @@ def createNewRoleGET():
 @app.route("/createNewRolePOST", methods=['GET', 'POST'])
 def createNewRolePOST():
     form = InformForm()
-    error = []
-    if not request.form.get("department_id"):
-        error.append("Please Select the Department")
-
-        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
-        return render_template("admin/new_role.html",
-                               display_all_departments=fetch_all_departments,
-                               form=form,
-                               error=error,
-                               came_from="admin.adminHome",
-                               gender_array=gender_array
-                               )
-    else:
-        # Insert the employees  data into the employees collection
-        mongo.db.role.insert_one({
-            '_id': random_id_generation.generating_random_id_role(),
-            'role_name': request.form.get('role_name'),
-            'role_have_full_power': True if request.form.get('role_have_full_power') else False,
-            'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
-            'role_department_id': int(request.form.get('department_id'))
-        })
-        return redirect(url_for("admin.adminHome"))
+    # Insert the employees  data into the employees collection
+    mongo.db.role.insert_one({
+        '_id': random_id_generation.generating_random_id_role(),
+        'role_name': request.form.get('role_name'),
+    })
+    return redirect(url_for("admin.adminHome"))
 
 
 @app.route("/editRole/<int:id>", methods=['GET', 'POST'])

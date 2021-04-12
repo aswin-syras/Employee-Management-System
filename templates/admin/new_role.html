@@ -5,8 +5,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
     <div class="container">
@@ -24,30 +22,6 @@
                 <div class="col-4">
                     {{ form.role_name.label }} {{ form.role_name(class="form-control")}} {{ form.hidden_tag() }}
                 </div>
-                <div class="col-3 checkbox-vertically-center">
-                    {{ form.role_have_full_power(class="form-check-input", type="checkbox", checked=False)}} {{ form.role_have_full_power.label }} {{ form.hidden_tag() }}
-                </div>
-                <div class="col-3 checkbox-vertically-center">
-                    {{ form.role_upload_documents_profile_pictures(class="form-check-input", type="checkbox", checked=False)}} {{ form.role_upload_documents_profile_pictures.label }}  {{ form.hidden_tag() }}
-                </div>
-
-                    <!--Department Type-->
-                    <div class="col-3">
-                        <label for="" class="" >Department Type</label>
-                        <select class="form-control selectpicker" id="select-department_type" data-live-search="true" name="department_id">
-                             <option selected disabled>Please Select the options</option>
-                            {% for department in display_all_departments %}
-                                {% if department._id %}
-                                    {% if requestForm %}
-                                        <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
-                                            {{ department.department_name }}</option>
-                                    {% else %}
-                                        <option value="{{ department._id }}">{{ department.department_name }}</option>
-                                    {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
             </div>
 
             <!-- Buttons -->

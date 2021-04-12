@@ -42,6 +42,11 @@
             </div>
         {% endif %}
         <h3 class="text-center overall-heading">List of Employees work in <b>{{ one_department.department_name }}</b> Department <span class="no-of-employees">( {{no_of_employees}} employees)</span></h3>
+        {% if session['employee_id'] %}
+            <div class="container">
+                <a href="{{ url_for('employees.home') }}" class="btn btn-default"><i class="fas fa-arrow-left"></i>  Back to <b>{{ session['first_name'] }} {{ session['last_name'] }}'s</b> Home page</a>
+            </div>
+        {% endif %}
         <div class="grand-parent-div">
             {% for employee in all_emp_in_mgrs_table %}
                 <div class="parent-div">
