@@ -490,6 +490,14 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             }
         }
 
+        if 'about_me' in found_one_from_db_before_json:
+            fetched_value_before_json['about_me'] = request.form.get('about_me') if request.form.get('about_me') else found_one_from_db_before_json['about_me']
+        else:
+            if request.form.get('about_me'):
+                fetched_value_before_json['about_me'] = request.form.get('about_me')
+            else:
+                fetched_value_before_json['about_me'] = ''
+
         if int(request.form.get('employee_type_id')) == 1000:
             my_salary = request.form.get('salary')
             my_bonus = request.form.get('bonus')
@@ -560,6 +568,15 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                 collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
             if fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]:
                 collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
+            
+            # Check if the about me exists
+            if 'about_me' in found_one_from_db_before_json:
+                if fetched_value_before_json["about_me"] != found_one_from_db_before_json["about_me"]:
+                    collect_data_to_append["about_me"] = fetched_value_before_json["about_me"]
+            else:
+                if request.form.get('about_me'):
+                    collect_data_to_append["about_me"] = fetched_value_before_json["about_me"]
+
             if (fetched_value_before_json["official_email_address"] != found_one_from_db_before_json[
                 "official_email_address"]):
                 collect_data_to_append["official_email_address"] = fetched_value_before_json[
@@ -1186,6 +1203,7 @@ def editingDepartmentGET(id):
                     mgr["phone_number"] = emp["phone_number"]
                     mgr["profile_image_name"] = emp["profile_image_name"]
                     mgr["is_active"] = emp["is_active"]
+                    mgr["official_email_address"] = emp["official_email_address"]
 
         print("all_mgrs1: ", all_mgrs)
 
