@@ -69,7 +69,7 @@
                                         {% if employee.manager_first_name and employee.manager_last_name %}
                                             {{ employee.manager_first_name }} {{ employee.manager_last_name }}
                                         {% endif %}
-                                    </b>
+                                    </b> {% if employee.is_active %} (Active) {% else %} (In Active) {% endif %}
                                 </div>
                                 <div class="dept-personal-info">
                                     <b>{{ employee.manager_role_description }}</b>
@@ -100,7 +100,7 @@
                                     </div>
                                     <div class=" text-center add-border-padding">
                                         <div>
-                                            <b>{{ children.first_name }} {{ children.last_name }}</b>
+                                            <b>{{ children.first_name }} {{ children.last_name }}</b>{% if children.is_active %} (Active) {% else %} (In Active) {% endif %}
                                         </div>
 
                                         <div>
@@ -133,7 +133,7 @@
 
                                                 <div class=" text-center add-border-padding">
                                                     <div>
-                                                        <b>{{ child.first_name }} {{ child.last_name }}</b>
+                                                        <b>{{ child.first_name }} {{ child.last_name }}</b>{% if child.is_active %} (Active) {% else %} (In Active) {% endif %}
                                                     </div>
 
                                                     <div>
