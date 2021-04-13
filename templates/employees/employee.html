@@ -160,6 +160,15 @@
                                     {% endif %}
                                 </div>
                             </div>
+
+                             <div class="form-group pt-3 row">
+                                <label for="">About me</label>
+                                {% if one_employee.about_me %}
+                                    <textarea class="form-control" id="about_me_comment" rows="3" name="about_me" required>{{ one_employee.about_me }}</textarea>
+                                {% else %}
+                                    <textarea class="form-control" id="about_me_comment" rows="3" name="about_me" required></textarea>
+                                {% endif %}
+                            </div>
                        </div>
 
                    </div>
