@@ -1188,6 +1188,7 @@ def editingDepartmentGET(id):
                     mgr["email_address"] = emp["email_address"]
                     mgr["phone_number"] = emp["phone_number"]
                     mgr["profile_image_name"] = emp["profile_image_name"]
+                    mgr["is_active"] = emp["is_active"]
 
         print("all_mgrs1: ", all_mgrs)
 
@@ -1234,7 +1235,6 @@ def editingDepartmentGET(id):
             for role in all_roles1:
                 if role["_id"] == mgr_emp["manager_role_id"]:
                     mgr_emp["manager_role_description"] = role["role_name"]
-                    print("Mgr_emp: ", mgr_emp)
 
                 for mgr_children in mgr_emp["children"]:
                     for role1 in all_roles1:
@@ -1243,11 +1243,8 @@ def editingDepartmentGET(id):
                                 mgr_children["manager_role_description"] = role1["role_name"]
 
                                 if 'children' in mgr_children:
-                                    # print("mgr_: ", 'children' in mgr_children, mgr_children["children"])
                                     for mgr_grand_children in mgr_children["children"]:
                                         for role2 in all_roles1:
-                                            print("mgr_*********: ", role2["_id"], mgr_grand_children)
-
                                             if role2["_id"] == mgr_grand_children["user_role_id"]:
                                                 mgr_grand_children["manager_role_description"] = role2["role_name"]
 
@@ -1262,69 +1259,13 @@ def editingDepartmentGET(id):
         # all_emp_in_mgrs_table = np.concatenate((arr1, arr2))
 
         print("Combining: arr", all_emp_in_mgrs_table)
-        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
-        # print("all_emp_not_in_mgr_table: ", all_emp_not_in_mgr_table)
 
-        # print("++++++++++++++++++",list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp)))
-
-        # print("ALL MR: ", all_mgrs)
-        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
-        # for emp in all_emp:
-        #     if emp['user_manager_id'] == 0 and emp['_id'] != 0:
-        #         emp['level'] = 2
-        #     elif emp['_id'] == 0:
-        #         emp['level'] = 1
-
-        # for emp in all_emp:
-        #     if emp['level'] == 2:
-
-        # print("MANAGER:::: ", all_mgrs)
-        # print("---------- ", one_department)
     else:
         print("no_of_employees: ", no_of_employees)
         all_emp_in_mgrs_table = []
         all_emp_in_mgrs_table = no_of_employees
 
-    # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
-    # print("map_all_mgr: ", map_all_mgr)
 
-    # All the employees who are managers
-    # all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] in map_all_mgr, all_emp))
-
-    # for mgr in all_emp_in_mgrs_table:
-    #     if 'level' not in mgr:
-    #         mgr['level'] = 3
-
-    # Last level employees
-    # all_emp_not_mgr_table = list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp))
-    #
-    # for emp in all_emp:
-    #     if 'level' not in emp:
-    #         emp['level'] = 4
-    #
-    # all_emps = sorted(all_emp, key=lambda k: k['level'])
-
-    # Get the managers of the employees
-    # map_fetch_mgr_from_emp = list(map(lambda x: x['user_manager_id'], all_emp_in_mgrs_table))
-
-    # Team Leads getting reported to Director of the department
-    # 1st level reporting managerx
-    # mgrs_reporting_to = list(filter(lambda x: x['_id'] in map_fetch_mgr_from_emp, all_emp_in_mgrs_table))
-
-    # print("EMPLOYEE BELONG TO THE DEPrtment: ", all_emp, all_emps)
-
-    # print("All the managers who are employees", all_emp_in_mgrs_table)
-    # print("Fetcg all the managers who are form the list: ", map_fetch_mgr_from_emp)
-    # print("A;l Emp not in managers table: ", all_emp_not_mgr_table)
-    # print("Managers reporting to: ", mgrs_reporting_to)
-
-    # for emp in all_emp:
-    #     for mgr in all_mgrs:
-    #         if emp['_id'] == mgr['_id']:
-    #             print(emp)
-
-    # result = list(filter(lambda x: x['_id'] in all_emp, all_mgrs))
-    # print("result: ", (result))
     return render_template("admin/edit_department.html",
                            form=form,
                            one_department=one_department,
