@@ -468,7 +468,9 @@
                     <a href="{{ url_for('admin.adminHome') }}" class="btn btn-secondary">Cancel</a>
                 </div>
                 <div class="form-group buttons-edit">
+                    {% if one_employee._id != 0 %}
                     <a class="btn btn-danger" href="/deleteExistingEmployee/{{ one_employee._id }}"><i class="fas fa-trash"></i>  Delete</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
