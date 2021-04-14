@@ -17,8 +17,7 @@
                     <h2 class="mb-0">
                         <button class="btn btn-link btn-color-border" type="button" data-toggle="collapse" data-target="#collapseOne"
                             aria-expanded="true" aria-controls="collapseOne">
-                            <b>What is Employee Management System?</b>
-                            <b><i class="fas fa-plus"></i></b>
+                            <b class="header-title float-left">What is Employee Management System?</b>
                         </button>
                     </h2>
                 </div>
@@ -123,4 +122,135 @@
             </div>
         </div>
     </div>
+
+
+       <section class ="container">
+
+        <div class ="accordion">
+            <h2>Frequently Asked Questions</h2>
+            <div class ="accordion-item" id="question1">
+                <a class ="accordion-link" href = "#question1" style = "text-decoration: none">
+
+                    <b>1. How will I access the new system?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                       The new EMS is a cloud/web based system, so you can access anywhere you have an internet connection.
+                        You will use the URL to run the application. The new user will be added by the admin and username
+                        and password will be provided by admin. The password will be changed by clicking on forgot password.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question2">
+                <a class ="accordion-link" href = "#question2" style = "text-decoration: none">
+                    <b>2. Who do I contact if I forget my password?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        On the login page, there is usually a forgot password link.  You can click this link and follow
+                        the on-screen instructions.  As a backup process, you can also contact admin and they will be
+                        able to reset your password to your default and then when you log on again, you will be prompted
+                        to change.  If you do not have this link, contact your system administrator.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question3">
+                <a class ="accordion-link" href = "#question3" style = "text-decoration: none">
+                    <b>3. What if I need to change some of my personal information (i.e. banking information)?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        On the user home page user can click on edit details icon, that will take
+                        them to edit user page. User can edit few details such as Personal details, Bank details,
+                        Skills and Qualities. To update the other information they need to contact to admin to get the
+                        details updated as they do not have rights to edit few details.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question4">
+                <a class ="accordion-link" href = "#question4" style = "text-decoration: none">
+                    <b>4. What is the purpose of employee management software?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        Dedicated EMS helps in tracking and evaluating parameters like employee performance, goal tracking,
+                        attendance, and so on. The software brings all your data under one roof.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question5">
+                <a class ="accordion-link" href = "#question5" style = "text-decoration: none">
+                    <b>5. What do employee management systems do?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        It helps you manage employee with easy tracking and storing of workforce information.
+                        The software keeps a track of data like leaves, punch records, performance, payments,
+                        reimbursements, etc.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question6">
+                <a class ="accordion-link" href = "#question6" style = "text-decoration: none">
+                    <b>6. What are the Benefits of an Employee Management System?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        <b>Benefits of an EMS are as follows-</b>
+
+                            1. HR data analytics
+                            2. Compliant HR
+                            3. Secured data
+                            4. Full proof payroll
+                            5. Keeps track of leave and attendance
+                            6. Reduces paperwork
+                            7. Saves HR time
+                            8. Zeroed errors
+                    </p>
+
+                </div>
+            </div>
+
+            <div class ="accordion-item" id="question7">
+                <a class ="accordion-link" href = "#question7" style = "text-decoration: none">
+                    <b>7. How do new users can signup?</b>
+                    <i class ="icon ion-md-add"></i>
+                </a>
+                <div class ="answer">
+                    <p>
+                        New users can be added by the admin. As Admin has rights and permissions to add new users.
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+    <script>
+        const faqs = document.querySelectorAll(".accordion");
+
+        faqs.forEach(accordion => {
+        accordion.addEventListener("click", () => {
+        accordion.classList.toggle("active");
+    });
+});
+    </script>
+
 {% endblock content %}
