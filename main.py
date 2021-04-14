@@ -178,8 +178,6 @@ def createNewEmployeeGET():
     # all_managers = database_connection.connect_manager_table_name()
     form = InformForm()
 
-    all_managers = database_connection.connect_manager_table_name()
-
     fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
     twenty_yrs_ago = datetime.now() - relativedelta(years=20)
@@ -1390,18 +1388,12 @@ def editingRolePOST(id):
     fetched_one_value_before_json = {
         '_id': id,
         "role_name": found_one_from_db_before_json['role_name'],
-        'role_have_full_power': True if found_one_from_db_before_json['role_have_full_power'] else False,
-        'role_upload_documents_profile_pictures': True if found_one_from_db_before_json['role_name'] else False,
-        'role_department_id': int(found_one_from_db_before_json['role_department_id'])
     }
 
     converted_json = json.dumps(fetched_one_value_before_json, sort_keys=True)
     fetched_value_before_json = {
         '_id': id,
         "role_name": request.form.get('role_name'),
-        'role_have_full_power': True if request.form.get('role_have_full_power') else False,
-        'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
-        'role_department_id': int(request.form.get('department_id'))
     }
 
     fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
@@ -1412,14 +1404,6 @@ def editingRolePOST(id):
     else:
         if fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]:
             collect_data_to_append["role_name"] = fetched_value_before_json["role_name"]
-        if fetched_value_before_json["role_have_full_power"] != fetched_one_value_before_json["role_have_full_power"]:
-            collect_data_to_append["role_have_full_power"] = fetched_value_before_json["role_have_full_power"]
-        if (fetched_value_before_json["role_upload_documents_profile_pictures"] != fetched_one_value_before_json[
-            "role_upload_documents_profile_pictures"]):
-            collect_data_to_append["role_upload_documents_profile_pictures"] = fetched_value_before_json[
-                "role_upload_documents_profile_pictures"]
-        if fetched_value_before_json["role_department_id"] != fetched_one_value_before_json["role_department_id"]:
-            collect_data_to_append["role_department_id"] = fetched_value_before_json["role_department_id"]
 
         # Update the employees  data into the employees collection
         mongo.db.role.update_one(
