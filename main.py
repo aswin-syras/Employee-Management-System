@@ -1789,6 +1789,10 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
 def help():
     return render_template("shared-component/help.html")
 
+@app.route("/charts")
+def charts():
+    return render_template("shared-component/charts.html")
+
 
 @app.route('/plot.png')
 def plot_png():
