@@ -521,6 +521,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
 
         collect_data_to_append = {}
         if converted_json == fetched_val_json:
+            print("They are Exactly the same, so don't update the db")
         else:
             if fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]:
                 collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
@@ -1382,6 +1383,7 @@ def editingRolePOST(id):
 
     collect_data_to_append = {}
     if converted_json == fetched_val_json:
+        print("They are Exactly the same, so don't update the db")
     else:
         if fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]:
             collect_data_to_append["role_name"] = fetched_value_before_json["role_name"]
@@ -1681,6 +1683,7 @@ def postAnExistingEventData(id, toggle):
 
         collect_data_to_append = {}
         if converted_json == fetched_val_json:
+            print("They are Exactly the same, so don't update the db")
         else:
             if fetched_value_before_json["employee_id"] != found_one_from_db_before_json["employee_id"]:
                 collect_data_to_append["employee_id"] = fetched_value_before_json["employee_id"]
