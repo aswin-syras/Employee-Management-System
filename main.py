@@ -1791,6 +1791,17 @@ def help():
 
 @app.route("/charts")
 def charts():
+    #fetch_count = database_connection.connect_employee_table_name()
+    #query = {'_id': id}
+    #all_employees = fetch_count.find_many(query)
+    #return all_employees
+
+   # fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+    #areachart_lables = ["Research & Developments", "Customer Service Representative", "CEO"]
+    #areachart_values = [all_employees]
+
+    areachart_lables = ["one", "two", "three", "four"]
+    areachart_values = [4, 7, 10, 40]
     return render_template("shared-component/charts.html",areachart_lables = areachart_lables, areachart_values = areachart_values)
 
 
