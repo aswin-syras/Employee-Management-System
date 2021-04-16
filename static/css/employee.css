@@ -53,3 +53,9 @@
 .align-div{
     padding-left: 150px;
 }
+
+#welcome{
+        color: red;
+        text-align: center;
+        padding-top: 50px;
+    }

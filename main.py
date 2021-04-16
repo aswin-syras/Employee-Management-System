@@ -2,6 +2,8 @@
 from datetime import datetime
 
 from flask import Flask, request, render_template, url_for, session, redirect, flash
+from wtforms.csrf import session
+
 from login import login
 from admin import admin
 from employees import employees
@@ -29,7 +31,10 @@ from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+import string
+
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = "$%^&U$%^TYURTFY&*GU"
 
 ###### BluePrint for differernt pages
@@ -46,6 +51,7 @@ fetch_database_connection = database_connection.database_connection()
 #### Fetch only certain table
 all_roles = database_connection.connect_role_table_name()
 login_table_name = database_connection.connect_login_table()
+manager_table_name = database_connection.connect_manager_table_name()
 
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
 
@@ -54,8 +60,10 @@ class InformForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     startdate = DateField('Start Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     enddate = DateField('End Date', format="%Y-%m-%d", validators=(validators.DataRequired(),))
-    start_at = TimeField('Start at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
-    end_at = TimeField('End at', format="'%h-%m'", validators=[DateRange(min=datetime.now())])
+    start_at = TimeField('Start at', format="'%h-%m'",
+                         validators=[DateRange(min=datetime.now()), validators.DataRequired()])
+    end_at = TimeField('End at', format="'%h-%m'",
+                       validators=[DateRange(min=datetime.now()), validators.DataRequired()])
     date_of_joining = DateField('Date of Joining', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     date_of_birth = DateField('Date Of Birth', format="%Y-%m-%d", validators=(validators.DataRequired(),))
     last_date = DateField('Last Date', format="%Y-%m-%d", )
@@ -99,9 +107,12 @@ class InformForm(FlaskForm):
     role_have_full_power = BooleanField('Assign Full Power?')
     role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
 
+@app.route("/", methods=["GET"])
+def homepage():
+    return render_template('base.html')
 
 # http://127.0.0.1:5001/
-@app.route("/", methods=["GET"])
+@app.route("/login", methods=["GET"])
 def redirect_login():
     return redirect(url_for('login.login_info'))
 
@@ -116,7 +127,6 @@ def greet():
 # This should return your name
 @app.route("/name", methods=["GET"])
 def name():
-    print(request)
     return "<h1>Employee Management System</h1>"
 
 
@@ -156,7 +166,6 @@ def file(filename):
 def profile(id):
     # employees = mongo.db.employees.find_one_or_404({'_id': id})
     employees = mongo.db.employees.find_one_or_404({'_id': id})
-    print(employees)
 
     return f'''
         <h1>id</h1>
@@ -164,32 +173,11 @@ def profile(id):
     '''
 
 
-def generating_random_id_profile_picture():
-    # Generating a new random id for employees
-    i = 1
-
-    while (i > 0):
-        random_id_generator = randrange(1, 1000000000000000000000000000000000)
-        print("uniq: ", mongo.db.fs.files.find())
-        all_employee_type_find = [docss for docss in mongo.db.fs.files.find()]
-
-        # Fetch only the Id only for comparing
-        result = map(lambda x: x["filename"], all_employee_type_find)
-        not_in_list = str(random_id_generator) not in list(result)
-        if (not_in_list):
-            i = 0
-            return str(random_id_generator)
-        else:
-            i = 1
-
-
 @app.route("/newEmployee")
 def createNewEmployeeGET():
     # all_roles = database_connection.connect_role_table_name()
     # all_managers = database_connection.connect_manager_table_name()
     form = InformForm()
-
-    all_managers = database_connection.connect_manager_table_name()
 
     fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
@@ -251,7 +239,7 @@ def createNewFormComparison():
             }
         if request.files["profile_image"].filename:
             profile_image = request.files["profile_image"]
-            picture = generating_random_id_profile_picture()
+            picture = random_id_generation.generating_random_id_profile_picture()
 
             # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
             # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
@@ -292,6 +280,9 @@ def createNewFormComparison():
 
         insert_data.update(salary_hourly_details)
 
+        # Insert the employees  data into the employees collection
+        mongo.db.employees.insert_one(insert_data)
+
         # If the is a Manager? then insert the user into the table
         if request.form.get('is_manager'):
             manager_data = {
@@ -313,11 +304,7 @@ def createNewFormComparison():
             "email_address": request.form.get('first_name') + '.' + request.form.get('last_name') + '@ems.com',
             'is_admin': False
         }
-
         login_table_name.insert_one(insert_data_Login)
-
-        # Insert the employees  data into the employees collection
-        mongo.db.employees.insert_one(insert_data)
 
 
 @app.route("/createNewEmployee", methods=['POST'])
@@ -336,7 +323,6 @@ def createNewEmployee():
 
             error = []
 
-            print("request.form.get:::", request.form.get("manager_id"), request.form)
             if not request.form.get("role_id"):
                 error.append("Please Select the Job Position")
             elif request.form.get("role_id"):
@@ -357,7 +343,6 @@ def createNewEmployee():
             elif request.form.get("department_id"):
                 requestForm.update({'department_id': int(request.form.get("department_id"))})
 
-            print([doc for doc in mongo.db.departments.find()])
             fetch_all_departments = [doc for doc in mongo.db.departments.find()]
             fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
@@ -395,30 +380,23 @@ def createNewEmployee():
                                    gender_array=gender_array,
                                    requestForm=requestForm)
         else:
-            print("REP MAAGER: ", request.form.get('manager_id'), request.form.get('department_id'),
-                  type(request.form.get('department_id')))
 
             manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
             manager_dept_all = [doc for doc in manager_dept]
 
-            print("MANAGER:::: ", manager_dept_all)
-            if len(manager_dept_all) == 0:
-                print("IS  none: ")
+            if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
                 createNewFormComparison()
                 return redirect(url_for("admin.adminHome"))
             else:
-                print("is not none")
                 result = filter(
                     lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x['_id'] == int(
                         request.form.get('manager_id')), manager_dept_all)
                 list_result = list(result)
                 # not_in_list = random_id_generator not in list(result)
-                print("RESULR: ", len(list_result), list_result)
                 if len(list_result) > 0:
                     createNewFormComparison()
                     return redirect(url_for("admin.adminHome"))
                 else:
-                    print("Need to throw an error")
                     error = []
                     error.append(f"Reporting manager doesn't belong to the department you selected.")
                     requestForm.update({'role_id': int(request.form.get("role_id"))})
@@ -444,11 +422,12 @@ def createNewEmployee():
 
 def editEmployeeComparison(found_one_from_db_before_json, id):
     if "profile_image" in request.files:
+        print("ref: ", request.form)
         found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
         if request.files["profile_image"].filename and found_one_from_db_before_json["profile_image_name"] != \
                 request.files["profile_image"].filename:
             profile_image = request.files["profile_image"]
-            picture = generating_random_id_profile_picture()
+            picture = random_id_generation.generating_random_id_profile_picture()
 
             # Mongo save can be done only once, only in POST, in fs.files can have only 1 uploaded file also the length of the uploaded file should be greater than 1
             # fs.files obj.len can never be zero, if it is zero then the file will not load whatsoever
@@ -462,7 +441,6 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
 
         one_salary_hourly_pay = {}
-        print("request.form.get('manager_id'): ")
         fetched_value_before_json = {
             '_id': id,
             'first_name': request.form.get('first_name'),
@@ -499,6 +477,15 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             }
         }
 
+        if 'about_me' in found_one_from_db_before_json:
+            fetched_value_before_json['about_me'] = request.form.get('about_me') if request.form.get('about_me') else \
+            found_one_from_db_before_json['about_me']
+        else:
+            if request.form.get('about_me'):
+                fetched_value_before_json['about_me'] = request.form.get('about_me')
+            else:
+                fetched_value_before_json['about_me'] = ''
+
         if int(request.form.get('employee_type_id')) == 1000:
             my_salary = request.form.get('salary')
             my_bonus = request.form.get('bonus')
@@ -529,7 +516,6 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                 }
             }
         fetched_value_before_json.update(one_salary_hourly_pay)
-        print(fetched_value_before_json)
         fetched_value_before_json.update(one_salary_hourly_pay)
         fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
 
@@ -537,9 +523,6 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         if converted_json == fetched_val_json:
             print("They are Exactly the same, so don't update the db")
         else:
-            print("11111111: ", fetched_value_before_json)
-            print("22222222: ", found_one_from_db_before_json)
-
             if fetched_value_before_json["first_name"] != found_one_from_db_before_json["first_name"]:
                 collect_data_to_append["first_name"] = fetched_value_before_json["first_name"]
             if fetched_value_before_json["last_name"] != found_one_from_db_before_json["last_name"]:
@@ -569,6 +552,15 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                 collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
             if fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]:
                 collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
+
+            # Check if the about me exists
+            if 'about_me' in found_one_from_db_before_json:
+                if fetched_value_before_json["about_me"] != found_one_from_db_before_json["about_me"]:
+                    collect_data_to_append["about_me"] = fetched_value_before_json["about_me"]
+            else:
+                if request.form.get('about_me'):
+                    collect_data_to_append["about_me"] = fetched_value_before_json["about_me"]
+
             if (fetched_value_before_json["official_email_address"] != found_one_from_db_before_json[
                 "official_email_address"]):
                 collect_data_to_append["official_email_address"] = fetched_value_before_json[
@@ -576,220 +568,69 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
             if fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]:
                 collect_data_to_append["is_manager"] = fetched_value_before_json["is_manager"]
 
-            if (fetched_value_before_json["address"]['current_address'] != found_one_from_db_before_json["address"][
-                'current_address']):
-                if 'address' in collect_data_to_append:
-                    collect_data_to_append['address'].update({
-                        'current_address': fetched_value_before_json["address"]['current_address']
-                    })
-                else:
-                    collect_data_to_append.update({'address': {
-                        'current_address': fetched_value_before_json["address"]['current_address']
+
+
+            address_data = {
+                    "address": {
+                        "current_address": fetched_value_before_json['address']['current_address'],
+                        "permanent_address": fetched_value_before_json['address']['permanent_address']
                     }
-                    })
-                # collect_data_to_append["address"]['current_address'] = fetched_value_before_json["address"]['current_address']
-            if (fetched_value_before_json["address"]['permanent_address'] !=
-                    found_one_from_db_before_json["address"]['permanent_address']):
-                print("SAY YES: ", 'address' in collect_data_to_append, collect_data_to_append)
-                if 'address' in collect_data_to_append:
-                    collect_data_to_append['address'].update({
-                        'permanent_address': fetched_value_before_json["address"]['permanent_address']
-                    })
-                else:
-                    collect_data_to_append.update({'address': {
-                        'permanent_address': fetched_value_before_json["address"]['permanent_address']
+                }
+            collect_data_to_append.update(address_data)
+
+            bank_details_data = {
+                "bank_details": {
+                    "bank_name": fetched_value_before_json['bank_details']['bank_name'],
+                    "account_number": fetched_value_before_json['bank_details']['account_number'],
+                    "UAN_number": fetched_value_before_json['bank_details']['UAN_number']
+                }
+            }
+            collect_data_to_append.update(bank_details_data)
+
+            if ('salary_details' in fetched_value_before_json and 'hourly_pay_details' in found_one_from_db_before_json) or ('salary_details' in found_one_from_db_before_json and 'salary_details' in fetched_value_before_json):
+                salary_overall = {
+                    "salary_details": {
+                        "salary": fetched_value_before_json['salary_details']['salary'],
+                        "bonus": fetched_value_before_json['salary_details']['bonus'],
+                        "allowances": {
+                            "basic_allowance": fetched_value_before_json['salary_details']['allowances'][
+                                'basic_allowance'],
+                            "medical_allowance": fetched_value_before_json['salary_details']['allowances'][
+                                'medical_allowance'],
+                            "provident_fund": fetched_value_before_json['salary_details']['allowances'][
+                                'provident_fund'],
+                            "tax": fetched_value_before_json['salary_details']['allowances']['tax']
+                        }
                     }
-                    })
-            if (fetched_value_before_json["bank_details"]['bank_name'] !=
-                    found_one_from_db_before_json["bank_details"]['bank_name']):
-                if 'bank_details' in collect_data_to_append:
-                    collect_data_to_append['bank_details'].update({
-                        'bank_name': fetched_value_before_json["bank_details"]['bank_name']
-                    })
-                else:
-                    collect_data_to_append.update({'bank_details': {
-                        'bank_name': fetched_value_before_json["bank_details"]['bank_name']
+                }
+
+                collect_data_to_append.update(salary_overall)
+
+                if 'salary_details' in fetched_value_before_json and 'hourly_pay_details' in found_one_from_db_before_json:
+                    # Deliberately remove the key called Hourly_pay_details
+                    mongo.db.employees.update_one(
+                        {'_id': id},
+                        {'$unset': {'hourly_pay_details': ""}}
+                    )
+
+            elif ('hourly_pay_details' in fetched_value_before_json and 'salary_details' in found_one_from_db_before_json) or ('hourly_pay_details' in found_one_from_db_before_json and 'hourly_pay_details' in fetched_value_before_json):
+                hourly_overall = {
+                    "hourly_pay_details": {
+                        "hourly_pay": fetched_value_before_json['hourly_pay_details']['hourly_pay']
                     }
-                    })
-            if (fetched_value_before_json["bank_details"]['account_number'] !=
-                    found_one_from_db_before_json["bank_details"]['account_number']):
-                if 'bank_details' in collect_data_to_append:
-                    collect_data_to_append['bank_details'].update({
-                        'account_number': fetched_value_before_json["bank_details"]['account_number']
-                    })
-                else:
-                    collect_data_to_append.update({'bank_details': {
-                        'account_number': fetched_value_before_json["bank_details"]['account_number']
-                    }
-                    })
-            if (fetched_value_before_json["bank_details"]['UAN_number'] !=
-                    found_one_from_db_before_json["bank_details"]['UAN_number']):
-                if 'bank_details' in collect_data_to_append:
-                    collect_data_to_append['bank_details'].update({
-                        'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-                    })
-                else:
-                    collect_data_to_append.update({'bank_details': {
-                        'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-                    }
-                    })
-            if 'hourly_pay_details' in fetched_value_before_json:
-                if fetched_value_before_json["hourly_pay_details"]['hourly_pay'] != \
-                        found_one_from_db_before_json["hourly_pay_details"]['hourly_pay']:
-                    collect_data_to_append.update(
-                        {
-                            'hourly_pay_details': {
-                                'hourly_pay': fetched_value_before_json["hourly_pay_details"]['hourly_pay']
-                            }
-                        })
-            else:
-                if fetched_value_before_json["salary_details"]['salary'] != \
-                        found_one_from_db_before_json["salary_details"]['salary']:
-                    if 'salary_details' in collect_data_to_append:
-                        collect_data_to_append['salary_details'].update(
-                            {
-                                'salary': fetched_value_before_json["salary_details"]['salary']
-                            })
-                    else:
-                        collect_data_to_append.update(
-                            {
-                                'salary_details': {
-                                    'salary': fetched_value_before_json["salary_details"]['salary']
-                                }
-                            })
-                if fetched_value_before_json["salary_details"]['bonus'] != \
-                        found_one_from_db_before_json["salary_details"]['bonus']:
-                    if 'salary_details' in collect_data_to_append:
-                        collect_data_to_append['salary_details'].update(
-                            {
-                                'bonus': fetched_value_before_json["salary_details"]['bonus']
-                            })
-                    else:
-                        collect_data_to_append.update(
-                            {
-                                'salary_details': {
-                                    'bonus': fetched_value_before_json["salary_details"]['bonus']
-                                }
-                            })
-                if fetched_value_before_json["salary_details"]['allowances'] != \
-                        found_one_from_db_before_json["salary_details"]['allowances']:
-                    if fetched_value_before_json["salary_details"]['allowances']['basic_allowance'] != \
-                            found_one_from_db_before_json["salary_details"]['allowances']['basic_allowance']:
-                        if 'salary_details' in collect_data_to_append:
-                            if 'allowances' in collect_data_to_append['salary_details']:
-                                collect_data_to_append['salary_details']['allowances'].update(
-                                    {
-                                        'basic_allowance':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'basic_allowance']
-                                    })
-                            else:
-                                collect_data_to_append['salary_details'].update({
-                                    'allowances': {
-                                        'basic_allowance':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'basic_allowance']
-                                    }
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'allowances': {
-                                            'basic_allowance':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'basic_allowance']
-                                        }
-                                    }
-                                })
-                    if fetched_value_before_json["salary_details"]['allowances']['medical_allowance'] != \
-                            found_one_from_db_before_json["salary_details"]['allowances']['medical_allowance']:
-                        if 'salary_details' in collect_data_to_append:
-                            if 'allowances' in collect_data_to_append['salary_details']:
-                                collect_data_to_append['salary_details']['allowances'].update(
-                                    {
-                                        'medical_allowance':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'medical_allowance']
-                                    })
-                            else:
-                                collect_data_to_append['salary_details'].update({
-                                    'allowances': {
-                                        'medical_allowance':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'medical_allowance']
-                                    }
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'allowances': {
-                                            'medical_allowance':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'medical_allowance']
-                                        }
-                                    }
-                                })
-                    if fetched_value_before_json["salary_details"]['allowances']['provident_fund'] != \
-                            found_one_from_db_before_json["salary_details"]['allowances']['provident_fund']:
-                        if 'salary_details' in collect_data_to_append:
-                            if 'allowances' in collect_data_to_append['salary_details']:
-                                collect_data_to_append['salary_details']['allowances'].update(
-                                    {
-                                        'provident_fund':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'provident_fund']
-                                    })
-                            else:
-                                collect_data_to_append['salary_details'].update({
-                                    'allowances': {
-                                        'provident_fund': fetched_value_before_json["salary_details"]["allowances"][
-                                            'provident_fund']
-                                    }
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'allowances': {
-                                            'provident_fund':
-                                                fetched_value_before_json["salary_details"]["allowances"][
-                                                    'provident_fund']
-                                        }
-                                    }
-                                })
-                    if fetched_value_before_json["salary_details"]['allowances']['tax'] != \
-                            found_one_from_db_before_json["salary_details"]['allowances']['tax']:
-                        if 'salary_details' in collect_data_to_append:
-                            if 'allowances' in collect_data_to_append['salary_details']:
-                                collect_data_to_append['salary_details']['allowances'].update(
-                                    {
-                                        'tax':
-                                            fetched_value_before_json["salary_details"]["allowances"][
-                                                'tax']
-                                    })
-                            else:
-                                collect_data_to_append['salary_details'].update({
-                                    'allowances': {
-                                        'tax': fetched_value_before_json["salary_details"]["allowances"]['tax']
-                                    }
-                                })
-                        else:
-                            collect_data_to_append.update(
-                                {
-                                    'salary_details': {
-                                        'allowances': {
-                                            'tax': fetched_value_before_json["salary_details"]["allowances"][
-                                                'tax']
-                                        }
-                                    }
-                                })
+                }
+
+                collect_data_to_append.update(hourly_overall)
+
+                if 'hourly_pay_details' in fetched_value_before_json and 'salary_details' in found_one_from_db_before_json:
+                    # Deliberately remove the key called Hourly_pay_details
+                    mongo.db.employees.update_one(
+                        {'_id': id},
+                        {'$unset': {'salary_details': ""}}
+                    )
 
             # Check whether collect_data_to_append is an empty dict
             res = bool(collect_data_to_append)
-
-            print("collect_data_to_append: ", collect_data_to_append)
 
             if res:
                 if 'is_manager' in collect_data_to_append:
@@ -804,21 +645,23 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                         mongo.db.managers.insert_one(manager_data)
                     else:
                         mongo.db.managers.delete_one({'_id': id})
-                elif 'user_role_id' in collect_data_to_append:
-                    print("user_role_id ************* ",
-                          database_connection.fetch_only_one_manager(fetched_value_before_json['_id']))
-                    exists_in_mgr_table = database_connection.fetch_only_one_manager(fetched_value_before_json['_id'])
-                    if exists_in_mgr_table:
-                        print("True")
-                        mongo.db.managers.update_one(
-                            {'_id': id},
-                            {'$set': {
-                                'manager_role_id': collect_data_to_append['user_role_id']
-                            }}
-                        )
-                    else:
-                        print("False")
 
+                if request.form.get('is_manager'):
+                    manager_update_fetch = {}
+                    if 'department_id' in collect_data_to_append:
+                        manager_update_fetch['manager_department_id'] = collect_data_to_append['department_id']
+                    if 'first_name' in collect_data_to_append:
+                        manager_update_fetch['manager_first_name'] = collect_data_to_append['first_name']
+                    if 'last_name' in collect_data_to_append:
+                        manager_update_fetch['manager_last_name'] = collect_data_to_append['last_name']
+                    if 'user_role_id' in collect_data_to_append:
+                        manager_update_fetch['manager_role_id'] = collect_data_to_append['user_role_id']
+
+                    if manager_update_fetch:
+                        manager_table_name.update_one(
+                            {'_id': id},
+                            {'$set': manager_update_fetch}
+                        )
                 if 'first_name' in collect_data_to_append or 'last_name' in collect_data_to_append:
                     # Keep Login page updated as well
                     login_table_name.update_one(
@@ -840,9 +683,7 @@ def editEmployee(id):
     form = InformForm()
     twenty_yrs_ago = datetime.now() - relativedelta(years=20)
     strp_today = twenty_yrs_ago.strftime("%Y-%m-%d")
-    print("strp_today: ", strp_today)
 
-    print("***************** ", find_one)
     one_salary_hourly_pay = {}
     if 'hourly_pay_details' in find_one:
         one_salary_hourly_pay = {
@@ -882,14 +723,11 @@ def editAnEmployee(id):
         requestForm = {}
         form = InformForm()
 
-        print("|re: ", type(request.form.get('employee_type_id')), request.form)
-
         if ((not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
                 "role_id") or not request.form.get("department_id")) and id != 0):
 
             error = []
 
-            print("request.form.get:::", request.form.get("manager_id"), request.form)
             if not request.form.get("role_id"):
                 error.append("Please Select the Job Position")
             elif request.form.get("role_id"):
@@ -910,7 +748,6 @@ def editAnEmployee(id):
             elif request.form.get("department_id"):
                 requestForm.update({'department_id': int(request.form.get("department_id"))})
 
-            print("FORMS EI|T|: ", request.form)
             fetch_all_departments = [doc for doc in mongo.db.departments.find()]
             fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
 
@@ -928,7 +765,6 @@ def editAnEmployee(id):
                                    one_employee=found_one_from_db_before_json)
         elif int(request.form.get("employee_type_id")) != 1000 and request.form.get(
                 "is_manager"):  # If manager cannot be in Hourly rate
-            print("SHIt")
             error = []
             error.append("Manager Cannot be on an hourly rate")
             requestForm.update({'role_id': int(request.form.get("role_id"))})
@@ -953,31 +789,25 @@ def editAnEmployee(id):
         else:
             # editEmployeeComparison(found_one_from_db_before_json)
 
-            print("REP MAAGER: ", request.form.get('manager_id'), request.form.get('department_id'),
-                  type(request.form.get('department_id')))
 
             manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
             manager_dept_all = [doc for doc in manager_dept]
 
             if id != 0:
                 if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
-                    print("IS  none: ")
                     editEmployeeComparison(found_one_from_db_before_json, id)
                     return redirect(url_for("admin.adminHome"))
                 else:
-                    print("is not none")
                     result = filter(
                         lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x[
                             '_id'] == int(
                             request.form.get('manager_id')), manager_dept_all)
                     list_result = list(result)
                     # not_in_list = random_id_generator not in list(result)
-                    print("RESULR: ", len(list_result), list_result)
                     if len(list_result) > 0:
                         editEmployeeComparison(found_one_from_db_before_json, id)
                         return redirect(url_for("admin.adminHome"))
                     else:
-                        print("Need to throw an error")
                         error = []
                         error.append(f"Reporting manager doesn't belong to the department you selected.")
                         requestForm.update({'role_id': int(request.form.get("role_id"))})
@@ -1004,10 +834,128 @@ def editAnEmployee(id):
                 return redirect(url_for("admin.adminHome"))
 
 
+@app.route("/editAnIndividualEmployee/<int:id>", methods=['POST'])
+def editAnIndividualEmployee(id):
+    if "profile_image" in request.files:
+        found_one_from_db_before_json = mongo.db.employees.find_one({"_id": id})
+        profile_image = request.files["profile_image"]
+        requestForm = {}
+        form = InformForm()
+
+        if ((not request.form.get("employee_type_id") or not request.form.get("manager_id") or not request.form.get(
+                "role_id") or not request.form.get("department_id")) and id != 0):
+
+            error = []
+
+            if not request.form.get("role_id"):
+                error.append("Please Select the Job Position")
+            elif request.form.get("role_id"):
+                requestForm.update({'role_id': int(request.form.get("role_id"))})
+
+            if not request.form.get("manager_id") and id != 0:
+                error.append("Please Select the Reporting Manager")
+            elif request.form.get("manager_id"):
+                requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+
+            if not request.form.get("employee_type_id"):
+                error.append("Please Select the Employment Type")
+            elif request.form.get("employee_type_id"):
+                requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+
+            if not request.form.get("department_id"):
+                error.append("Please Select the Department")
+            elif request.form.get("department_id"):
+                requestForm.update({'department_id': int(request.form.get("department_id"))})
+
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
+            return render_template("employees/employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="employees.home",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm,
+                                   one_employee=found_one_from_db_before_json)
+        elif int(request.form.get("employee_type_id")) != 1000 and request.form.get(
+                "is_manager"):  # If manager cannot be in Hourly rate
+            error = []
+            error.append("Manager Cannot be on an hourly rate")
+            requestForm.update({'role_id': int(request.form.get("role_id"))})
+            requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+            requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+            requestForm.update({'department_id': int(request.form.get("department_id"))})
+            fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+            fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+            all_managers = database_connection.connect_manager_table_name()
+            return render_template("employees/employee.html",
+                                   display_all_roles=database_connection.role_table(all_roles),
+                                   display_all_managers=database_connection.manager_table(all_managers),
+                                   display_all_departments=fetch_all_departments,
+                                   display_all_employee_type=fetch_all_employee_type,
+                                   form=form,
+                                   error=error,
+                                   came_from="employees.home",
+                                   gender_array=gender_array,
+                                   requestForm=requestForm,
+                                   one_employee=found_one_from_db_before_json)
+        else:
+            # editEmployeeComparison(found_one_from_db_before_json)
+
+
+            manager_dept = mongo.db.managers.find({'manager_department_id': int(request.form.get('department_id'))})
+            manager_dept_all = [doc for doc in manager_dept]
+
+            if id != 0:
+                if len(manager_dept_all) == 0 or int(request.form.get('manager_id')) == 0:
+                    editEmployeeComparison(found_one_from_db_before_json, id)
+                    return redirect(url_for("employees.home"))
+                else:
+                    result = filter(
+                        lambda x: x["manager_department_id"] == int(request.form.get('department_id')) and x[
+                            '_id'] == int(
+                            request.form.get('manager_id')), manager_dept_all)
+                    list_result = list(result)
+                    # not_in_list = random_id_generator not in list(result)
+                    if len(list_result) > 0:
+                        editEmployeeComparison(found_one_from_db_before_json, id)
+                        return redirect(url_for("employees.home"))
+                    else:
+                        error = []
+                        error.append(f"Reporting manager doesn't belong to the department you selected.")
+                        requestForm.update({'role_id': int(request.form.get("role_id"))})
+                        requestForm.update({'manager_id': int(request.form.get("manager_id"))})
+                        requestForm.update({'employee_type_id': int(request.form.get("employee_type_id"))})
+                        requestForm.update({'department_id': int(request.form.get("department_id"))})
+                        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
+                        fetch_all_employee_type = [doc for doc in mongo.db.employee_type.find()]
+
+                        all_managers = database_connection.connect_manager_table_name()
+                        return render_template("employees/employee.html",
+                                               display_all_roles=database_connection.role_table(all_roles),
+                                               display_all_managers=database_connection.manager_table(all_managers),
+                                               display_all_departments=fetch_all_departments,
+                                               display_all_employee_type=fetch_all_employee_type,
+                                               form=form,
+                                               error=error,
+                                               came_from="employees.home",
+                                               gender_array=gender_array,
+                                               requestForm=requestForm,
+                                               one_employee=found_one_from_db_before_json)
+            else:  # if its a CEO Just return
+                editEmployeeComparison(found_one_from_db_before_json, id)
+                return redirect(url_for("employees.home"))
+
+
 # Delete an Event
 @app.route("/deleteExistingEmployee/<int:id>")
 def deleteExistingEmployee(id):
-    print("ID: ", id, )
     fetch_one_employee = mongo.db.employees.find_one({'_id': id})
     if fetch_one_employee['is_manager']:
         mongo.db.managers.delete_one({'_id': id})
@@ -1056,8 +1004,9 @@ def editingDepartmentGET(id):
                     mgr["email_address"] = emp["email_address"]
                     mgr["phone_number"] = emp["phone_number"]
                     mgr["profile_image_name"] = emp["profile_image_name"]
+                    mgr["is_active"] = emp["is_active"]
+                    mgr["official_email_address"] = emp["official_email_address"]
 
-        print("all_mgrs1: ", all_mgrs)
 
         mgr_count = 0
         emp_count = 0
@@ -1102,7 +1051,6 @@ def editingDepartmentGET(id):
             for role in all_roles1:
                 if role["_id"] == mgr_emp["manager_role_id"]:
                     mgr_emp["manager_role_description"] = role["role_name"]
-                    print("Mgr_emp: ", mgr_emp)
 
                 for mgr_children in mgr_emp["children"]:
                     for role1 in all_roles1:
@@ -1111,16 +1059,12 @@ def editingDepartmentGET(id):
                                 mgr_children["manager_role_description"] = role1["role_name"]
 
                                 if 'children' in mgr_children:
-                                    # print("mgr_: ", 'children' in mgr_children, mgr_children["children"])
                                     for mgr_grand_children in mgr_children["children"]:
                                         for role2 in all_roles1:
-                                            print("mgr_*********: ", role2["_id"], mgr_grand_children)
-
                                             if role2["_id"] == mgr_grand_children["user_role_id"]:
                                                 mgr_grand_children["manager_role_description"] = role2["role_name"]
 
         # Is there any other employees (other than the one in the manager's table) reporting directly to CEO
-        print("All emp: ", all_emp)
         # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
         # all_emp_not_in_mgr_table = list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp)) #All emp not in mgr table
         # arr1 = np.array(all_emp_in_mgrs_table)
@@ -1129,70 +1073,10 @@ def editingDepartmentGET(id):
         #
         # all_emp_in_mgrs_table = np.concatenate((arr1, arr2))
 
-        print("Combining: arr", all_emp_in_mgrs_table)
-        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
-        # print("all_emp_not_in_mgr_table: ", all_emp_not_in_mgr_table)
-
-        # print("++++++++++++++++++",list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp)))
-
-        # print("ALL MR: ", all_mgrs)
-        # print("all_emp_in_mgrs_table: ", all_emp_in_mgrs_table)
-        # for emp in all_emp:
-        #     if emp['user_manager_id'] == 0 and emp['_id'] != 0:
-        #         emp['level'] = 2
-        #     elif emp['_id'] == 0:
-        #         emp['level'] = 1
-
-        # for emp in all_emp:
-        #     if emp['level'] == 2:
-
-        # print("MANAGER:::: ", all_mgrs)
-        # print("---------- ", one_department)
     else:
-        print("no_of_employees: ", no_of_employees)
         all_emp_in_mgrs_table = []
         all_emp_in_mgrs_table = no_of_employees
 
-    # map_all_mgr = list(map(lambda x: x['_id'], all_mgrs))
-    # print("map_all_mgr: ", map_all_mgr)
-
-    # All the employees who are managers
-    # all_emp_in_mgrs_table = list(filter(lambda d: d['_id'] in map_all_mgr, all_emp))
-
-    # for mgr in all_emp_in_mgrs_table:
-    #     if 'level' not in mgr:
-    #         mgr['level'] = 3
-
-    # Last level employees
-    # all_emp_not_mgr_table = list(filter(lambda d: d['_id'] not in map_all_mgr, all_emp))
-    #
-    # for emp in all_emp:
-    #     if 'level' not in emp:
-    #         emp['level'] = 4
-    #
-    # all_emps = sorted(all_emp, key=lambda k: k['level'])
-
-    # Get the managers of the employees
-    # map_fetch_mgr_from_emp = list(map(lambda x: x['user_manager_id'], all_emp_in_mgrs_table))
-
-    # Team Leads getting reported to Director of the department
-    # 1st level reporting managerx
-    # mgrs_reporting_to = list(filter(lambda x: x['_id'] in map_fetch_mgr_from_emp, all_emp_in_mgrs_table))
-
-    # print("EMPLOYEE BELONG TO THE DEPrtment: ", all_emp, all_emps)
-
-    # print("All the managers who are employees", all_emp_in_mgrs_table)
-    # print("Fetcg all the managers who are form the list: ", map_fetch_mgr_from_emp)
-    # print("A;l Emp not in managers table: ", all_emp_not_mgr_table)
-    # print("Managers reporting to: ", mgrs_reporting_to)
-
-    # for emp in all_emp:
-    #     for mgr in all_mgrs:
-    #         if emp['_id'] == mgr['_id']:
-    #             print(emp)
-
-    # result = list(filter(lambda x: x['_id'] in all_emp, all_mgrs))
-    # print("result: ", (result))
     return render_template("admin/edit_department.html",
                            form=form,
                            one_department=one_department,
@@ -1237,7 +1121,6 @@ def editingEmployeeTypeGET(id):
     # Insert the employees  data into the employees collection
     form = InformForm()
     one_employee_type = mongo.db.employee_type.find_one({"_id": id})
-    print("---------- ", one_employee_type)
     return render_template("admin/edit_employee_type.html",
                            form=form,
                            one_employee_type=one_employee_type,
@@ -1271,28 +1154,12 @@ def createNewRoleGET():
 @app.route("/createNewRolePOST", methods=['GET', 'POST'])
 def createNewRolePOST():
     form = InformForm()
-    error = []
-    if not request.form.get("department_id"):
-        error.append("Please Select the Department")
-
-        fetch_all_departments = [doc for doc in mongo.db.departments.find()]
-        return render_template("admin/new_role.html",
-                               display_all_departments=fetch_all_departments,
-                               form=form,
-                               error=error,
-                               came_from="admin.adminHome",
-                               gender_array=gender_array
-                               )
-    else:
-        # Insert the employees  data into the employees collection
-        mongo.db.role.insert_one({
-            '_id': random_id_generation.generating_random_id_role(),
-            'role_name': request.form.get('role_name'),
-            'role_have_full_power': True if request.form.get('role_have_full_power') else False,
-            'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
-            'role_department_id': int(request.form.get('department_id'))
-        })
-        return redirect(url_for("admin.adminHome"))
+    # Insert the employees  data into the employees collection
+    mongo.db.role.insert_one({
+        '_id': random_id_generation.generating_random_id_role(),
+        'role_name': request.form.get('role_name'),
+    })
+    return redirect(url_for("admin.adminHome"))
 
 
 @app.route("/editRole/<int:id>", methods=['GET', 'POST'])
@@ -1300,7 +1167,6 @@ def editingRoleGET(id):
     # Insert the employees  data into the employees collection
     form = InformForm()
     one_role = mongo.db.role.find_one({"_id": id})
-    print("---------- ", one_role)
 
     fetch_all_departments = [doc for doc in mongo.db.departments.find()]
     return render_template("admin/edit_role.html",
@@ -1318,18 +1184,12 @@ def editingRolePOST(id):
     fetched_one_value_before_json = {
         '_id': id,
         "role_name": found_one_from_db_before_json['role_name'],
-        'role_have_full_power': True if found_one_from_db_before_json['role_have_full_power'] else False,
-        'role_upload_documents_profile_pictures': True if found_one_from_db_before_json['role_name'] else False,
-        'role_department_id': int(found_one_from_db_before_json['role_department_id'])
     }
 
     converted_json = json.dumps(fetched_one_value_before_json, sort_keys=True)
     fetched_value_before_json = {
         '_id': id,
         "role_name": request.form.get('role_name'),
-        'role_have_full_power': True if request.form.get('role_have_full_power') else False,
-        'role_upload_documents_profile_pictures': True if request.form.get('role_name') else False,
-        'role_department_id': int(request.form.get('department_id'))
     }
 
     fetched_val_json = json.dumps(fetched_value_before_json, sort_keys=True)
@@ -1340,14 +1200,6 @@ def editingRolePOST(id):
     else:
         if fetched_value_before_json["role_name"] != fetched_one_value_before_json["role_name"]:
             collect_data_to_append["role_name"] = fetched_value_before_json["role_name"]
-        if fetched_value_before_json["role_have_full_power"] != fetched_one_value_before_json["role_have_full_power"]:
-            collect_data_to_append["role_have_full_power"] = fetched_value_before_json["role_have_full_power"]
-        if (fetched_value_before_json["role_upload_documents_profile_pictures"] != fetched_one_value_before_json[
-            "role_upload_documents_profile_pictures"]):
-            collect_data_to_append["role_upload_documents_profile_pictures"] = fetched_value_before_json[
-                "role_upload_documents_profile_pictures"]
-        if fetched_value_before_json["role_department_id"] != fetched_one_value_before_json["role_department_id"]:
-            collect_data_to_append["role_department_id"] = fetched_value_before_json["role_department_id"]
 
         # Update the employees  data into the employees collection
         mongo.db.role.update_one(
@@ -1385,7 +1237,6 @@ def convert24(str1):
 def createNewEventPost():
     form = InformForm()
     # TODO we may need to show all the employees list
-    print("NEW: ", request.form.get("employee_id"))
 
     # TODO remove this
     today = datetime.now()
@@ -1394,11 +1245,7 @@ def createNewEventPost():
     curr_date_time = datetime.strptime(strp_today, "%Y-%m-%d %H:%M")
     timestamp_current_date_time = datetime.timestamp(curr_date_time)
 
-    print("NOW: ", timestamp_current_date_time)
-
     if (form.validate_on_submit()):
-        session['startdate'] = form.startdate.data
-        session['enddate'] = form.enddate.data
         return redirect(url_for("date"))
 
     all_employees = database_connection.connect_employee_table_name()
@@ -1416,10 +1263,6 @@ def createNewEventPost():
 @app.route("/admin/calendar", methods=['POST'])
 def date():
     form = InformForm()
-    session['startdate'] = form.startdate.data
-    session['enddate'] = form.enddate.data
-    startdate = session["startdate"]
-    enddate = session["enddate"]
 
     # TODO Need to validate and some logics
     # https://www.dataquest.io/blog/python-datetime-tutorial/
@@ -1433,14 +1276,7 @@ def date():
     # date2 = datetime(int(end_date_split[0]), int(end_date_split[1]), int(end_date_split[2]), int(end_at_split[0]), int(end_at_split[1]), 00)
     #
     # diff = date2 - date1
-    # print("Difference: ", diff)
 
-    print("NEW: ", request.form.get("employee_id"))
-    print("FORM: ", request.form, datetime.now())
-
-    converted_start_date = convert24(request.form.get('start_at'))
-    converted_end_date = convert24(request.form.get('end_at'))
-    print("converted_end_date: ", converted_end_date, converted_start_date)
 
     form = InformForm()
 
@@ -1448,7 +1284,6 @@ def date():
         requestForm = {}
         error = []
 
-        print("request.form.get:::", request.form.get("manager_id"), request.form)
         if not request.form.get("employee_id"):
             error.append("Please Select the Employee Name")
         elif request.form.get("employee_id"):
@@ -1499,12 +1334,10 @@ def date():
         # split_start_at = str(converted_start_date).split(':')
         # split_end_at = str(converted_end_date).split(':')
         #
-        # print(type(converted_start_date), split_start_at)
         # d1 = datetime(int(split_start_date[0]), int(split_start_date[1]), int(split_start_date[2]), int(split_start_at[0]),
         #               int(split_start_at[1]))
         # d2 = datetime(int(split_end_date[0]), int(split_end_date[1]), int(split_end_date[2]), int(split_end_at[0]), int(split_end_at[1]))
         #
-        # print("d1", d1, d2, d1 > d2)
 
         # Today's timestamp
         today = datetime.now()
@@ -1513,14 +1346,9 @@ def date():
         timestamp_current_date_time = datetime.timestamp(curr_date_time)
 
         today = datetime.now()
-        print("NOW: ", float(timestamp_current_date_time) < float(timestamp))
-        print("Float: ", float(timestamp_current_date_time), float(timestamp))
-        print("timestamo End date: ", float(timestamp), dt_object2)
-        print("timestamo2 Start date: ", float(timestamp2), dt_object1)
 
         error = []
         if (timestamp == timestamp2):
-            print("They r same, please try something else")
             # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
             error.append(
                 'Start date and End date are same, please try to enter the start date to be less than the end date')
@@ -1533,7 +1361,6 @@ def date():
                                    requestForm=requestForm)
 
         elif (float(timestamp) < float(timestamp2)):
-            print("Looks like the start date is greater than end date")
             error.append('Looks like the start date is greater than end date')
 
             all_employees = database_connection.connect_employee_table_name()
@@ -1544,75 +1371,72 @@ def date():
                                    display_all_managers=database_connection.manager_table(all_managers), error=error,
                                    requestForm=requestForm)
         else:
-            print("Looks like it is the correct date: ", request.form, session)
             mongo.db.workSchedule.insert_one({
                 'employee_id': int(request.form.get('employee_id')),
                 'title': request.form.get('title'),
-                'start': request.form.get('startdate') + 'T' + converted_start_date,
-                'end': request.form.get('enddate') + 'T' + converted_end_date,
+                'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+                'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
                 'manager_id': int(request.form.get('manager_id'))})
             return redirect(url_for("admin.getFullCalendar"))
 
 
-@app.route("/getExistingEvent/<id>/<int:toggle>/empId/<int:employee_id>", methods=['GET', 'POST'])
-def editExitEvent(id, toggle, employee_id):
-    one_element = database_connection.fetch_only_one_work_schedule(ObjectId(id))
-    print("DATE: ", one_element, toggle, employee_id)
-    form = InformForm()
-    # TODO we may need to show all the employees list
-
-    all_employees = database_connection.connect_employee_table_name()
-    all_managers = database_connection.connect_manager_table_name()
-    return render_template('admin/edit_event_creation.html',
-                           form=form,
-                           display_all_employees=database_connection.employee_table(all_employees),
-                           display_all_managers=database_connection.manager_table(all_managers),
-                           fetched_data=one_element,
-                           toggle=toggle,
-                           coming_from_emp_edit_screen=employee_id)
-
-
-@app.route("/postAnExistingEvent/<id>", methods=['POST'])
-def postAnExistingEventData(id):
+@app.route("/postAnExistingEvent/<int:toggle>/<id>", methods=['POST'])
+def postAnExistingEventData(id, toggle):
     requestForm = {
         "employee_id": int(request.form.get("employee_id")),
         "manager_id": int(request.form.get("manager_id"))
     }
     form = InformForm()
-    print("req: ", requestForm)
     #
-    # print("request.form:::: ", request.form["startdate"], request.form.get('startdate'))
     value_date1 = request.form.get('startdate') + ' ' + request.form.get('start_at')
-    print("+++++++++++++++++++++: ", value_date1)
 
     # converted_start_at = convert24(request.form.get('start_at'))
     # converted_end_at = convert24(request.form.get('end_at'))
-    # print("converted_end_date: ", converted_start_at, converted_end_at)
+    if (request.form.get('startdate') and request.form.get('start_at')) and (
+            request.form.get('enddate') and request.form.get('end_at')):
+        ############# START AT ###############
+        if len(request.form.get('start_at')) >= 8:
+            dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                           "%Y-%m-%d %H:%M:%S")
+        else:
+            dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
+                                           "%Y-%m-%d %H:%M")
 
-    ############# START AT ###############
-    if len(request.form.get('start_at')) >= 8:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
-                                       "%Y-%m-%d %H:%M:%S")
-    else:
-        dt_object1 = datetime.strptime(request.form.get('startdate') + ' ' + request.form.get('start_at'),
-                                       "%Y-%m-%d %H:%M")
+        ############# END AT ###############
+        if len(request.form.get('end_at')) >= 8:
+            dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
+                                           "%Y-%m-%d %H:%M:%S")
+        else:
+            dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
+                                           "%Y-%m-%d %H:%M")
 
-    ############# END AT ###############
-    if len(request.form.get('end_at')) >= 8:
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'),
-                                       "%Y-%m-%d %H:%M:%S")
     else:
-        dt_object2 = datetime.strptime(request.form.get('enddate') + ' ' + request.form.get('end_at'), "%Y-%m-%d %H:%M")
+        error = 'Please check the entry for Start date and time or end date and time'
+        all_employees = database_connection.connect_employee_table_name()
+        all_managers = database_connection.connect_manager_table_name()
+        one_element = {
+            "_id": ObjectId(id),
+            "employee_id": int(request.form.get("employee_id")),
+            "manager_id": int(request.form.get("manager_id")),
+            "title": request.form.get("title"),
+            'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
+            'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
+        }
+        return render_template('admin/edit_event_creation.html',
+                               form=form,
+                               display_all_employees=database_connection.employee_table(all_employees),
+                               display_all_managers=database_connection.manager_table(all_managers),
+                               error=error,
+                               toggle=toggle,
+                               requestForm=requestForm,
+                               fetched_data=one_element)
 
     timestamp = datetime.timestamp(dt_object2)
     timestamp2 = datetime.timestamp(dt_object1)
     error = None
 
-    print(dt_object1, dt_object2)
-    print(timestamp, timestamp2)
 
     if (timestamp == timestamp2):
-        print("******: ++++++++++ ", form)
 
         one_element = {
             "_id": ObjectId(id),
@@ -1623,7 +1447,6 @@ def postAnExistingEventData(id):
             'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
         }
 
-        print("They r same, please try something else")
         # flash("Start date and End date are same, please try to enter the start date to be less than the end date")
         error = 'Start date and End date are same, please try to enter the start date to be less than the end date'
         all_employees = database_connection.connect_employee_table_name()
@@ -1633,6 +1456,7 @@ def postAnExistingEventData(id):
                                display_all_employees=database_connection.employee_table(all_employees),
                                display_all_managers=database_connection.manager_table(all_managers),
                                error=error,
+                               toggle=toggle,
                                requestForm=requestForm,
                                fetched_data=one_element)
     elif (float(timestamp) < float(timestamp2)):
@@ -1644,7 +1468,6 @@ def postAnExistingEventData(id):
             'start': request.form.get('startdate') + 'T' + request.form.get('start_at'),
             'end': request.form.get('enddate') + 'T' + request.form.get('end_at'),
         }
-        print("Looks like the start date is greater than end date")
         error = 'Looks like the start date is greater than end date'
         all_employees = database_connection.connect_employee_table_name()
         all_managers = database_connection.connect_manager_table_name()
@@ -1653,13 +1476,12 @@ def postAnExistingEventData(id):
                                display_all_employees=database_connection.employee_table(all_employees),
                                display_all_managers=database_connection.manager_table(all_managers),
                                error=error,
+                               toggle=toggle,
                                requestForm=requestForm,
                                fetched_data=one_element)
 
     else:
         found_one_from_db_before_json = database_connection.fetch_only_one_work_schedule(ObjectId(id))
-
-        print("request.form.get('manager_id'): ", request.form.get('manager_id'))
 
         del found_one_from_db_before_json["_id"]
         converted_json = json.dumps(found_one_from_db_before_json, sort_keys=True)
@@ -1691,7 +1513,11 @@ def postAnExistingEventData(id):
                 {'_id': ObjectId(id)},
                 {'$set': collect_data_to_append}
             )
-        return redirect(url_for('admin.getFullCalendar'))
+        if toggle == 1:
+            return redirect(url_for('admin.getFullCalendar'))
+        else:
+            return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=requestForm['employee_id']))
+            # return redirect(url_for('admin.getFullCalendar'))
 
 
 # Delete an Event
@@ -1704,6 +1530,11 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
         return redirect(url_for('admin.getFullCalendar'))
     else:
         return redirect(url_for('admin.getEditEmployeeEventCalendar', empId=coming_from_emp_edit_screen))
+
+
+@app.route("/help")
+def help():
+    return render_template("shared-component/help.html")
 
 
 @app.route('/plot.png')

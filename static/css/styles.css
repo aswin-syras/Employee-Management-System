@@ -193,6 +193,7 @@ h4 {
 
 .ptop-8 {
     padding-top: 8px !important;
+    padding
 }
 
 .edit-department-name {
@@ -288,6 +289,20 @@ h4 {
 
 .mb-1 {
     margin-bottom: 15px !important;
+}
+
+.btn-color-border {
+    outline: none;
+    border-color: transparent;
+    text-decoration: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
 }
 
 @media (max-width: 1024px) {

@@ -15,6 +15,7 @@ login = Blueprint("login", __name__, static_folder="static", template_folder="te
 
 # Login table name
 login_table_name = database_connection.connect_login_table()
+employee_table_name = database_connection.connect_employee_table_name()
 
 
 class LoginForm(FlaskForm):
@@ -109,20 +110,26 @@ def login_validationPost():
     print("user12: ", login_check)
     if login_check:
         session['username'] = login_check['one_data']['username']
-        # session['first_name'] = login_check['one_data']['first_name']
-        # session['last_name'] = login_check['one_data']['last_name']
+        session['first_name'] = login_check['one_data']['first_name']
+        session['last_name'] = login_check['one_data']['last_name']
         session['is_admin'] = login_check['one_data']['is_admin']
         # session['_id'] = login_check['one_data']['_id']
         # session['email_address'] = login_check['one_data']['email_address']
 
         if login_check['one_data']['is_admin']:
             print("Reditct him to Sdmin oage: ", session)
-
             return redirect(url_for("admin.adminHome"))
         else:
             print("to notmal emp page")
+            query = {
+                'username': request.form.get('username')
+            }
+            fetch_employee_one = employee_table_name.find_one(query)
+            session['employee_id'] = fetch_employee_one['_id']
+            print("1233 ***-+595* : ", fetch_employee_one)
+
             # TODO: Redirect to Employee page
-        return "Success! Redirect to employees page"
+            return redirect(url_for('employees.home'))
     else:
         error.append("Username and password doesn't match")
         form = LoginForm()

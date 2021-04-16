@@ -6,6 +6,7 @@ employee_table_name = database_connection.connect_employee_table_name()
 department_table_name = database_connection.connect_department_table_name()
 employee_type_name = database_connection.connect_employee_type_table_name()
 role_table_name = database_connection.connect_role_table_name()
+fs_files_table_name = database_connection.connect_fs_files()
 
 
 # Generating a new random id for Login
@@ -85,5 +86,23 @@ def generating_random_id_role():
         if not_in_list:
             i = 0
             return random_id_generator
+        else:
+            i = 1
+
+def generating_random_id_profile_picture():
+    # Generating a new random id for employees
+    i = 1
+
+    while (i > 0):
+        random_id_generator = randrange(1, 1000000000000000000000000000000000)
+        print("uniq: ", fs_files_table_name.find())
+        all_employee_type_find = [docss for docss in fs_files_table_name.find()]
+
+        # Fetch only the Id only for comparing
+        result = map(lambda x: x["filename"], all_employee_type_find)
+        not_in_list = str(random_id_generator) not in list(result)
+        if (not_in_list):
+            i = 0
+            return str(random_id_generator)
         else:
             i = 1

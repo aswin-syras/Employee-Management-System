@@ -29,7 +29,7 @@
                 activeNextSibling = activeTab.nextElementSibling,
                 op_children = activePrevSibling.children[1].children,
                 text_change = activePrevSibling.previousElementSibling,
-                set_title_dept_name = department[selected_dept_arr].department_name + ' ' + department[selected_dept_arr].department_name
+                set_title_dept_name = department[selected_dept_arr].department_name;
 
             for (var i = 0; i < op_children.length; i++) {
                 if ( i != selected_dept_arr + 1 ) {
@@ -90,7 +90,7 @@
 
     <!--suppress XmlInvalidId, XmlDuplicatedId -->
     <div class="parent-edit-div container">
-        <h2>Editing an Employee</h2>
+        <h2>{{ form.first_name.label }} {{ form.last_name.label }}</h2>
         <form method="POST" action="/editAnEmployee/{{ one_employee._id }}"  enctype="multipart/form-data">
             <div>
             {{ form.csrt_token }}
@@ -304,14 +304,12 @@
                                     <select class="form-control selectpicker" id="select-department" data-live-search="true" name="department_id">
                                          <option selected disabled>Please Select the options</option>
                                         {% for department in display_all_departments %}
-                                            {% if department._id %}
-                                                {% if requestForm %}
-                                                    <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
-                                                        {{ department.department_name }}</option>
-                                                {% else %}
-                                                    <option value="{{ department._id }}"{% if  department._id == one_employee.department_id %} selected="selected"
-                                                            {% endif %}>{{ department.department_name }}</option>
-                                                {% endif %}
+                                            {% if requestForm %}
+                                                <option value="{{ department._id }}"{% if  department._id == requestForm.department_id %} selected="selected" {% endif %}>
+                                                    {{ department.department_name }}</option>
+                                            {% else %}
+                                                <option value="{{ department._id }}"{% if  department._id == one_employee.department_id %} selected="selected"
+                                                        {% endif %}>{{ department.department_name }}</option>
                                             {% endif %}
                                         {% endfor %}
                                     </select>
@@ -381,7 +379,6 @@
                         <!-- Salary Details-->
                         <div class="checked_as-inactive">
                             <div id="salary_complete_details">
-        <!--                    {% if one_employee.salary_details %}-->
                             <div class="row">
                                 <div class="col-3">
                                     {{ form.salary.label }}
@@ -392,7 +389,6 @@
                                     {% endif %}
                                 </div>
                                 <div class="col-3">
-        <!--                            {{ form.bonus.label }} {{ form.bonus(class="form-control", id="bonusId")}} {{ form.hidden_tag() }}-->
                                     {{ form.bonus.label }}
                                     {% if requestForm %}
                                         {{ form.bonus(class="form-control", id="bonusId", type="number")}} {{ form.hidden_tag() }}
@@ -439,7 +435,6 @@
                                 </div>
 
                             </div>
-        <!--                    {% endif %}-->
                         </div>
 
                             <!-- Hourly Details-->
@@ -458,6 +453,11 @@
                         </div>
                     </div>
 
+
+
+
+
+                    <!-- Employee Calender -->
                     <div class="tab-pane pb-3 pt-3 text-center mt-3" id="e">
                         <a href="{{ url_for('admin.getEditEmployeeEventCalendar', empId=one_employee._id) }}" class="btn btn-success"><i class="fas fa-calendar-alt"></i> &nbsp;  Click here to view the work schedule </a>
                     </div>
@@ -473,7 +473,9 @@
                     <a href="{{ url_for('admin.adminHome') }}" class="btn btn-secondary">Cancel</a>
                 </div>
                 <div class="form-group buttons-edit">
-                    <a class="btn btn-danger" href="/deleteExistingEmployee/{{ one_employee._id }}">Delete</a>
+                    {% if one_employee._id != 0 %}
+                    <a class="btn btn-danger" href="/deleteExistingEmployee/{{ one_employee._id }}"><i class="fas fa-trash"></i>  Delete</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
