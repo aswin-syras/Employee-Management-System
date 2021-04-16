@@ -564,7 +564,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                     "official_email_address"]
             if fetched_value_before_json["is_manager"] != found_one_from_db_before_json["is_manager"]:
                 collect_data_to_append["is_manager"] = fetched_value_before_json["is_manager"]
- 
+
 
 
             address_data = {
@@ -582,219 +582,49 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                     "UAN_number": fetched_value_before_json['bank_details']['UAN_number']
                 }
             }
-
             collect_data_to_append.update(bank_details_data)
 
+            if ('salary_details' in fetched_value_before_json and 'hourly_pay_details' in found_one_from_db_before_json) or ('salary_details' in found_one_from_db_before_json and 'salary_details' in fetched_value_before_json):
+                salary_overall = {
+                    "salary_details": {
+                        "salary": fetched_value_before_json['salary_details']['salary'],
+                        "bonus": fetched_value_before_json['salary_details']['bonus'],
+                        "allowances": {
+                            "basic_allowance": fetched_value_before_json['salary_details']['allowances'][
+                                'basic_allowance'],
+                            "medical_allowance": fetched_value_before_json['salary_details']['allowances'][
+                                'medical_allowance'],
+                            "provident_fund": fetched_value_before_json['salary_details']['allowances'][
+                                'provident_fund'],
+                            "tax": fetched_value_before_json['salary_details']['allowances']['tax']
+                        }
+                    }
+                }
 
-            # if (fetched_value_before_json["address"]['current_address'] != found_one_from_db_before_json["address"][
-            #     'current_address']):
-            #     if 'address' in collect_data_to_append:
-            #         collect_data_to_append['address'].update({
-            #             'current_address': fetched_value_before_json["address"]['current_address']
-            #         })
-            #     else:
-            #         collect_data_to_append.update({'address': {
-            #             'current_address': fetched_value_before_json["address"]['current_address']
-            #         }
-            #         })
-            #     # collect_data_to_append["address"]['current_address'] = fetched_value_before_json["address"]['current_address']
-            # if (fetched_value_before_json["address"]['permanent_address'] !=
-            #         found_one_from_db_before_json["address"]['permanent_address']):
-            #     print("SAY YES: ", 'address' in collect_data_to_append, collect_data_to_append)
-            #     if 'address' in collect_data_to_append:
-            #         collect_data_to_append['address'].update({
-            #             'permanent_address': fetched_value_before_json["address"]['permanent_address']
-            #         })
-            #     else:
-            #         collect_data_to_append.update({'address': {
-            #             'permanent_address': fetched_value_before_json["address"]['permanent_address']
-            #         }
-            #         })
-            # if (fetched_value_before_json["bank_details"]['bank_name'] !=
-            #         found_one_from_db_before_json["bank_details"]['bank_name']):
-            #     if 'bank_details' in collect_data_to_append:
-            #         collect_data_to_append['bank_details'].update({
-            #             'bank_name': fetched_value_before_json["bank_details"]['bank_name']
-            #         })
-            #     else:
-            #         collect_data_to_append.update({'bank_details': {
-            #             'bank_name': fetched_value_before_json["bank_details"]['bank_name']
-            #         }
-            #         })
-            # if (fetched_value_before_json["bank_details"]['account_number'] !=
-            #         found_one_from_db_before_json["bank_details"]['account_number']):
-            #     if 'bank_details' in collect_data_to_append:
-            #         collect_data_to_append['bank_details'].update({
-            #             'account_number': fetched_value_before_json["bank_details"]['account_number']
-            #         })
-            #     else:
-            #         collect_data_to_append.update({'bank_details': {
-            #             'account_number': fetched_value_before_json["bank_details"]['account_number']
-            #         }
-            #         })
-            # if (fetched_value_before_json["bank_details"]['UAN_number'] !=
-            #         found_one_from_db_before_json["bank_details"]['UAN_number']):
-            #     if 'bank_details' in collect_data_to_append:
-            #         collect_data_to_append['bank_details'].update({
-            #             'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-            #         })
-            #     else:
-            #         collect_data_to_append.update({'bank_details': {
-            #             'UAN_number': fetched_value_before_json["bank_details"]['UAN_number']
-            #         }
-            #         })
-            # if 'hourly_pay_details' in fetched_value_before_json:
-            #     if fetched_value_before_json["hourly_pay_details"]['hourly_pay'] != \
-            #             found_one_from_db_before_json["hourly_pay_details"]['hourly_pay']:
-            #         collect_data_to_append.update(
-            #             {
-            #                 'hourly_pay_details': {
-            #                     'hourly_pay': fetched_value_before_json["hourly_pay_details"]['hourly_pay']
-            #                 }
-            #             })
-            # else:
-            #     if fetched_value_before_json["salary_details"]['salary'] != \
-            #             found_one_from_db_before_json["salary_details"]['salary']:
-            #         if 'salary_details' in collect_data_to_append:
-            #             collect_data_to_append['salary_details'].update(
-            #                 {
-            #                     'salary': fetched_value_before_json["salary_details"]['salary']
-            #                 })
-            #         else:
-            #             collect_data_to_append.update(
-            #                 {
-            #                     'salary_details': {
-            #                         'salary': fetched_value_before_json["salary_details"]['salary']
-            #                     }
-            #                 })
-            #     if fetched_value_before_json["salary_details"]['bonus'] != \
-            #             found_one_from_db_before_json["salary_details"]['bonus']:
-            #         if 'salary_details' in collect_data_to_append:
-            #             collect_data_to_append['salary_details'].update(
-            #                 {
-            #                     'bonus': fetched_value_before_json["salary_details"]['bonus']
-            #                 })
-            #         else:
-            #             collect_data_to_append.update(
-            #                 {
-            #                     'salary_details': {
-            #                         'bonus': fetched_value_before_json["salary_details"]['bonus']
-            #                     }
-            #                 })
-            #     if fetched_value_before_json["salary_details"]['allowances'] != \
-            #             found_one_from_db_before_json["salary_details"]['allowances']:
-            #         if fetched_value_before_json["salary_details"]['allowances']['basic_allowance'] != \
-            #                 found_one_from_db_before_json["salary_details"]['allowances']['basic_allowance']:
-            #             if 'salary_details' in collect_data_to_append:
-            #                 if 'allowances' in collect_data_to_append['salary_details']:
-            #                     collect_data_to_append['salary_details']['allowances'].update(
-            #                         {
-            #                             'basic_allowance':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'basic_allowance']
-            #                         })
-            #                 else:
-            #                     collect_data_to_append['salary_details'].update({
-            #                         'allowances': {
-            #                             'basic_allowance':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'basic_allowance']
-            #                         }
-            #                     })
-            #             else:
-            #                 collect_data_to_append.update(
-            #                     {
-            #                         'salary_details': {
-            #                             'allowances': {
-            #                                 'basic_allowance':
-            #                                     fetched_value_before_json["salary_details"]["allowances"][
-            #                                         'basic_allowance']
-            #                             }
-            #                         }
-            #                     })
-            #         if fetched_value_before_json["salary_details"]['allowances']['medical_allowance'] != \
-            #                 found_one_from_db_before_json["salary_details"]['allowances']['medical_allowance']:
-            #             if 'salary_details' in collect_data_to_append:
-            #                 if 'allowances' in collect_data_to_append['salary_details']:
-            #                     collect_data_to_append['salary_details']['allowances'].update(
-            #                         {
-            #                             'medical_allowance':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'medical_allowance']
-            #                         })
-            #                 else:
-            #                     collect_data_to_append['salary_details'].update({
-            #                         'allowances': {
-            #                             'medical_allowance':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'medical_allowance']
-            #                         }
-            #                     })
-            #             else:
-            #                 collect_data_to_append.update(
-            #                     {
-            #                         'salary_details': {
-            #                             'allowances': {
-            #                                 'medical_allowance':
-            #                                     fetched_value_before_json["salary_details"]["allowances"][
-            #                                         'medical_allowance']
-            #                             }
-            #                         }
-            #                     })
-            #         if fetched_value_before_json["salary_details"]['allowances']['provident_fund'] != \
-            #                 found_one_from_db_before_json["salary_details"]['allowances']['provident_fund']:
-            #             if 'salary_details' in collect_data_to_append:
-            #                 if 'allowances' in collect_data_to_append['salary_details']:
-            #                     collect_data_to_append['salary_details']['allowances'].update(
-            #                         {
-            #                             'provident_fund':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'provident_fund']
-            #                         })
-            #                 else:
-            #                     collect_data_to_append['salary_details'].update({
-            #                         'allowances': {
-            #                             'provident_fund': fetched_value_before_json["salary_details"]["allowances"][
-            #                                 'provident_fund']
-            #                         }
-            #                     })
-            #             else:
-            #                 collect_data_to_append.update(
-            #                     {
-            #                         'salary_details': {
-            #                             'allowances': {
-            #                                 'provident_fund':
-            #                                     fetched_value_before_json["salary_details"]["allowances"][
-            #                                         'provident_fund']
-            #                             }
-            #                         }
-            #                     })
-            #         if fetched_value_before_json["salary_details"]['allowances']['tax'] != \
-            #                 found_one_from_db_before_json["salary_details"]['allowances']['tax']:
-            #             if 'salary_details' in collect_data_to_append:
-            #                 if 'allowances' in collect_data_to_append['salary_details']:
-            #                     collect_data_to_append['salary_details']['allowances'].update(
-            #                         {
-            #                             'tax':
-            #                                 fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'tax']
-            #                         })
-            #                 else:
-            #                     collect_data_to_append['salary_details'].update({
-            #                         'allowances': {
-            #                             'tax': fetched_value_before_json["salary_details"]["allowances"]['tax']
-            #                         }
-            #                     })
-            #             else:
-            #                 collect_data_to_append.update(
-            #                     {
-            #                         'salary_details': {
-            #                             'allowances': {
-            #                                 'tax': fetched_value_before_json["salary_details"]["allowances"][
-            #                                     'tax']
-            #                             }
-            #                         }
-            #                     })
+                collect_data_to_append.update(salary_overall)
+
+                if 'salary_details' in fetched_value_before_json and 'hourly_pay_details' in found_one_from_db_before_json:
+                    # Deliberately remove the key called Hourly_pay_details
+                    mongo.db.employees.update_one(
+                        {'_id': id},
+                        {'$unset': {'hourly_pay_details': ""}}
+                    )
+
+            elif ('hourly_pay_details' in fetched_value_before_json and 'salary_details' in found_one_from_db_before_json) or ('hourly_pay_details' in found_one_from_db_before_json and 'hourly_pay_details' in fetched_value_before_json):
+                hourly_overall = {
+                    "hourly_pay_details": {
+                        "hourly_pay": fetched_value_before_json['hourly_pay_details']['hourly_pay']
+                    }
+                }
+
+                collect_data_to_append.update(hourly_overall)
+
+                if 'hourly_pay_details' in fetched_value_before_json and 'salary_details' in found_one_from_db_before_json:
+                    # Deliberately remove the key called Hourly_pay_details
+                    mongo.db.employees.update_one(
+                        {'_id': id},
+                        {'$unset': {'salary_details': ""}}
+                    )
 
             # Check whether collect_data_to_append is an empty dict
             res = bool(collect_data_to_append)
