@@ -1791,7 +1791,7 @@ def help():
 
 @app.route("/charts")
 def charts():
-    return render_template("shared-component/charts.html")
+    return render_template("shared-component/charts.html",areachart_lables = areachart_lables, areachart_values = areachart_values)
 
 
 @app.route('/plot.png')
