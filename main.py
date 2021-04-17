@@ -1800,8 +1800,8 @@ def charts():
     #areachart_lables = ["Research & Developments", "Customer Service Representative", "CEO"]
     #areachart_values = [all_employees]
 
-    areachart_lables = ["one", "two", "three", "four"]
-    areachart_values = [4, 7, 10, 40]
+    areachart_lables = ["Research & Developments", "Human Resource", "Sales and Marketing", "Customer Service Representative", "Information Technology", "CEO"]
+    areachart_values = [3, 0, 0, 0, 0, 1]
     return render_template("shared-component/charts.html",areachart_lables = areachart_lables, areachart_values = areachart_values)
 
 
