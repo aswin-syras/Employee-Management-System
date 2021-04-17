@@ -30,6 +30,7 @@ import random
 from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from collections import Counter
 
 import string
 
@@ -52,6 +53,8 @@ fetch_database_connection = database_connection.database_connection()
 all_roles = database_connection.connect_role_table_name()
 login_table_name = database_connection.connect_login_table()
 manager_table_name = database_connection.connect_manager_table_name()
+employee_table_name = database_connection.connect_employee_table_name()
+department_table_name = database_connection.connect_department_table_name()
 
 gender_array = ['Not Ready to Declare', 'Male', 'Female']
 
@@ -107,9 +110,11 @@ class InformForm(FlaskForm):
     role_have_full_power = BooleanField('Assign Full Power?')
     role_upload_documents_profile_pictures = BooleanField('Ablity to Upload Document?')
 
+
 @app.route("/", methods=["GET"])
 def homepage():
     return render_template('base.html')
+
 
 # http://127.0.0.1:5001/
 @app.route("/login", methods=["GET"])
@@ -313,7 +318,6 @@ def createNewFormComparison():
         login_table_name.insert_one(insert_data_Login)
 
 
-
 @app.route("/createNewEmployee", methods=['POST'])
 def createNewEmployee():
     if "profile_image" in request.files:
@@ -494,7 +498,8 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
         }
 
         if 'about_me' in found_one_from_db_before_json:
-            fetched_value_before_json['about_me'] = request.form.get('about_me') if request.form.get('about_me') else found_one_from_db_before_json['about_me']
+            fetched_value_before_json['about_me'] = request.form.get('about_me') if request.form.get('about_me') else \
+                found_one_from_db_before_json['about_me']
         else:
             if request.form.get('about_me'):
                 fetched_value_before_json['about_me'] = request.form.get('about_me')
@@ -571,7 +576,7 @@ def editEmployeeComparison(found_one_from_db_before_json, id):
                 collect_data_to_append["date_of_joining"] = fetched_value_before_json["date_of_joining"]
             if fetched_value_before_json["last_date"] != found_one_from_db_before_json["last_date"]:
                 collect_data_to_append["last_date"] = fetched_value_before_json["last_date"]
-            
+
             # Check if the about me exists
             if 'about_me' in found_one_from_db_before_json:
                 if fetched_value_before_json["about_me"] != found_one_from_db_before_json["about_me"]:
@@ -1283,7 +1288,6 @@ def editingDepartmentGET(id):
         all_emp_in_mgrs_table = []
         all_emp_in_mgrs_table = no_of_employees
 
-
     return render_template("admin/edit_department.html",
                            form=form,
                            one_department=one_department,
@@ -1789,21 +1793,47 @@ def deleteEvent(id, toggle, coming_from_emp_edit_screen):
 def help():
     return render_template("shared-component/help.html")
 
+
 @app.route("/charts")
 def charts():
-    #fetch_count = database_connection.connect_employee_table_name()
-    #query = {'_id': id}
-    #all_employees = fetch_count.find_many(query)
-    #return all_employees
+    areachart_lables = ["one", "two", "three", "four"]
+    areachart_values = [4, 7, 10, 40]
 
-   # fetch_all_departments = [doc for doc in mongo.db.departments.find()]
-    #areachart_lables = ["Research & Developments", "Customer Service Representative", "CEO"]
-    #areachart_values = [all_employees]
+    employee_table = database_connection.employee_table(employee_table_name)
+    department_table = database_connection.department_table(department_table_name)
 
-    areachart_lables = ["Research & Developments", "Human Resource", "Sales and Marketing", "Customer Service Representative", "Information Technology", "CEO"]
-    areachart_values = [3, 0, 0, 0, 0, 1]
-    return render_template("shared-component/charts.html",areachart_lables = areachart_lables, areachart_values = areachart_values)
+    # Employee and the Department
+    department_name = list(map(lambda x: x['department_name'], department_table))
+    department_id = list(map(lambda x: x['_id'], department_table))
+    employee_dept_id = list(map(lambda x: x['department_id'], employee_table))
 
+    overall_num_employees_in_dept = []
+    for x in department_id:
+        d = Counter(employee_dept_id)
+        overall_num_employees_in_dept.append(d[x])
+
+    # ********************Managers and the employees in piechart ********************* #
+    role_table = database_connection.role_table(all_roles)
+    role_id = list(map(lambda x: x['_id'], role_table))
+    role_name = list(map(lambda x: x['role_name'], role_table))
+
+    all_emp_not_in_mgrs_table = list(filter(lambda d: d['_id'] not in role_id, employee_table))
+    employee_not_mgr_id = list(map(lambda x: x['user_role_id'], all_emp_not_in_mgrs_table))
+
+
+    overall_num_roles = []
+    for x in role_id:
+        d = Counter(employee_not_mgr_id)
+        overall_num_roles.append(d[x])
+
+
+    return render_template("shared-component/charts.html", areachart_lables=areachart_lables,
+                           areachart_values=areachart_values,
+                           department_name=department_name,
+                           overall_num_employees_in_dept=overall_num_employees_in_dept,
+                           overall_num_roles=overall_num_roles,
+                           role_name=role_name
+                           )
 
 @app.route('/plot.png')
 def plot_png():
