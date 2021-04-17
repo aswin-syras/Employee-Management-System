@@ -127,7 +127,9 @@ def editEmployee(id):
     fetch_all_employee_type = [doc for doc in db_employee_type]
 
     all_managers = database_connection.connect_manager_table_name()
-    print("find_one: ", find_one)
+    session['first_name'] = find_one['first_name']
+    session['last_name'] = find_one['last_name']
+
     return render_template("employees/employee.html",
                            form=form,
                            one_employee=find_one,
