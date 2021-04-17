@@ -71,6 +71,7 @@ def connect_role_dept_mgr_table():
     database_name = database_connection()
     role_table_name = database_name["role"]
     department_table_name = database_name["departments"]
+    department_table_name = database_name["departments"]
     manager_table_name = database_name["managers"]
     return {"role": role_table_name, "department": department_table_name, "manager": manager_table_name}
 
